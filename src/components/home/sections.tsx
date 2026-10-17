@@ -30,8 +30,11 @@ export function BadgeBar({ s, badges }: { s: HomeContent["badges"]; badges: Badg
     <section aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        <div className="rm-offset mx-auto max-w-5xl [--offset-surface:#ffffff]" {...reveal(2, "up-lg")}>
-          <ul className="relative grid grid-cols-2 overflow-hidden rounded-[16px] sm:grid-cols-3 lg:grid-cols-5 [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)]">
+        <div className="rm-offset mx-auto max-w-6xl [--offset-surface:#ffffff]" {...reveal(2, "up-lg")}>
+          <ul
+            className="relative grid grid-cols-2 overflow-hidden rounded-[16px] sm:grid-cols-3 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)]"
+            style={{ "--cols": badges.length } as CSSProperties}
+          >
             {badges.map((b) => (
               <li
                 key={b.id}
@@ -270,7 +273,16 @@ function Quote({ t }: { t: Testimonial }) {
   );
 }
 
-function MarqueeRow({ items, reverse }: { items: Testimonial[]; reverse?: boolean }) {
+/** Repeat a short row so one copy is always wider than the screen. */
+function fillRow(items: Testimonial[], min = 6): Testimonial[] {
+  if (items.length === 0) return items;
+  const out: Testimonial[] = [];
+  while (out.length < min) out.push(...items);
+  return out;
+}
+
+function MarqueeRow({ items: given, reverse }: { items: Testimonial[]; reverse?: boolean }) {
+  const items = fillRow(given);
   return (
     <div className="rm-marquee py-3" data-reverse={reverse ? "" : undefined}>
       <div
@@ -278,16 +290,16 @@ function MarqueeRow({ items, reverse }: { items: Testimonial[]; reverse?: boolea
         style={{ "--marquee-duration": `${Math.max(items.length, 3) * 13}s` } as CSSProperties}
       >
         <ul className="flex gap-6">
-          {items.map((t) => (
-            <li key={t.id}>
+          {items.map((t, i) => (
+            <li key={`${t.id}-${i}`} aria-hidden={i >= given.length ? true : undefined}>
               <Quote t={t} />
             </li>
           ))}
         </ul>
         {/* Second copy so the loop is seamless; hidden from screen readers and keyboards. */}
         <ul className="flex gap-6" aria-hidden="true" inert>
-          {items.map((t) => (
-            <li key={t.id}>
+          {items.map((t, i) => (
+            <li key={`${t.id}-copy-${i}`}>
               <Quote t={t} />
             </li>
           ))}
@@ -330,7 +342,7 @@ export function Testimonials({ s, items }: { s: HomeContent["testimonials"]; ite
 
 // ------------------------------------------------------------------ founder
 /** Split a quote into lines of a few words for the scroll-fill effect. */
-function toLines(text: string, perLine = 7): string[] {
+function toLines(text: string, perLine = 5): string[] {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   for (let i = 0; i < words.length; i += perLine) lines.push(words.slice(i, i + perLine).join(" "));
@@ -356,7 +368,7 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
             {toLines(`“${s.quote}”`).map((line, i) => (
               <span
                 key={i}
-                className="rm-fill-line text-[clamp(1.4rem,4.4vw,3.4rem)] font-bold leading-[1.12] tracking-[-0.04em]"
+                className="rm-fill-line text-[clamp(1.4rem,4.4vw,3.4rem)] font-bold leading-[1.12] tracking-[-0.04em] md:whitespace-nowrap"
               >
                 {line}
               </span>

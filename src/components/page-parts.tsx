@@ -167,7 +167,7 @@ export function CtaPanel({
   whatsappHref?: string | null;
 }) {
   return (
-    <section className="py-20 md:py-28">
+    <section className="pb-20 pt-4 md:pb-28">
       <Container>
         <div
           data-reveal="up-lg"

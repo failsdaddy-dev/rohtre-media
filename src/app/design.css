@@ -6,9 +6,11 @@
    stacking case cards, a moving-stripe brand band, scroll-filled lines,
    drifting testimonial rows and an intro splash.
 
-   Motion is driven by a tiny inline script (src/lib/motion-boot.ts) that
-   sets data-motion / data-scrolled / data-intro on <html> and data-in on
-   [data-reveal] elements as they enter the viewport; Lenis adds smooth
+   Motion: a tiny inline script (src/lib/motion-boot.ts) sets data-motion /
+   data-scrolled / data-intro on <html>; Motion (src/components/motion.tsx)
+   animates [data-reveal] elements in as they enter the viewport and fills
+   .rm-fill-line by scroll, using the Web Animations API (no attribute
+   changes, so no hydration mismatches); Lenis adds smooth
    scrolling (src/components/smooth-scroll.tsx). Nothing is hidden unless that
    script ran, and everything is off for people who prefer reduced motion. */
 
@@ -214,24 +216,11 @@ html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-header-on-solid
 }
 
 /* ---------------------------------------------------------- reveal on view
-   [data-reveal] fades and rises in when it enters the viewport. A --d delay
-   (set inline) staggers a group. */
+   [data-reveal] starts hidden (only when motion is allowed); Motion
+   (src/components/motion.tsx) fades and raises it in with the Web Animations
+   API when it enters the viewport. --d (inline) delays it to stagger a group. */
 html[data-motion] [data-reveal] {
   opacity: 0;
-  transform: translate3d(0, var(--ry, 32px), 0);
-  transition:
-    opacity 0.8s var(--ease-soft) var(--d, 0s),
-    transform 0.8s var(--ease-soft) var(--d, 0s);
-}
-html[data-motion] [data-reveal="fade"] {
-  --ry: 0px;
-}
-html[data-motion] [data-reveal="up-lg"] {
-  --ry: 60px;
-}
-html[data-motion] [data-reveal][data-in] {
-  opacity: 1;
-  transform: none;
 }
 
 /* Hero entrance on page load */
@@ -399,9 +388,10 @@ html[data-intro] {
   line-height: 1;
   white-space: nowrap;
   color: transparent;
-  background: repeating-linear-gradient(45deg, var(--s1) 25%, var(--s1) 50%, var(--s2) 50%, var(--s2) 75%);
+  background: repeating-linear-gradient(45deg, var(--s1) 25%, var(--s1) 50%, #0a0a0a 50%, #0a0a0a 75%);
   background-size: var(--stripe-size) var(--stripe-size);
   -webkit-background-clip: text;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.35));
   background-clip: text;
   animation: rm-stripe-pos 2.5s linear infinite;
 }

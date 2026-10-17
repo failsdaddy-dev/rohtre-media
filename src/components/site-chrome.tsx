@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getSettings } from "@/lib/settings";
 import { Intro } from "./intro";
+import { Motion } from "./motion";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { SmoothScroll } from "./smooth-scroll";
@@ -23,6 +24,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
         template={settings.whatsapp.template}
         enabled={settings.whatsapp.enabled}
       />
+      <Motion />
     </div>
   );
 }
