@@ -6,12 +6,12 @@ import { ArrowRightIcon, ChatIcon } from "../icons";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 import { HeroSlider } from "./hero-slider";
-import { PlaceholderBox } from "./parts";
+import { PlaceholderBox, reveal } from "./parts";
 
-// Hero (R14): a dark band with a pill label, the real visible H1 (two-tone),
-// the two calls to action, then the two finished slides (text baked into the
-// images) with separate desktop and mobile crops in a framed slider.
-// Slide 1 loads eagerly with high priority; slide 2 loads lazily.
+// Hero (R14): a full-screen dark band with drifting light beams, a pill label,
+// the real visible H1 (two-tone), two calls to action; then the two finished
+// slides (text baked into the images, separate desktop and mobile crops) in
+// a framed slider. Slide 1 loads eagerly with high priority; slide 2 lazily.
 // verified: node_modules/next/dist/docs/01-app/03-api-reference/02-components/image.md
 //   (getImageProps art direction; loading="eager" + fetchPriority="high"
 //   rather than `preload` when the image differs by viewport)
@@ -19,6 +19,7 @@ import { PlaceholderBox } from "./parts";
 // guidance on hidden H1s (unverified), so the safe choice is visible text.
 
 const DESKTOP_MIN = "(min-width: 768px)";
+const enter = (i: number) => ({ className: "rm-hero-in", style: { "--i": i } as CSSProperties });
 
 function Slide({ slide, index }: { slide: HomeContent["hero"]["slides"][number]; index: number }) {
   const first = index === 0;
@@ -26,7 +27,7 @@ function Slide({ slide, index }: { slide: HomeContent["hero"]["slides"][number];
     return (
       <PlaceholderBox
         title={`Hero slide ${index + 1}`}
-        className="aspect-[4/5] w-full rounded-none border-0 md:aspect-[12/5]"
+        className="aspect-[4/5] w-full rounded-none border-0 bg-[#0d0d0d] md:aspect-[12/5]"
       >
         Upload a finished desktop image (about 1920×800) and a mobile image (about 1080×1350), with alt text.
       </PlaceholderBox>
@@ -70,48 +71,62 @@ function Slide({ slide, index }: { slide: HomeContent["hero"]["slides"][number];
 export function Hero({ hero, whatsappHref }: { hero: HomeContent["hero"]; whatsappHref: string | null }) {
   const slides = hero.slides.filter((s) => SHOW_PLACEHOLDERS || (s.desktop && s.mobile));
   return (
-    <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-hero-bg rm-glow overflow-hidden">
-      <Container className="flex flex-col items-center gap-6 pb-14 pt-16 text-center sm:pt-24">
-        {hero.eyebrow && <p className="rm-pill rm-rise-in">{hero.eyebrow}</p>}
-        <h1
-          className="rm-rise-in max-w-4xl text-[clamp(2.6rem,7vw,5.25rem)] font-bold leading-[0.95] tracking-[-0.045em]"
-          style={{ "--i": 1 } as CSSProperties}
-        >
-          {hero.h1}
-          {hero.h1Accent && (
-            <>
-              {" "}
-              <span className="rm-text-grad block pb-1">{hero.h1Accent}</span>
-            </>
+    <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-beams overflow-hidden">
+      <div className="flex min-h-[100svh] items-center">
+        <Container className="flex flex-col items-center py-24 text-center">
+          {hero.eyebrow && (
+            <p {...enter(0)}>
+              <span className="rm-pill mb-8">{hero.eyebrow}</span>
+            </p>
           )}
-        </h1>
-        {hero.subline && (
-          <p className="rm-rise-in max-w-2xl text-lg text-fg-2" style={{ "--i": 2 } as CSSProperties}>
-            {hero.subline}
-          </p>
-        )}
-        <div className="rm-rise-in flex flex-wrap justify-center gap-3 pt-2" style={{ "--i": 3 } as CSSProperties}>
-          <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-            {hero.ctaLabel} <ArrowRightIcon size={18} />
-          </ButtonLink>
-          {whatsappHref && (
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener"
-              className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-line px-6 font-semibold hover:bg-hover"
+          <h1
+            className="rm-hero-in mb-6 max-w-5xl text-[clamp(2.5rem,6.4vw,5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
+            style={{ "--i": 1 } as CSSProperties}
+          >
+            {hero.h1}
+            {hero.h1Accent && (
+              <>
+                {" "}
+                <span className="rm-text-grad block pb-1">{hero.h1Accent}</span>
+              </>
+            )}
+          </h1>
+          {hero.subline && (
+            <p
+              className="rm-hero-in mb-10 max-w-3xl text-lg leading-relaxed text-[#f2f2f2] md:text-xl"
+              style={{ "--i": 2 } as CSSProperties}
             >
-              <ChatIcon size={18} /> WhatsApp us
-            </a>
+              {hero.subline}
+            </p>
           )}
-        </div>
-      </Container>
+          <div
+            className="rm-hero-in flex w-full flex-col items-center justify-center gap-4 sm:flex-row"
+            style={{ "--i": 3 } as CSSProperties}
+          >
+            <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
+              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
+                {hero.ctaLabel} <ArrowRightIcon size={18} />
+              </ButtonLink>
+            </span>
+            {whatsappHref && (
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener"
+                className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-6 font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                <ChatIcon size={18} /> WhatsApp us
+              </a>
+            )}
+          </div>
+        </Container>
+      </div>
 
       {slides.length > 0 && (
-        <Container className="pb-16 sm:pb-24">
+        <Container className="pb-20 sm:pb-28">
           <div
-            className="rm-rise-in overflow-hidden rounded-[24px] border border-line bg-bg-elev shadow-[0_40px_120px_-40px_color-mix(in_srgb,var(--brand)_45%,transparent)]"
-            style={{ "--i": 4 } as CSSProperties}
+            className="overflow-hidden rounded-[28px] border border-white/10 shadow-[0_40px_120px_-40px_rgba(229,9,20,0.45)]"
+            {...reveal(0, "up-lg")}
           >
             <HeroSlider labels={slides.map((s, i) => s.alt || `Slide ${i + 1}`)}>
               {slides.map((s, i) => (

@@ -158,3 +158,28 @@ export const ServiceIcon = ({ name, ...p }: P & { name: string }) => (
     )}
   </Svg>
 );
+
+export const AwardIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="9" r="6" />
+    <path d="m8.5 14-1.5 7 5-3 5 3-1.5-7" />
+  </Svg>
+);
+/** Process step icons, by position: call, plan, launch, improve. */
+export const StepIcon = ({ index, ...p }: P & { index: number }) => (
+  <Svg {...p}>
+    {index % 4 === 0 && (
+      <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+    )}
+    {index % 4 === 1 && (
+      <>
+        <path d="M4 5h16v14H4z" />
+        <path d="M4 10h16M10 10v9" />
+      </>
+    )}
+    {index % 4 === 2 && (
+      <path d="M5 19c1-3 2-5 5-6l4-4c2-2 5-3 6-3 0 1-1 4-3 6l-4 4c-1 3-3 4-6 5l-2-2Zm9-9h.01M4 15l-1 4 4-1" />
+    )}
+    {index % 4 === 3 && <path d="M3 17l6-6 4 4 8-8M15 7h6v6" />}
+  </Svg>
+);

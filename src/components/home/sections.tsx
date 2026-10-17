@@ -9,83 +9,94 @@ import {
   type Result,
   type Testimonial,
 } from "@/lib/home-data";
-import { ArrowRightIcon, ServiceIcon } from "../icons";
+import { ArrowRightIcon, AwardIcon, ServiceIcon, StepIcon } from "../icons";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
-import { NotLiveTag, PlaceholderBox, SectionCta, SectionHead } from "./parts";
+import { NotLiveTag, PlaceholderBox, reveal, SectionCta, SectionHead } from "./parts";
 
-// Home sections (R13), alternating light and dark bands. Each is a plain
-// server component fed by the content schema (src/content/home-schema.ts)
-// and the proof tables. Anything not approved shows only while building,
-// marked; the live site leaves it out. Every section ends with a CTA.
+// Home sections (R13): warm off-white and near-black bands alternate, the
+// layout and motion modelled on the reference site in RohTre's colours.
+// Each section is a server component fed by the content schema
+// (src/content/home-schema.ts) and the proof tables. Anything not approved
+// shows only while building, marked; the live site leaves it out. Every
+// section ends with a Book a Call.
 
-const PAD = "py-20 sm:py-28";
-const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
+const PAD = "py-20 md:py-28";
 
 // ------------------------------------------------------------------- badges
-/** Trust-badge bar (R11): one bordered bar on the red offset block. */
+/** Partner badges in one bordered bar on the red offset block (R11). */
 export function BadgeBar({ s, badges }: { s: HomeContent["badges"]; badges: Badge[] }) {
   return (
-    <section aria-label="Partners and recognition" className={PAD}>
+    <section aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
       <Container>
-        <p className="rm-reveal mb-10 text-center text-xs font-bold uppercase tracking-[0.28em] text-brand">
-          {s.eyebrow}
-        </p>
-        <div className="rm-offset rm-reveal [--offset-surface:var(--bg-elev)]" style={stagger(1)}>
-          <ul className="relative grid grid-cols-2 gap-px overflow-hidden rounded-[16px] bg-line sm:grid-cols-3 lg:grid-cols-6">
+        <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
+        <div className="rm-offset mx-auto max-w-5xl [--offset-surface:#ffffff]" {...reveal(2, "up-lg")}>
+          <ul className="relative grid grid-cols-2 overflow-hidden rounded-[16px] sm:grid-cols-3 lg:grid-cols-5 [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)]">
             {badges.map((b) => (
               <li
                 key={b.id}
-                className={`flex min-h-44 flex-col items-center justify-center gap-3 bg-bg-elev px-4 py-7 text-center ${
+                className={`flex min-h-44 flex-col items-center justify-center gap-3 px-4 py-8 text-center ${
                   isLiveBadge(b) ? "" : "outline-2 -outline-offset-8 outline-dashed outline-brand"
                 }`}
                 title={isLiveBadge(b) ? undefined : (b.notes ?? undefined)}
               >
-                {b.image_public_id ? (
-                  <Image
-                    src={b.image_public_id}
-                    alt=""
-                    width={200}
-                    height={80}
-                    sizes="160px"
-                    loading="lazy"
-                    className="rm-white-art h-11 w-auto max-w-full object-contain"
-                  />
-                ) : (
-                  <span className="text-[2.4rem] font-bold leading-none tracking-[-0.04em] text-brand">{b.label}</span>
-                )}
-                <span>
-                  {b.image_public_id && (
-                    <span className="block text-[13px] font-bold uppercase tracking-[0.12em]">{b.label}</span>
+                <span className="grid h-12 place-items-center">
+                  {b.image_public_id ? (
+                    <Image
+                      src={b.image_public_id}
+                      alt=""
+                      width={200}
+                      height={80}
+                      sizes="160px"
+                      loading="lazy"
+                      className="rm-white-art h-11 w-auto max-w-[150px] object-contain"
+                    />
+                  ) : /^\d/.test(b.label) ? (
+                    <span className="text-[2.6rem] font-bold leading-none tracking-[-0.05em]">{b.label}</span>
+                  ) : (
+                    <AwardIcon size={40} className="text-brand" strokeWidth={1.8} />
                   )}
-                  {b.sublabel && <span className="mt-0.5 block text-xs text-fg-2">{b.sublabel}</span>}
+                </span>
+                <span>
+                  {!/^\d/.test(b.label) && (
+                    <span className="block text-[12px] font-bold uppercase leading-snug tracking-[0.18em]">
+                      {b.label}
+                    </span>
+                  )}
+                  {b.sublabel && (
+                    <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-2">
+                      {b.sublabel}
+                    </span>
+                  )}
                 </span>
                 {!isLiveBadge(b) && <NotLiveTag>Switched off</NotLiveTag>}
               </li>
             ))}
           </ul>
         </div>
-        <SectionCta {...s.cta} />
+        <SectionCta {...s.cta} variant="dark" />
       </Container>
     </section>
   );
 }
 
 // ----------------------------------------------------------------- services
+/** Square black cards; hovering lights a red/white gradient border with a soft bloom. */
 export function Services({ s }: { s: HomeContent["services"] }) {
   return (
-    <section id="services" className={`rm-dark rm-grid-bg ${PAD}`}>
+    <section id="services" className={`rm-dark ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {s.items.map((item, i) => (
-            <li key={item.title} className="rm-reveal" style={stagger(i % 3)}>
-              <div className="group flex h-full flex-col gap-4 rounded-[20px] border border-line bg-bg-elev p-7 transition-[border-color,transform] duration-[var(--dur-3)] hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--brand)_60%,var(--line))]">
-                <span className="grid size-12 place-items-center rounded-xl bg-[color-mix(in_srgb,var(--brand)_14%,transparent)] text-brand transition-transform duration-[var(--dur-3)] group-hover:scale-110">
+            <li key={item.title} {...reveal(i % 3)}>
+              <div className="rm-glow-card p-7 md:p-9">
+                <span className="rm-glow-face" aria-hidden="true" />
+                <span className="mb-5 grid size-[52px] place-items-center bg-white/[0.06] text-brand">
                   <ServiceIcon name={item.icon} size={22} />
                 </span>
-                <h3 className="text-xl font-bold tracking-[-0.02em]">{item.title}</h3>
-                <p className="flex-1 text-fg-2">{item.text}</p>
+                <h3 className="mb-2.5 text-xl font-bold tracking-[-0.02em] text-white">{item.title}</h3>
+                <p className="mb-6 flex-1 text-[15px] leading-relaxed text-white/45">{item.text}</p>
                 {item.tags.length > 0 && (
                   <ul className="flex flex-wrap gap-2" aria-label="Includes">
                     {item.tags.map((t) => (
@@ -96,7 +107,7 @@ export function Services({ s }: { s: HomeContent["services"] }) {
                   </ul>
                 )}
                 {item.href && (
-                  <a href={item.href} className="inline-flex items-center gap-1.5 font-semibold text-brand">
+                  <a href={item.href} className="mt-5 inline-flex items-center gap-1.5 font-semibold text-brand">
                     Learn more <ArrowRightIcon size={16} />
                   </a>
                 )}
@@ -111,51 +122,56 @@ export function Services({ s }: { s: HomeContent["services"] }) {
 }
 
 // ------------------------------------------------------------------ results
-/** Proof blocks (R19) as cards that stack while scrolling. */
+/** Proof blocks (R19) as big cards that stack while scrolling: white, red, black. */
 const TONES = [
-  "border border-line bg-bg-elev",
-  "bg-brand text-brand-fg [--fg-2:rgba(255,255,255,0.82)]",
-  "rm-dark border border-line",
+  "bg-white text-[#0a0a0a] [--fg-2:#5c5c5c]",
+  "bg-brand text-white [--fg-2:rgba(255,255,255,0.85)]",
+  "bg-[#0d0d0d] text-white border border-white/10 [--fg-2:#9a9a9a]",
 ];
 
 export function Results({ s, results }: { s: HomeContent["results"]; results: Result[] }) {
   return (
-    <section className={PAD}>
+    <section className={`rm-dark rm-grid-bg ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ol className="rm-stack flex flex-col gap-10">
+        <ol className="rm-stack flex flex-col gap-8 md:gap-24">
           {results.map((r, i) => (
-            <li key={r.id} style={stagger(i)}>
-              {r.is_placeholder ? (
-                <PlaceholderBox title={`Result ${i + 1}`} className="min-h-80 bg-bg">
-                  Brand name and logo, one real metric, a short summary and a dashboard screenshot on the right.
-                </PlaceholderBox>
-              ) : (
-                <article
-                  className={`grid gap-8 rounded-[28px] p-7 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)] sm:p-10 md:grid-cols-[1.1fr_0.9fr] ${TONES[i % 3]}`}
-                >
-                  <div className="flex flex-col gap-4">
-                    {!isLiveProof(r) && <NotLiveTag>Not approved yet</NotLiveTag>}
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] opacity-80">{r.brand_name}</p>
-                    <p className="text-[clamp(3rem,7vw,5rem)] font-bold leading-none tracking-[-0.05em]">
-                      {r.metric_value}
-                    </p>
-                    <p className="text-xl font-semibold">{r.metric_label}</p>
-                    {r.summary && <p className="max-w-md text-fg-2">{r.summary}</p>}
+            <li key={r.id} style={{ "--i": i } as CSSProperties}>
+              <article
+                className={`overflow-hidden rounded-[1.5rem] shadow-[0_40px_100px_-40px_rgba(0,0,0,0.8)] md:rounded-[2.5rem] ${TONES[i % 3]}`}
+                {...reveal(0, "up-lg")}
+              >
+                {r.is_placeholder ? (
+                  <div className="p-5 md:p-10">
+                    <PlaceholderBox title={`Result ${i + 1}`} className="min-h-72 border-current">
+                      Brand name and logo, one real metric, a short summary and a dashboard screenshot on the right.
+                    </PlaceholderBox>
                   </div>
-                  {r.image_public_id && (
-                    <Image
-                      src={r.image_public_id}
-                      alt={r.image_alt ?? ""}
-                      width={720}
-                      height={540}
-                      sizes="(max-width: 768px) 100vw, 480px"
-                      loading="lazy"
-                      className="h-full max-h-80 w-full rounded-[18px] object-cover"
-                    />
-                  )}
-                </article>
-              )}
+                ) : (
+                  <div className="flex flex-col items-center gap-8 p-6 md:p-10 lg:flex-row lg:gap-12">
+                    <div className="flex w-full flex-1 flex-col gap-4">
+                      {!isLiveProof(r) && <NotLiveTag>Not approved yet</NotLiveTag>}
+                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] opacity-80">{r.brand_name}</p>
+                      <p className="text-[clamp(3rem,7vw,5.5rem)] font-bold leading-none tracking-[-0.05em]">
+                        {r.metric_value}
+                      </p>
+                      <p className="text-xl font-semibold md:text-2xl">{r.metric_label}</p>
+                      {r.summary && <p className="max-w-md text-[var(--fg-2)]">{r.summary}</p>}
+                    </div>
+                    {r.image_public_id && (
+                      <Image
+                        src={r.image_public_id}
+                        alt={r.image_alt ?? ""}
+                        width={720}
+                        height={560}
+                        sizes="(max-width: 1024px) 100vw, 460px"
+                        loading="lazy"
+                        className="aspect-[4/3] w-full max-w-[460px] rounded-[1.25rem] object-cover md:rounded-[1.75rem]"
+                      />
+                    )}
+                  </div>
+                )}
+              </article>
             </li>
           ))}
         </ol>
@@ -165,34 +181,44 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
   );
 }
 
+// -------------------------------------------------------------- stripe band
+/** The brand name filled with moving red/off-white stripes. Decorative. */
+export function StripeBand({ text = "ROHTRE MEDIA" }: { text?: string }) {
+  return (
+    <section aria-hidden="true" className="rm-stripe-band">
+      <span className="rm-stripe-text">{text}</span>
+    </section>
+  );
+}
+
 // ------------------------------------------------------------------ process
-/** A sticky heading on the left, a vertical timeline on the right. */
+/** Heading on the left (sticky), the steps as a vertical timeline on the right. */
 export function Process({ s }: { s: HomeContent["process"] }) {
   return (
-    <section className={`rm-dark rm-grid-bg ${PAD}`}>
-      <Container className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="lg:sticky lg:top-[calc(var(--header-h)+48px)] lg:self-start">
-          <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-          <SectionCta {...s.cta} center={false} />
+    <section id="process" className={PAD}>
+      <Container className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="lg:sticky lg:top-[calc(var(--header-h)+56px)] lg:self-start">
+          <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} className="md:mb-0" />
+          <SectionCta {...s.cta} center={false} variant="dark" />
         </div>
         <ol className="flex flex-col">
           {s.steps.map((step, i) => (
-            <li key={step.title} className="rm-reveal relative flex gap-6 pb-12 last:pb-0" style={stagger(i)}>
+            <li key={step.title} className="relative flex gap-6 pb-14 last:pb-0" {...reveal(i)}>
               {i < s.steps.length - 1 && (
                 <span
                   aria-hidden="true"
                   className="absolute bottom-0 left-7 top-16 border-l-2 border-dashed border-line"
                 />
               )}
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line bg-bg-elev text-xl font-bold text-brand">
-                {String(i + 1).padStart(2, "0")}
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line bg-white text-brand shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]">
+                <StepIcon index={i} size={22} />
               </span>
-              <div className="flex flex-col gap-2 pt-1">
-                <span className="w-fit rounded-md bg-[color-mix(in_srgb,var(--brand)_16%,transparent)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-brand">
+              <div className="flex flex-col gap-2.5 pt-1">
+                <span className="w-fit rounded-md bg-[color-mix(in_srgb,var(--brand)_12%,transparent)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-brand">
                   Step {i + 1}
                 </span>
                 <h3 className="text-2xl font-bold tracking-[-0.02em]">{step.title}</h3>
-                <p className="max-w-md text-fg-2">{step.text}</p>
+                <p className="max-w-md leading-relaxed text-fg-2">{step.text}</p>
               </div>
             </li>
           ))}
@@ -206,17 +232,14 @@ export function Process({ s }: { s: HomeContent["process"] }) {
 function Quote({ t }: { t: Testimonial }) {
   return (
     <figure
-      className={`flex h-full w-[min(360px,82vw)] shrink-0 flex-col gap-5 rounded-[22px] border bg-bg-elev p-7 ${
+      className={`flex h-full w-[min(380px,84vw)] shrink-0 flex-col gap-5 rounded-[2rem] border bg-white p-7 shadow-[0_14px_40px_-26px_rgba(0,0,0,0.35)] ${
         isLiveProof(t) ? "border-line" : "border-dashed border-brand"
       }`}
     >
       {!isLiveProof(t) && <NotLiveTag>{t.is_placeholder ? "Placeholder" : "Needs client’s permission"}</NotLiveTag>}
-      <span aria-hidden="true" className="text-5xl font-bold leading-[0.5] text-brand">
-        “
-      </span>
-      <blockquote className="flex-1 text-[16px] leading-relaxed">{t.quote}</blockquote>
+      <blockquote className="flex-1 text-[15px] italic leading-relaxed text-[#2b2b2b]">“{t.quote}”</blockquote>
       <figcaption className="flex items-center gap-3 border-t border-line pt-4">
-        {t.photo_public_id && (
+        {t.photo_public_id ? (
           <Image
             src={t.photo_public_id}
             alt=""
@@ -226,11 +249,18 @@ function Quote({ t }: { t: Testimonial }) {
             loading="lazy"
             className="size-11 rounded-full object-cover"
           />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid size-11 place-items-center rounded-full bg-brand font-bold text-white"
+          >
+            {t.person_name.charAt(0)}
+          </span>
         )}
         <span>
           <span className="block font-bold">{t.person_name}</span>
           {(t.person_role || t.company) && (
-            <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-fg-2">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-2">
               {[t.person_role, t.company].filter(Boolean).join(" · ")}
             </span>
           )}
@@ -242,9 +272,12 @@ function Quote({ t }: { t: Testimonial }) {
 
 function MarqueeRow({ items, reverse }: { items: Testimonial[]; reverse?: boolean }) {
   return (
-    <div className="rm-marquee py-2" data-reverse={reverse ? "" : undefined}>
-      <div className="rm-marquee-track" style={{ "--marquee-duration": `${items.length * 14}s` } as CSSProperties}>
-        <ul className="flex gap-5">
+    <div className="rm-marquee py-3" data-reverse={reverse ? "" : undefined}>
+      <div
+        className="rm-marquee-track"
+        style={{ "--marquee-duration": `${Math.max(items.length, 3) * 13}s` } as CSSProperties}
+      >
+        <ul className="flex gap-6">
           {items.map((t) => (
             <li key={t.id}>
               <Quote t={t} />
@@ -252,7 +285,7 @@ function MarqueeRow({ items, reverse }: { items: Testimonial[]; reverse?: boolea
           ))}
         </ul>
         {/* Second copy so the loop is seamless; hidden from screen readers and keyboards. */}
-        <ul className="flex gap-5" aria-hidden="true" inert>
+        <ul className="flex gap-6" aria-hidden="true" inert>
           {items.map((t) => (
             <li key={t.id}>
               <Quote t={t} />
@@ -265,23 +298,23 @@ function MarqueeRow({ items, reverse }: { items: Testimonial[]; reverse?: boolea
 }
 
 export function Testimonials({ s, items }: { s: HomeContent["testimonials"]; items: Testimonial[] }) {
-  const rows = items.length >= 6 ? [items.filter((_, i) => i % 2 === 0), items.filter((_, i) => i % 2 === 1)] : [items];
+  const rows = items.length >= 4 ? [items.filter((_, i) => i % 2 === 0), items.filter((_, i) => i % 2 === 1)] : [items];
   return (
-    <section className={`bg-bg-soft ${PAD}`}>
+    <section id="testimonials" className={`overflow-hidden border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>
       {s.variant === "slider" ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2" {...reveal(0, "fade")}>
           {rows.map((row, i) => (
             <MarqueeRow key={i} items={row} reverse={i === 1} />
           ))}
         </div>
       ) : (
         <Container>
-          <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 [&_figure]:w-full">
+          <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 [&_figure]:w-full">
             {items.map((t, i) => (
-              <li key={t.id} className="rm-reveal" style={stagger(i % 3)}>
+              <li key={t.id} {...reveal(i % 3)}>
                 <Quote t={t} />
               </li>
             ))}
@@ -289,56 +322,58 @@ export function Testimonials({ s, items }: { s: HomeContent["testimonials"]; ite
         </Container>
       )}
       <Container>
-        <SectionCta {...s.cta} />
+        <SectionCta {...s.cta} variant="dark" />
       </Container>
     </section>
   );
 }
 
 // ------------------------------------------------------------------ founder
-/** The founder's quote lights up word by word, then the founder card. */
-function WordReveal({ text }: { text: string }) {
-  const words = text.split(/\s+/);
-  const start = 18;
-  const span = 42; // % of the quote's trip through the viewport
-  return (
-    <p className="rm-words text-[clamp(1.9rem,4.4vw,3.6rem)] font-bold leading-[1.12] tracking-[-0.035em]">
-      {words.map((w, i) => {
-        const a = start + (i / words.length) * span;
-        const b = start + ((i + 1) / words.length) * span;
-        return (
-          <span
-            key={i}
-            className="rm-word"
-            style={{ animationRange: `cover ${a.toFixed(1)}% cover ${b.toFixed(1)}%` } as CSSProperties}
-          >
-            {w}{" "}
-          </span>
-        );
-      })}
-    </p>
-  );
+/** Split a quote into lines of a few words for the scroll-fill effect. */
+function toLines(text: string, perLine = 7): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  for (let i = 0; i < words.length; i += perLine) lines.push(words.slice(i, i + perLine).join(" "));
+  return lines;
 }
 
+/** Big quote lines that fill with white as you scroll, then the founder card. */
 export function Founder({ s }: { s: HomeContent["founder"] }) {
   return (
     <section className={`rm-dark rm-grid-bg ${PAD}`}>
-      <Container>
-        <p className="rm-reveal mb-8 text-xs font-bold uppercase tracking-[0.28em] text-brand">{s.eyebrow}</p>
+      <Container className="flex flex-col items-center text-center">
+        <p className="rm-label mb-6" {...reveal(0)}>
+          {s.eyebrow}
+        </p>
+        <h2
+          className="mb-10 text-[clamp(1.9rem,4.6vw,3rem)] font-bold leading-[1.12] tracking-[-0.04em] md:mb-14"
+          {...reveal(1)}
+        >
+          {s.title} <span className="rm-text-grad">{s.accent}</span>
+        </h2>
         {s.quote && (
-          <blockquote className="mb-16 max-w-5xl">
-            <WordReveal text={`“${s.quote}”`} />
+          <blockquote className="flex max-w-6xl flex-col gap-3 md:gap-5">
+            {toLines(`“${s.quote}”`).map((line, i) => (
+              <span
+                key={i}
+                className="rm-fill-line text-[clamp(1.4rem,4.4vw,3.4rem)] font-bold leading-[1.12] tracking-[-0.04em]"
+              >
+                {line}
+              </span>
+            ))}
           </blockquote>
         )}
-        <div className="grid items-center gap-10 md:grid-cols-[minmax(0,320px)_1fr]">
+        <span aria-hidden="true" className="mt-10 h-[3px] w-12 rounded-full bg-brand md:mt-14" />
+
+        <div className="mt-14 grid w-full max-w-4xl items-center gap-10 text-left md:grid-cols-[260px_1fr]">
           {s.photo ? (
-            <div className="rm-offset rm-reveal overflow-hidden [--offset-surface:var(--bg-elev)]">
+            <div className="rm-offset overflow-hidden [--offset-surface:#000]" {...reveal(0)}>
               <Image
                 src={s.photo.publicId}
                 alt={`${s.name}, ${s.role}`}
                 width={s.photo.width}
                 height={s.photo.height}
-                sizes="(max-width: 768px) 100vw, 320px"
+                sizes="(max-width: 768px) 100vw, 260px"
                 loading="lazy"
                 className="relative aspect-square w-full rounded-[16px] object-cover"
               />
@@ -346,10 +381,10 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
           ) : (
             SHOW_PLACEHOLDERS && <PlaceholderBox title="Founder photo" className="aspect-square" />
           )}
-          <div className="rm-reveal flex flex-col items-start gap-4" style={stagger(1)}>
-            <h2 className="text-[clamp(2rem,4vw,3rem)] font-bold leading-none tracking-[-0.03em]">{s.name}</h2>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">{s.role}</p>
-            <p className="max-w-xl text-lg text-fg-2">{s.bio}</p>
+          <div className="flex flex-col items-start gap-4" {...reveal(1)}>
+            <h3 className="text-[clamp(1.9rem,3.6vw,2.75rem)] font-bold leading-none tracking-[-0.03em]">{s.name}</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand">{s.role}</p>
+            <p className="max-w-xl text-lg leading-relaxed text-fg-2">{s.bio}</p>
             {s.yearsExperience ? (
               <p className="text-lg">
                 <span className="text-4xl font-bold text-brand">{s.yearsExperience}+</span> years as a digital
@@ -373,37 +408,37 @@ export function Faq({ s }: { s: HomeContent["faq"] }) {
   const items = s.items.filter((f) => SHOW_PLACEHOLDERS || f.status === "ready");
   const columns = [items.filter((_, i) => i % 2 === 0), items.filter((_, i) => i % 2 === 1)];
   return (
-    <section className={`bg-bg-soft ${PAD}`}>
+    <section id="faq" className={PAD}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        <div className="grid gap-4 md:grid-cols-2 md:items-start">
+        <div className="grid gap-5 md:grid-cols-2 md:items-start">
           {columns.map((col, c) => (
-            <div key={c} className="flex flex-col gap-4">
+            <div key={c} className="flex flex-col gap-5">
               {col.map((f, i) => (
                 <details
                   key={f.q}
-                  className="rm-reveal group rounded-[20px] border border-line bg-bg-elev px-6 py-5 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)]"
-                  style={stagger(i)}
+                  className="rm-faq rounded-[1.75rem] border border-line bg-white px-6 py-5 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.3)] md:px-7 md:py-6"
+                  {...reveal(i)}
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-bold">
                     <span className="flex flex-wrap items-center gap-2">
                       {f.q}
                       {f.status === "draft" && <NotLiveTag>Draft · needs approval</NotLiveTag>}
                     </span>
                     <span
                       aria-hidden="true"
-                      className="grid size-8 shrink-0 place-items-center rounded-full bg-chip text-lg text-brand transition-transform duration-[var(--dur-3)] group-open:rotate-45"
+                      className="rm-faq-plus grid size-8 shrink-0 place-items-center rounded-full bg-chip text-lg"
                     >
                       +
                     </span>
                   </summary>
-                  <p className="mt-3 text-fg-2">{f.a}</p>
+                  <p className="pt-3 leading-relaxed text-fg-2">{f.a}</p>
                 </details>
               ))}
             </div>
           ))}
         </div>
-        <SectionCta {...s.cta} />
+        <SectionCta {...s.cta} variant="dark" />
       </Container>
     </section>
   );

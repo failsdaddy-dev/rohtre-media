@@ -21,22 +21,27 @@ export function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="rm-dark rm-hero-dark rm-hero-bg rm-glow overflow-hidden">
-      <Container className="flex flex-col items-start gap-5 pb-20 pt-16 sm:pb-28 sm:pt-24">
-        <p className="rm-pill rm-rise-in">{eyebrow}</p>
+    <section className="rm-dark rm-hero-dark rm-beams overflow-hidden">
+      <Container className="flex flex-col items-start gap-6 pb-24 pt-20 sm:pb-32 sm:pt-28">
+        <p className="rm-hero-in">
+          <span className="rm-pill">{eyebrow}</span>
+        </p>
         <h1
-          className="rm-rise-in max-w-4xl text-[clamp(2.4rem,6vw,4.75rem)] font-bold leading-[0.96] tracking-[-0.045em]"
+          className="rm-hero-in max-w-4xl text-[clamp(2.4rem,6vw,4.75rem)] font-semibold leading-[1.04] tracking-[-0.04em]"
           style={{ "--i": 1 } as CSSProperties}
         >
           {title}
         </h1>
         {intro && (
-          <p className="rm-rise-in max-w-2xl text-lg text-fg-2" style={{ "--i": 2 } as CSSProperties}>
+          <p
+            className="rm-hero-in max-w-2xl text-lg leading-relaxed text-[#e6e6e6]"
+            style={{ "--i": 2 } as CSSProperties}
+          >
             {intro}
           </p>
         )}
         {children && (
-          <div className="rm-rise-in flex flex-wrap gap-3 pt-2" style={{ "--i": 3 } as CSSProperties}>
+          <div className="rm-hero-in flex flex-wrap gap-3 pt-2" style={{ "--i": 3 } as CSSProperties}>
             {children}
           </div>
         )}
@@ -63,13 +68,13 @@ export function Section({
   dark?: boolean;
   id?: string;
 }) {
-  const tone = dark ? "rm-dark rm-grid-bg" : soft ? "bg-bg-soft" : "";
+  const tone = dark ? "rm-dark rm-grid-bg" : soft ? "border-y border-line" : "";
   return (
-    <section id={id} className={`py-20 sm:py-24 ${tone}`}>
+    <section id={id} className={`py-20 md:py-28 ${tone}`}>
       <Container>
         {(eyebrow || title || intro) && (
-          <div className="rm-reveal mb-12 flex max-w-3xl flex-col gap-3">
-            {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.28em] text-brand">{eyebrow}</p>}
+          <div data-reveal="" className="mb-12 flex max-w-3xl flex-col gap-4">
+            {eyebrow && <p className="rm-label">{eyebrow}</p>}
             {title && (
               <h2 className="text-[clamp(2rem,4.2vw,3.25rem)] font-bold leading-[1.03] tracking-[-0.04em]">{title}</h2>
             )}
@@ -84,10 +89,8 @@ export function Section({
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={`rm-offset on-hover h-full border border-line bg-bg-elev p-6 [--offset-surface:var(--bg-elev)] ${className}`}
-    >
-      <div className="relative">{children}</div>
+    <div data-reveal="" className={`rm-card h-full p-7 ${className}`}>
+      {children}
     </div>
   );
 }
@@ -122,25 +125,28 @@ export function ButtonLink({
   );
 }
 
-/** Decorative accents for the dark CTA panel: a red squiggle and a striped corner. */
+/** Decorative accents for the dark CTA panel: dots, squiggles and quarter circles. */
 function PanelAccents() {
   return (
-    <>
-      <svg aria-hidden="true" viewBox="0 0 140 24" className="absolute right-8 top-8 hidden w-32 sm:block">
-        <path
-          className="rm-squiggle"
-          d="M4 12c6-8 12-8 18 0s12 8 18 0 12-8 18 0 12 8 18 0 12-8 18 0 12 8 18 0 12-8 18 0"
-        />
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden text-[#e50914] sm:block">
+      <div className="rm-dots absolute left-[38%] top-0 h-20 w-40 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
+      <svg viewBox="0 0 24 140" className="rm-float absolute bottom-10 left-10 h-28 w-5">
+        <circle cx="12" cy="6" r="4" className="rm-squiggle" />
+        <path className="rm-squiggle text-white/50" d="M12 12l-6 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-6 6" />
+        <circle cx="12" cy="134" r="4" className="rm-squiggle" />
       </svg>
-      <div
-        aria-hidden="true"
-        className="rm-stripes absolute -bottom-10 -left-10 hidden size-40 rotate-12 rounded-[28px] opacity-70 sm:block"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -right-6 bottom-10 hidden size-20 rounded-full border-[10px] border-[color-mix(in_srgb,var(--brand)_55%,transparent)] sm:block"
-      />
-    </>
+      <svg viewBox="0 0 150 30" className="rm-float absolute right-14 top-10 w-36 [animation-delay:-3s]">
+        <circle cx="6" cy="18" r="4" className="rm-squiggle" />
+        <path
+          className="rm-squiggle text-white/50"
+          d="M12 18l6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6"
+        />
+        <circle cx="144" cy="10" r="4" className="rm-squiggle" />
+      </svg>
+      <span className="absolute bottom-24 right-24 size-24 rounded-bl-full bg-white/25" />
+      <span className="absolute -bottom-px -right-px size-32 rounded-tl-full bg-[#e50914]/70" />
+      <span className="absolute bottom-16 left-24 size-10 rounded-tl-full bg-white/20" />
+    </div>
   );
 }
 
@@ -161,26 +167,31 @@ export function CtaPanel({
   whatsappHref?: string | null;
 }) {
   return (
-    <section className="py-20 sm:py-24">
+    <section className="py-20 md:py-28">
       <Container>
-        <div className="rm-dark rm-grid-bg rm-reveal relative overflow-hidden rounded-[32px] px-6 py-16 text-center sm:px-12 sm:py-20">
+        <div
+          data-reveal="up-lg"
+          className="rm-dark relative overflow-hidden rounded-[2rem] bg-[#0d0d0d] px-6 py-16 text-center shadow-[0_40px_90px_-40px_rgba(0,0,0,0.6)] sm:px-12 md:py-20"
+        >
           <PanelAccents />
           <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5">
-            <p className="rm-pill">{eyebrow}</p>
-            <h2 className="text-[clamp(2.2rem,5vw,3.75rem)] font-bold leading-[1] tracking-[-0.045em]">
-              {title} <span className="rm-text-grad block pb-1">{accent}</span>
+            <p className="rm-label">{eyebrow}</p>
+            <h2 className="text-[clamp(2.2rem,5vw,3.75rem)] font-bold leading-[1.04] tracking-[-0.045em]">
+              {title} <span className="rm-text-grad">{accent}</span>
             </h2>
-            {text && <p className="text-lg text-fg-2">{text}</p>}
-            <div className="flex flex-wrap justify-center gap-3 pt-2">
-              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-                {label} <ArrowRightIcon size={18} />
-              </ButtonLink>
+            {text && <p className="text-lg text-white/65">{text}</p>}
+            <div className="flex flex-wrap justify-center gap-3 pt-3">
+              <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
+                <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
+                  {label} <ArrowRightIcon size={18} />
+                </ButtonLink>
+              </span>
               {whatsappHref && (
                 <a
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener"
-                  className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-line px-6 font-semibold hover:bg-hover"
+                  className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   <ChatIcon size={18} /> WhatsApp us
                 </a>

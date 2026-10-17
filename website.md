@@ -69,11 +69,16 @@ Phase 3 turns these into the general section registry (`src/sections/<type>/`).
 
 ## 5. Theme tokens and design (`src/app/globals.css`, `src/app/design.css`)
 
-**No theme toggle** (founder, 2026-10-17). The site is light; sections with `.rm-dark` set `color-scheme: dark`, so every `light-dark()` token inside them resolves to its dark value. Pages alternate light and dark bands.
-Design language (inspired by peakpilots.in, not copied; our colours, font, buttons and content): dark hero with a pill label and two-tone H1 (`.rm-text-grad` accent line); header transparent over a dark hero (`.rm-hero-dark`), turning solid white on scroll (CSS scroll timeline); dark bands with a fine grid (`.rm-grid-bg`) and red glow (`.rm-glow`); service cards with icon tile + tag chips (`.rm-tag`); badges in one bar on the red offset block; results as sticky stacking cards (`.rm-stack`); process as a timeline beside a sticky heading; testimonials as marquee rows (`.rm-marquee`, pause on hover); founder quote lighting up word by word (`.rm-words`); two-column FAQ cards; dark CTA panel with squiggle/stripe accents (`CtaPanel`); scroll reveals (`.rm-reveal`, `--i` stagger). All motion is CSS only, progressive (shown normally where scroll timelines aren't supported) and off for reduced motion.
-Key pairs (light / dark): bg #ffffff / #0f0f0f · fg #0f0f0f / #f1f1f1 · fg-2 #606060 / #aaaaaa · brand #d4000f / #e50914 · focus #c4000f / #ff3b3b.
-Styles copied from rohtre-vault with an `rm-` prefix: `.rm-press` (button lift on a red block), `.rm-offset` (card on a red offset block), `.rm-field`, `.rm-stripes`, `.rm-text-grad`, `.rm-hero-bg`, motion keyframes, reduced motion. Font: Space Grotesk via next/font (self-hosted).
-Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>= 3:1) in both themes. All pass.
+**No theme toggle.** Light tokens on `:root` (page `#f5f4f0` warm off-white, cards `#ffffff`, text `#0a0a0a`, red `#d4000f`); `.rm-dark` redefines the same tokens (`#080808` page, `#000000` cards, white text, red `#e50914`). Don't use `light-dark()`: Tailwind/Lightning CSS compiles it into a fallback fixed at `:root`, which made every dark section render light (bug found 2026-10-17). Gradient headings: `.rm-text-grad` with `--grad-a/b/c` (red family). Contrast: `tests/theme.test.ts` (29 checks, both palettes).
+Design modelled on the effects of peakpilots.in (reference only; our colours, font, buttons and content):
+- Motion: `src/lib/motion-boot.ts` (inline in `<head>`) sets `html[data-motion]`, `html[data-scrolled]`, `html[data-intro]` and `data-in` on `[data-reveal]` elements via IntersectionObserver (fade-up 0.8 s, `--ease-soft` = cubic-bezier(0.22,1,0.36,1); `--d` stagger). Data attributes, not classes, so React never overwrites them. `.rm-fill-line` lines fill with white by scroll position.
+- Smooth scrolling: Lenis (`src/components/smooth-scroll.tsx`, lazy-loaded, about 4 KB; off for reduced motion).
+- Intro splash (`src/components/intro.tsx`): Vault-style stripes + "ROHTRE MEDIA", first page of a visit only, never on /lp, /admin, /login, /preview.
+- Header: sticky; transparent with white logo/nav over a `.rm-hero-dark` hero, white with dark nav once `data-scrolled` (0.5 s transitions).
+- Hero: full-screen `.rm-beams` (drifting light beams drawn in CSS + red glow), pill label, two-tone H1, Book a Call + WhatsApp; the 2-slide slider below in a framed card.
+- Cards: `.rm-glow-card` (black square; hover = 4-corner red/white gradient border + blurred bloom) on dark; `.rm-card` (white, soft shadow, lift on hover) on light.
+- Results: `.rm-stack` sticky stacking cards (white / red / black). `.rm-stripe-band`: "ROHTRE MEDIA" in moving red/off-white stripes. Testimonials: `.rm-marquee` two rows, opposite directions, pause on hover. FAQ: `.rm-faq` details with smooth height. Final CTA: dark `CtaPanel` with dots, squiggles, quarter circles.
+- All motion off for prefers-reduced-motion.
 
 ## 6. Visibility and bots (`src/lib/crawlers.ts`)
 
@@ -106,8 +111,10 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | 2026-10-17 | Home H1 is visible (under the slider), not screen-reader-only: no official Google guidance found on hidden H1s | R14 (unverified) |
 | 2026-10-17 | Hero slider without a library (CSS scroll-snap + about 1 KB JS); slide 1 `loading=eager` + `fetchPriority=high`, slide 2 lazy; art direction with `getImageProps` + `<picture>` (Next 16 deprecated `priority`) | R14, R35 |
 | 2026-10-17 | Badge artwork is white on transparent (as on the live site); CSS `.rm-white-art` turns it black outside dark sections | R43 |
+| 2026-10-17 | Redesign v2 after founder review: dark sections were rendering light (light-dark() bug), motion not smooth. Rebuilt to match the reference effects: explicit dark tokens, Lenis smooth scroll, IntersectionObserver reveals, glow cards, stacking cards, stripe band, fill lines, intro splash, header over hero. Light sections now warm off-white #f5f4f0 like the reference | Founder |
 | 2026-10-17 | **Theme toggle removed**; alternating light/dark sections instead. Redesign after peakpilots.in as a reference only (layout and motion ideas; colours, font, buttons and content stay ours). Not taken: their colours, stats, "industries" strip, copy | Founder |
 | 2026-10-17 | **Badges are a showcase**: shown when switched on, no proof link needed (DB constraint dropped in `20261017180000_badges_showcase`). 5 badges live; "2B+" off until conversions-vs-views is confirmed. Replaces R11's proof rule and R25's badge check | Founder |
+| 2026-10-17 | Lenis added as a dependency (smooth scrolling the founder asked for; about 4 KB, lazy) | R35 rule 8 |
 | 2026-10-17 | Home sections end with their own centred CTA (button + small line) instead of a separate strip; final CTA is the dark `CtaPanel` with Book a Call + WhatsApp | R13 |
 | 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
 

@@ -1,22 +1,27 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// Reads the light-dark() token pairs from globals.css and checks WCAG 2.2
-// contrast for every text/background pair, in both themes (R40, R43).
+// Reads the light tokens (:root) and the dark tokens (.rm-dark) from
+// globals.css and checks WCAG 2.2 contrast for every text/background pair in
+// both palettes (R40, R43).
 // verified: https://www.w3.org/TR/WCAG22/#contrast-minimum (4.5:1 text, 3:1 large text / UI)
 
 const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
-const root = css.slice(css.indexOf(":root {"), css.indexOf("}", css.indexOf(":root {")));
 
-function token(name: string): { light: string; dark: string } {
-  const m = root.match(
-    new RegExp(
-      String.raw`--${name}:\s*(?:light-dark\(\s*(#[0-9a-f]{6})\s*,\s*(#[0-9a-f]{6})\s*\)|(#[0-9a-f]{6}))`,
-      "i",
-    ),
-  );
-  if (!m) throw new Error(`token --${name} not found or not a hex colour`);
-  return m[3] ? { light: m[3], dark: m[3] } : { light: m[1], dark: m[2] };
+function block(selector: string): string {
+  const start = css.indexOf(`${selector} {`);
+  if (start < 0) throw new Error(`${selector} block not found`);
+  return css.slice(start, css.indexOf("}", start));
+}
+const PALETTES = { light: block(":root"), dark: block(".rm-dark") };
+
+function token(mode: keyof typeof PALETTES, name: string): string {
+  const own = PALETTES[mode].match(new RegExp(String.raw`--${name}:\s*(#[0-9a-f]{6})\s*;`, "i"));
+  if (own) return own[1];
+  // A token the dark palette doesn't override keeps its light value.
+  const fallback = PALETTES.light.match(new RegExp(String.raw`--${name}:\s*(#[0-9a-f]{6})\s*;`, "i"));
+  if (!fallback) throw new Error(`token --${name} not found or not a hex colour`);
+  return fallback[1];
 }
 
 function luminance(hex: string): number {
@@ -27,7 +32,7 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-export function contrast(a: string, b: string): number {
+function contrast(a: string, b: string): number {
   const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
   return (x + 0.05) / (y + 0.05);
 }
@@ -43,24 +48,32 @@ const TEXT_PAIRS: [string, string][] = [
   ["fg", "menu"],
   ["fg", "field-bg"],
 ];
-// Red used for focus rings, eyebrow labels and accents: UI-component level (3:1).
+// Red used for focus rings, labels, large accent headings: UI / large-text level (3:1).
 const UI_PAIRS: [string, string][] = [
   ["brand", "bg"],
   ["focus", "bg"],
   ["danger", "bg"],
+  ["grad-a", "bg"],
+  ["grad-c", "bg"],
 ];
 
 describe("theme contrast", () => {
   for (const mode of ["light", "dark"] as const) {
     for (const [fg, bg] of TEXT_PAIRS) {
       it(`${mode}: --${fg} on --${bg} >= 4.5:1`, () => {
-        expect(contrast(token(fg)[mode], token(bg)[mode])).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(token(mode, fg), token(mode, bg))).toBeGreaterThanOrEqual(4.5);
       });
     }
     for (const [fg, bg] of UI_PAIRS) {
       it(`${mode}: --${fg} on --${bg} >= 3:1`, () => {
-        expect(contrast(token(fg)[mode], token(bg)[mode])).toBeGreaterThanOrEqual(3);
+        expect(contrast(token(mode, fg), token(mode, bg))).toBeGreaterThanOrEqual(3);
       });
     }
   }
+
+  it("dark sections really redefine the core tokens", () => {
+    for (const name of ["bg", "bg-elev", "fg", "fg-2", "line"]) {
+      expect(PALETTES.dark).toMatch(new RegExp(`--${name}:`));
+    }
+  });
 });

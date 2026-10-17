@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { SITE_URL } from "@/lib/env";
+import { MOTION_BOOT_SCRIPT } from "@/lib/motion-boot";
 import "./globals.css";
 import "./design.css";
 
@@ -27,7 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
+    // suppressHydrationWarning: the motion script sets data-* on <html> before React loads.
+    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: MOTION_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-dvh">
         <a
           href="#main"

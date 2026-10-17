@@ -1,91 +1,86 @@
 /* ------------------------------------------------------------- site design
-   Layout patterns and motion for the public site: alternating dark/light
-   sections, an overlay header on dark heroes, scroll reveals, marquee rows,
-   stacking cards and a word-by-word quote reveal. Colours and buttons come
-   from globals.css; this file adds no new colours.
+   Layout patterns and motion for the public site, modelled on the effects
+   of the reference site (peakpilots.in) in RohTre's own red/white/black:
+   alternating light/dark sections, a header that is transparent over dark
+   heroes and turns white on scroll, fade-up reveals, glowing service cards,
+   stacking case cards, a moving-stripe brand band, scroll-filled lines,
+   drifting testimonial rows and an intro splash.
 
-   All motion is CSS only. Scroll-driven animations (animation-timeline) run
-   where the browser supports them; elsewhere the content is simply shown.
-   Everything is off for people who prefer reduced motion. */
+   Motion is driven by a tiny inline script (src/lib/motion-boot.ts) that
+   sets data-motion / data-scrolled / data-intro on <html> and data-in on
+   [data-reveal] elements as they enter the viewport; Lenis adds smooth
+   scrolling (src/components/smooth-scroll.tsx). Nothing is hidden unless that
+   script ran, and everything is off for people who prefer reduced motion. */
 
-/* ---------------------------------------------------------------- header
-   Solid white by default. On pages that start with a dark hero
-   (.rm-hero-dark) it begins transparent over the hero and turns solid as the
-   page scrolls (scroll-driven, no JavaScript). */
+:root {
+  interpolate-size: allow-keywords; /* lets <details> animate to auto height */
+}
+
+/* ------------------------------------------------------------------ Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* ---------------------------------------------------------------- header */
 .rm-header {
-  --header-bg: color-mix(in srgb, #ffffff 92%, transparent);
-  background: var(--header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 30px -18px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(16px);
+  transition:
+    background-color 0.5s var(--ease-soft),
+    border-color 0.5s var(--ease-soft),
+    box-shadow 0.5s var(--ease-soft);
 }
-
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    body:has(.rm-hero-dark) .rm-header {
-      animation: rm-header-solid linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 120px;
-    }
-    body:has(.rm-hero-dark) .rm-header .rm-header-on-hero {
-      animation: rm-fade-out-scroll linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 120px;
-    }
-    body:has(.rm-hero-dark) .rm-header .rm-header-on-solid {
-      animation: rm-fade-in-scroll linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 120px;
-    }
-    body:has(.rm-hero-dark) .rm-header .rm-nav-link {
-      animation: rm-nav-ink linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 120px;
-    }
-  }
+.rm-header .rm-nav-link {
+  color: #2b2b2b;
+  transition: color 0.5s var(--ease-soft);
 }
-@keyframes rm-header-solid {
-  from {
-    background: transparent;
-    border-bottom-color: transparent;
-    backdrop-filter: none;
-  }
-  to {
-    background: var(--header-bg);
-    border-bottom-color: var(--line);
-  }
+.rm-header .rm-nav-link:hover {
+  color: var(--brand);
 }
-@keyframes rm-nav-ink {
-  from {
-    color: rgba(255, 255, 255, 0.82);
-  }
-}
-@keyframes rm-fade-out-scroll {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes rm-fade-in-scroll {
-  from {
-    opacity: 0;
-  }
-}
-/* Two logos stacked: white on the hero, black once solid. Without scroll
-   timelines only the black one shows (solid header). */
 .rm-header-logos {
   display: grid;
 }
 .rm-header-logos > * {
   grid-area: 1 / 1;
+  transition: opacity 0.5s var(--ease-soft);
 }
 .rm-header-on-hero {
   opacity: 0;
 }
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    body:has(.rm-hero-dark) .rm-header-on-hero {
-      opacity: 1;
-    }
-  }
+
+/* Over a dark hero, until the page is scrolled: transparent, white text. */
+html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header {
+  background: transparent;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-nav-link {
+  color: rgba(255, 255, 255, 0.86);
+}
+html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-nav-link:hover {
+  color: #ffffff;
+}
+html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-header-on-hero {
+  opacity: 1;
+}
+html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-header-on-solid {
+  opacity: 0;
 }
 
 /* A dark hero sits under the sticky header. */
@@ -94,7 +89,45 @@
   padding-top: var(--header-h);
 }
 
-/* ------------------------------------------------------------ backgrounds */
+/* ------------------------------------------------------------- hero beams
+   Soft diagonal light beams on black, slowly drifting (our own take on the
+   reference hero image, drawn in CSS). */
+.rm-beams {
+  position: relative;
+  isolation: isolate;
+  background: #050505;
+}
+.rm-beams::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10%;
+  z-index: -2;
+  background:
+    linear-gradient(118deg, transparent 18%, rgba(255, 255, 255, 0.07) 24%, transparent 31%),
+    linear-gradient(118deg, transparent 38%, rgba(255, 255, 255, 0.05) 44%, transparent 52%),
+    linear-gradient(118deg, transparent 58%, rgba(255, 255, 255, 0.08) 64%, transparent 70%),
+    linear-gradient(118deg, transparent 76%, rgba(255, 255, 255, 0.04) 81%, transparent 88%);
+  filter: blur(18px);
+  animation: rm-beams-drift 18s ease-in-out infinite alternate;
+}
+.rm-beams::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 45% at 50% 108%, color-mix(in srgb, #e50914 30%, transparent), transparent 70%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent 50%);
+}
+@keyframes rm-beams-drift {
+  from {
+    transform: translate3d(-3%, 0, 0);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0);
+  }
+}
+
 /* Fine grid lines on dark sections, fading towards the edges. */
 .rm-grid-bg {
   position: relative;
@@ -106,13 +139,13 @@
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 85%);
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 25%, transparent 85%);
   pointer-events: none;
 }
-/* Soft red glow behind a section's heading. */
+/* Soft red glow at the bottom of a section. */
 .rm-glow {
   position: relative;
   isolation: isolate;
@@ -120,88 +153,292 @@
 .rm-glow::after {
   content: "";
   position: absolute;
-  inset: auto 10% 0;
-  height: 60%;
+  inset: auto 0 0;
+  height: 70%;
   z-index: -1;
-  background: radial-gradient(50% 60% at 50% 100%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%);
+  background: radial-gradient(50% 60% at 50% 100%, color-mix(in srgb, #e50914 22%, transparent), transparent 70%);
   pointer-events: none;
 }
 
-/* ------------------------------------------------------------ eyebrow pill */
+/* ------------------------------------------------------- labels and chips */
+/* Pill label above a hero headline. */
 .rm-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border: 1px solid color-mix(in srgb, var(--brand) 45%, var(--line));
+  gap: 10px;
+  padding: 7px 16px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  background: var(--hover);
+  backdrop-filter: blur(6px);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-weight: 600;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--brand);
 }
 .rm-dark .rm-pill {
-  color: color-mix(in srgb, var(--brand) 55%, #ffffff);
+  color: #ff4d4d;
 }
-.rm-pill::before {
+/* Small section label with a dot. */
+.rm-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.rm-dark .rm-label {
+  color: #ff4d4d;
+}
+.rm-label::before {
   content: "";
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--brand);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 25%, transparent);
+  background: currentColor;
 }
-
-/* Tag chips on cards */
+/* Square tag chips on cards. */
 .rm-tag {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   padding: 4px 10px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-size: 11px;
+  border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--fg-2);
+  color: color-mix(in srgb, var(--fg) 85%, transparent);
 }
 
-/* ---------------------------------------------------------- scroll reveal
-   .rm-reveal fades and rises into view as it scrolls in. --i staggers a
-   group (0, 1, 2…). */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .rm-reveal {
-      animation: rm-reveal-up linear both;
-      animation-timeline: view();
-      animation-range: entry calc(var(--i, 0) * 6%) entry calc(70% + var(--i, 0) * 6%);
-    }
-  }
+/* ---------------------------------------------------------- reveal on view
+   [data-reveal] fades and rises in when it enters the viewport. A --d delay
+   (set inline) staggers a group. */
+html[data-motion] [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--ry, 32px), 0);
+  transition:
+    opacity 0.8s var(--ease-soft) var(--d, 0s),
+    transform 0.8s var(--ease-soft) var(--d, 0s);
 }
-@keyframes rm-reveal-up {
+html[data-motion] [data-reveal="fade"] {
+  --ry: 0px;
+}
+html[data-motion] [data-reveal="up-lg"] {
+  --ry: 60px;
+}
+html[data-motion] [data-reveal][data-in] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero entrance on page load */
+@keyframes rm-hero-in {
   from {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translate3d(0, 24px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+  }
+}
+html[data-motion] .rm-hero-in {
+  animation: rm-hero-in 0.9s var(--ease-soft) calc(var(--intro-delay, 0s) + var(--i, 0) * 0.12s) both;
+}
+html[data-intro] {
+  --intro-delay: 2.4s;
+}
+
+/* ------------------------------------------------------- light-section cards
+   White cards on the off-white background: soft shadow, lift on hover. */
+.rm-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--bg-elev);
+  box-shadow: 0 12px 40px -24px rgba(0, 0, 0, 0.28);
+  transition:
+    transform 0.5s var(--ease-soft),
+    box-shadow 0.5s var(--ease-soft),
+    border-color 0.5s var(--ease-soft);
+}
+@media (hover: hover) {
+  .rm-card:hover {
+    transform: translate3d(0, -6px, 0);
+    border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
+    box-shadow: 0 28px 60px -28px color-mix(in srgb, var(--brand) 45%, rgba(0, 0, 0, 0.4));
   }
 }
 
+/* --------------------------------------------------------- glowing cards
+   Dark service cards: a solid black face; on hover a four-corner red/white
+   gradient lights up the 1px border and blooms softly around the card. */
+.rm-glow-card {
+  --g1: #e50914;
+  --g2: #ff6b6b;
+  --g3: #ffffff;
+  --g4: #8a0008;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.rm-glow-card > .rm-glow-face {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    inset 0.4s ease,
+    border-color 0.4s ease;
+}
+.rm-glow-card > *:not(.rm-glow-face) {
+  position: relative;
+  z-index: 1;
+}
+.rm-glow-card::before,
+.rm-glow-card::after {
+  content: "";
+  position: absolute;
+  background:
+    radial-gradient(circle at 0% 0%, var(--g1), transparent 55%),
+    radial-gradient(circle at 100% 0%, var(--g2), transparent 55%),
+    radial-gradient(circle at 0% 100%, var(--g3), transparent 55%),
+    radial-gradient(circle at 100% 100%, var(--g4), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.rm-glow-card::after {
+  inset: -1px;
+  z-index: -1;
+}
+.rm-glow-card::before {
+  inset: -8px;
+  z-index: -2;
+  filter: blur(10px);
+}
+@media (hover: hover) {
+  .rm-glow-card:hover > .rm-glow-face {
+    inset: 1px;
+    border-color: transparent;
+  }
+  .rm-glow-card:hover::after {
+    opacity: 0.9;
+  }
+  .rm-glow-card:hover::before {
+    opacity: 0.75;
+  }
+}
+.rm-glow-card:focus-within::after {
+  opacity: 0.9;
+}
+
+/* -------------------------------------------------------- stacking cards
+   Each card sticks a little lower than the one before, so they pile up. */
+.rm-stack > * {
+  position: sticky;
+  top: calc(var(--header-h) + 16px + var(--i, 0) * 12px);
+}
+@media (min-width: 768px) {
+  .rm-stack > * {
+    top: calc(var(--header-h) + 24px + var(--i, 0) * 28px);
+  }
+}
+
+/* ------------------------------------------------------ moving-stripe band
+   The brand name filled with diagonal red/off-white stripes that slide
+   sideways, over a matching striped background, with a dark vignette. */
+.rm-stripe-band {
+  --stripe-size: 80px;
+  --s1: #e50914;
+  --s2: #f5f4f0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22vh;
+  min-height: 150px;
+  overflow: clip;
+  background: #080808;
+}
+@media (min-width: 768px) {
+  .rm-stripe-band {
+    --stripe-size: 120px;
+    height: 40vh;
+  }
+}
+.rm-stripe-band::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(100% + var(--stripe-size));
+  background: repeating-linear-gradient(45deg, var(--s2) 25%, var(--s2) 50%, var(--s1) 50%, var(--s1) 75%);
+  background-size: var(--stripe-size) var(--stripe-size);
+  animation: rm-stripe-move 2.5s linear infinite;
+  z-index: 1;
+}
+.rm-stripe-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(8, 8, 8, 0) 0%, #080808 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+.rm-stripe-text {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(2.2rem, 11vw, 11rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  color: transparent;
+  background: repeating-linear-gradient(45deg, var(--s1) 25%, var(--s1) 50%, var(--s2) 50%, var(--s2) 75%);
+  background-size: var(--stripe-size) var(--stripe-size);
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: rm-stripe-pos 2.5s linear infinite;
+}
+@keyframes rm-stripe-move {
+  to {
+    transform: translateX(calc(var(--stripe-size) * -1));
+  }
+}
+@keyframes rm-stripe-pos {
+  to {
+    background-position: calc(var(--stripe-size) * -1) 0;
+  }
+}
+
+/* ------------------------------------------------- scroll-filled lines
+   Each line starts dim and fills with white from left to right as it moves
+   up the screen (progress set by motion-boot.ts). */
+.rm-fill-line {
+  display: block;
+  color: transparent;
+  background: linear-gradient(to right, #ffffff 50%, rgba(255, 255, 255, 0.14) 50%);
+  background-size: 200% 100%;
+  background-position-x: 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 /* ------------------------------------------------------------- marquee
-   Two copies of the list slide left forever; hover or focus pauses it. The
-   second copy is aria-hidden. Reduced motion: a normal swipeable row. */
+   Two copies of the list drift sideways forever; hover pauses. */
 .rm-marquee {
   overflow: hidden;
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 7%, black 93%, transparent);
 }
 .rm-marquee-track {
   display: flex;
   width: max-content;
-  gap: 20px;
+  gap: 24px;
   animation: rm-marquee var(--marquee-duration, 60s) linear infinite;
 }
 .rm-marquee[data-reverse] .rm-marquee-track {
@@ -213,10 +450,144 @@
 }
 @keyframes rm-marquee {
   to {
-    transform: translateX(calc(-50% - 10px));
+    transform: translateX(calc(-50% - 12px));
   }
 }
+
+/* ------------------------------------------------------------------- FAQ */
+.rm-faq summary::-webkit-details-marker {
+  display: none;
+}
+.rm-faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size 0.45s var(--ease-soft),
+    content-visibility 0.45s allow-discrete;
+}
+.rm-faq[open]::details-content {
+  block-size: auto;
+}
+.rm-faq .rm-faq-plus {
+  transition:
+    transform 0.45s var(--ease-soft),
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+.rm-faq[open] .rm-faq-plus {
+  transform: rotate(45deg);
+  background: var(--brand);
+  color: #ffffff;
+}
+
+/* ----------------------------------------------------- decorative accents */
+.rm-squiggle {
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+.rm-float {
+  animation: rm-float 6s ease-in-out infinite;
+}
+@keyframes rm-float {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ------------------------------------------------------------- intro splash
+   Once per visit: red stripes drop in, the name rises, then the stripes fall
+   away to reveal the page. Shown only while <html data-intro> is set. */
+.rm-intro {
+  display: none;
+}
+html[data-intro] .rm-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  overflow: hidden;
+  pointer-events: none;
+  animation: rm-intro-hide 0s linear 3.1s forwards;
+}
+.rm-intro-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #060606;
+  animation: rm-fade-out-kf 0.25s var(--ease) 2.3s forwards;
+}
+.rm-intro-col {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.45);
+  background: linear-gradient(to bottom, #060606, #3a0709 42%, #e50914);
+  animation:
+    rm-col-in 0.65s var(--ease-out) calc(var(--i) * 0.07s) both,
+    rm-col-out 0.6s cubic-bezier(0.55, 0, 0.45, 1) calc(2.3s + var(--i) * 0.06s) forwards;
+}
+.rm-intro-col:last-child {
+  border-right: 0;
+}
+.rm-intro-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  color: #ffffff;
+  animation: rm-fade-out-kf 0.3s var(--ease) 2.1s forwards;
+}
+.rm-intro-letter {
+  display: inline-block;
+  animation: rm-letter-in 0.5s var(--ease-out) calc(0.7s + var(--i) * 0.035s) both;
+}
+@keyframes rm-col-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+@keyframes rm-letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rm-fade-out-kf {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes rm-intro-hide {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ------------------------------------------------------- reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  .rm-beams::before,
+  .rm-stripe-band::before,
+  .rm-stripe-text,
+  .rm-float {
+    animation: none;
+  }
   .rm-marquee {
     overflow-x: auto;
     mask-image: none;
@@ -227,47 +598,10 @@
   .rm-marquee-track > [aria-hidden="true"] {
     display: none;
   }
-}
-
-/* -------------------------------------------------------- stacking cards
-   Each card sticks a little lower than the one before, so they pile up as
-   the page scrolls. */
-.rm-stack > * {
-  position: sticky;
-  top: calc(var(--header-h) + 24px + var(--i, 0) * 28px);
-}
-
-/* ---------------------------------------------------- word-by-word reveal
-   Words start dim and light up as the quote scrolls through the viewport.
-   Each word gets its own slice of the scroll range (set inline). */
-.rm-words {
-  view-timeline-name: --rm-words;
-}
-.rm-words .rm-word {
-  color: inherit;
-}
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .rm-words .rm-word {
-      animation: rm-word-in linear both;
-      animation-timeline: --rm-words;
-    }
+  .rm-fill-line {
+    background-position-x: 0%;
   }
-}
-@keyframes rm-word-in {
-  from {
-    opacity: 0.18;
+  html[data-intro] .rm-intro {
+    display: none;
   }
-  to {
-    opacity: 1;
-  }
-}
-
-/* ----------------------------------------------------- decorative accents */
-.rm-squiggle {
-  stroke: var(--brand);
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }

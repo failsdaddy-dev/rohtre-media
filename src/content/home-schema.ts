@@ -59,11 +59,21 @@ export const homeSchema = z.object({
       ],
     }),
 
-  badges: z.object({ enabled: z.boolean(), eyebrow: z.string().max(60), cta }).default({
-    enabled: true,
-    eyebrow: "Partners & recognition",
-    cta: { text: "Want this team on your brand?", label: "Book a Call" },
-  }),
+  badges: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      cta,
+    })
+    .default({
+      enabled: true,
+      eyebrow: "Partners & recognition",
+      title: "Partners in",
+      accent: "your growth.",
+      cta: { text: "Want this team on your brand?", label: "Book a Call" },
+    }),
 
   services: z
     .object({
@@ -227,7 +237,9 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      /** Shown large, lighting up word by word as it scrolls into view. */
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      /** Shown large; each line fills with white as it scrolls into view. */
       quote: z.string().max(300),
       name: z.string().min(1).max(80),
       role: z.string().max(80),
@@ -240,7 +252,9 @@ export const homeSchema = z.object({
     .default({
       enabled: true,
       eyebrow: "Meet the founder",
-      // The CEO quote from the live home page.
+      // Headline and quote from the live About and home pages.
+      title: "Built on creative vision",
+      accent: "and digital mastery.",
       quote:
         "We build brands with precision: knowing where to focus, how much to invest, and how to turn attention into sales.",
       name: "Rohan Trehan",

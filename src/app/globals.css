@@ -1,48 +1,52 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ tokens
-   Red / white / black theme taken from RohTre Vault (R43). There is no
-   theme toggle: the site is light, and sections marked .rm-dark switch to
-   the dark palette (alternating light and dark sections). Each token holds
-   its light and dark value in light-dark(), which follows the element's
-   `color-scheme`, so everything inside a .rm-dark section turns dark on its
-   own. Re-theme by editing the values here only. tests/theme.test.ts checks
-   the contrast of the text/background pairs in both palettes. */
+   Red / white / black (R43). There is no theme toggle: pages alternate
+   light sections (warm off-white) and dark sections (near black). The light
+   values sit on :root; any element with .rm-dark redefines the same tokens
+   with dark values, so everything inside it turns dark. (light-dark() can't
+   be used: Tailwind compiles it into a fallback that is fixed at :root.)
+   Re-theme by editing the values here only. tests/theme.test.ts checks the
+   contrast of the text/background pairs in both palettes. */
 :root {
   color-scheme: light;
 
-  --bg: light-dark(#ffffff, #0f0f0f);
-  --bg-elev: light-dark(#ffffff, #212121);
-  --bg-soft: light-dark(#f6f6f6, #181818);
-  --menu: light-dark(#ffffff, #282828);
-  --fg: light-dark(#0f0f0f, #f1f1f1);
-  --fg-2: light-dark(#606060, #aaaaaa);
-  --line: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
-  --hover: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  --press: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
-  --chip: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  --chip-hover: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
-  --chip-on-bg: light-dark(#0f0f0f, #f1f1f1);
-  --chip-on-fg: light-dark(#ffffff, #0f0f0f);
-  --field-bg: light-dark(#ffffff, #121212);
-  --field-border: light-dark(#cccccc, #303030);
-  --skeleton: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
-  --overlay: light-dark(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6));
-  --focus: light-dark(#c4000f, #ff3b3b);
-  --brand: light-dark(#d4000f, #e50914);
+  --bg: #f5f4f0;
+  --bg-elev: #ffffff;
+  --bg-soft: #eeece8;
+  --menu: #ffffff;
+  --fg: #0a0a0a;
+  --fg-2: #5c5c5c;
+  --line: rgba(10, 10, 10, 0.1);
+  --hover: rgba(10, 10, 10, 0.05);
+  --press: rgba(10, 10, 10, 0.1);
+  --chip: rgba(10, 10, 10, 0.05);
+  --chip-hover: rgba(10, 10, 10, 0.1);
+  --chip-on-bg: #0a0a0a;
+  --chip-on-fg: #ffffff;
+  --field-bg: #ffffff;
+  --field-border: #d6d4cf;
+  --skeleton: rgba(10, 10, 10, 0.06);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --focus: #c4000f;
+  --brand: #d4000f;
   --brand-fg: #ffffff;
-  --danger: light-dark(#c62828, #ff6b6b);
-  --grad-to: light-dark(#ff3b3b, #ff5a5f);
+  --danger: #c62828;
+  /* Gradient for accent headings (red family only) */
+  --grad-a: #b8000d;
+  --grad-b: #e50914;
+  --grad-c: #ff3b3b;
+  --grad-to: #ff3b3b;
 
-  /* Striped brand panel (login, hero accents) */
-  --stripe-top: light-dark(#ffffff, #060606);
-  --stripe-mid: light-dark(#ffd9db, #3a0709);
+  /* Striped brand panel (login, intro, accents) */
+  --stripe-top: #ffffff;
+  --stripe-mid: #ffd9db;
   --stripe-bottom: #e50914;
-  --stripe-fg: light-dark(#0f0f0f, #ffffff);
-  --stripe-line: light-dark(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.45));
-  --hero-streak: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.035));
+  --stripe-fg: #0a0a0a;
+  --stripe-line: rgba(0, 0, 0, 0.09);
+  --hero-streak: rgba(0, 0, 0, 0.035);
 
-  --header-h: 64px;
+  --header-h: 72px;
   --radius-card: 18px;
   --radius-field: 16px;
 
@@ -51,10 +55,43 @@
   --dur-3: 250ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* A dark section: every token inside it resolves to its dark value. */
+
+/* A dark section: the same tokens with dark values. */
 .rm-dark {
   color-scheme: dark;
+
+  --bg: #080808;
+  --bg-elev: #000000;
+  --bg-soft: #111111;
+  --menu: #161616;
+  --fg: #ffffff;
+  --fg-2: #9a9a9a;
+  --line: rgba(255, 255, 255, 0.12);
+  --hover: rgba(255, 255, 255, 0.08);
+  --press: rgba(255, 255, 255, 0.16);
+  --chip: rgba(255, 255, 255, 0.07);
+  --chip-hover: rgba(255, 255, 255, 0.14);
+  --chip-on-bg: #ffffff;
+  --chip-on-fg: #0a0a0a;
+  --field-bg: #0f0f0f;
+  --field-border: #2c2c2c;
+  --skeleton: rgba(255, 255, 255, 0.08);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --focus: #ff3b3b;
+  --brand: #e50914;
+  --danger: #ff6b6b;
+  --grad-a: #e50914;
+  --grad-b: #ff4d4d;
+  --grad-c: #ff8a8a;
+  --grad-to: #ff5a5f;
+  --stripe-top: #060606;
+  --stripe-mid: #3a0709;
+  --stripe-fg: #ffffff;
+  --stripe-line: rgba(0, 0, 0, 0.45);
+  --hero-streak: rgba(255, 255, 255, 0.035);
+
   background-color: var(--bg);
   color: var(--fg);
 }
@@ -222,7 +259,7 @@ input:-webkit-autofill:focus {
   background: linear-gradient(to bottom, var(--stripe-top), var(--stripe-mid) 42%, var(--stripe-bottom));
 }
 .rm-text-grad {
-  background: linear-gradient(90deg, var(--brand), var(--grad-to));
+  background: linear-gradient(135deg, var(--grad-a) 0%, var(--grad-b) 50%, var(--grad-c) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
