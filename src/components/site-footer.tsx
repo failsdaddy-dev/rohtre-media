@@ -31,7 +31,7 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="mt-auto border-t border-line bg-bg-soft">
-      <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1.5fr_0.8fr_0.9fr]">
         <div className="flex flex-col gap-4">
           <Logo className="h-10 w-auto self-start" />
           <p className="text-xl font-bold tracking-[-0.02em]">{settings.tagline}</p>
@@ -58,8 +58,9 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
               className={`${link} flex items-center gap-2.5`}
             >
               <PhoneIcon size={18} className="shrink-0" />
+              {/* The number never breaks across lines; only "label:" may wrap above it. */}
               <span>
-                {p.label}: {p.display}
+                {p.label}: <span className="whitespace-nowrap">{p.display}</span>
               </span>
             </a>
           ))}
