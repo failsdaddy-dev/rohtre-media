@@ -1,0 +1,335 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ tokens
+   Red / white / black theme taken from RohTre Vault (R43). Each token holds
+   its light and dark value in light-dark(); the active pair follows
+   `color-scheme`, which follows the visitor's system setting unless
+   <html data-theme="light|dark"> is set by the toggle (see lib/theme.ts).
+   Re-theme by editing the values here only. tests/theme.test.ts checks the
+   contrast of the text/background pairs in both themes. */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#ffffff, #0f0f0f);
+  --bg-elev: light-dark(#ffffff, #212121);
+  --bg-soft: light-dark(#f6f6f6, #181818);
+  --menu: light-dark(#ffffff, #282828);
+  --fg: light-dark(#0f0f0f, #f1f1f1);
+  --fg-2: light-dark(#606060, #aaaaaa);
+  --line: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
+  --hover: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+  --press: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
+  --chip: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+  --chip-hover: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2));
+  --chip-on-bg: light-dark(#0f0f0f, #f1f1f1);
+  --chip-on-fg: light-dark(#ffffff, #0f0f0f);
+  --field-bg: light-dark(#ffffff, #121212);
+  --field-border: light-dark(#cccccc, #303030);
+  --skeleton: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
+  --overlay: light-dark(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6));
+  --focus: light-dark(#c4000f, #ff3b3b);
+  --brand: light-dark(#d4000f, #e50914);
+  --brand-fg: #ffffff;
+  --danger: light-dark(#c62828, #ff6b6b);
+  --grad-to: light-dark(#ff3b3b, #ff5a5f);
+
+  /* Striped brand panel (login, hero accents) */
+  --stripe-top: light-dark(#ffffff, #060606);
+  --stripe-mid: light-dark(#ffd9db, #3a0709);
+  --stripe-bottom: #e50914;
+  --stripe-fg: light-dark(#0f0f0f, #ffffff);
+  --stripe-line: light-dark(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.45));
+  --hero-streak: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.035));
+
+  --header-h: 64px;
+  --radius-card: 18px;
+  --radius-field: 16px;
+
+  --dur-1: 150ms;
+  --dur-2: 200ms;
+  --dur-3: 250ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-bg-soft: var(--bg-soft);
+  --color-menu: var(--menu);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-line: var(--line);
+  --color-hover: var(--hover);
+  --color-press: var(--press);
+  --color-chip: var(--chip);
+  --color-chip-hover: var(--chip-hover);
+  --color-chip-on-bg: var(--chip-on-bg);
+  --color-chip-on-fg: var(--chip-on-fg);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-brand), "Space Grotesk", Arial, sans-serif;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ------------------------------------------------------------------- base */
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+body {
+  font-family: var(--font-brand), "Space Grotesk", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+::selection {
+  background: color-mix(in srgb, var(--focus) 35%, transparent);
+}
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Text fields: no hard outline inside the box; the wrapper (.rm-field)
+   gets a soft red ring instead. */
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+.rm-field {
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+  border-radius: var(--radius-field);
+  transition:
+    border-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+.rm-field:hover {
+  border-color: color-mix(in srgb, var(--fg) 30%, var(--field-border));
+}
+.rm-field:focus-within {
+  border-color: color-mix(in srgb, var(--focus) 55%, var(--field-border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 13%, transparent);
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
+  -webkit-box-shadow: 0 0 0 1000px var(--field-bg) inset;
+  transition: background-color 9999s;
+}
+
+/* Buttons and chips: on hover they lift off a solid offset block (red, or
+   the text colour on red buttons) and press back flat when clicked.
+   Round icon buttons opt out with .no-lift. */
+.rm-press {
+  --lift-color: var(--brand);
+  transition:
+    transform var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease),
+    opacity var(--dur-1) var(--ease);
+}
+.rm-press.bg-brand {
+  --lift-color: var(--fg);
+}
+@media (hover: hover) {
+  .rm-press:not(.no-lift):not(:disabled):hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 0 var(--lift-color);
+  }
+}
+.rm-press:not(.no-lift):not(:disabled):active {
+  transform: translate(1px, 1px);
+  box-shadow: 0 0 0 var(--lift-color);
+}
+.rm-press.no-lift:active {
+  transform: scale(0.97);
+}
+
+/* Offset block: a bordered panel sitting on a solid red block. Both layers
+   are pseudo-elements so only opacity/transform animate. Add .on-hover to
+   show the layers only while hovered. */
+.rm-offset {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius-card);
+  transition: transform var(--dur-3) var(--ease);
+}
+.rm-offset::before,
+.rm-offset::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-3) var(--ease),
+    transform var(--dur-3) var(--ease);
+}
+.rm-offset::before {
+  z-index: -2;
+  background: var(--brand);
+  transform: translate(7px, 7px);
+}
+.rm-offset::after {
+  z-index: -1;
+  background: var(--offset-surface, var(--bg));
+  border: 2px solid var(--fg);
+}
+.rm-offset.on-hover::before,
+.rm-offset.on-hover::after {
+  opacity: 0;
+}
+.rm-offset.on-hover::before {
+  transform: translate(0, 0);
+}
+@media (hover: hover) {
+  .rm-offset:hover {
+    transform: translate(-3px, -3px);
+  }
+  .rm-offset:hover::before {
+    transform: translate(9px, 9px);
+  }
+  .rm-offset.on-hover:hover::before,
+  .rm-offset.on-hover:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Brand accents */
+.rm-stripes {
+  background: linear-gradient(to bottom, var(--stripe-top), var(--stripe-mid) 42%, var(--stripe-bottom));
+}
+.rm-text-grad {
+  background: linear-gradient(90deg, var(--brand), var(--grad-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.rm-hero-bg {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(60% 45% at 50% 110%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 70%);
+}
+.rm-hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(118deg, transparent 0 90px, var(--hero-streak) 90px 190px);
+  mask-image: linear-gradient(to bottom, black 45%, transparent);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ motion
+   Only transform and opacity animate. */
+@keyframes rm-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rm-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes rm-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rm-col-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rm-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.rm-fade-in {
+  animation: rm-fade-in var(--dur-2) var(--ease-out) both;
+}
+.rm-pop-in {
+  animation: rm-pop-in var(--dur-2) var(--ease-out) both;
+}
+.rm-rise-in {
+  animation: rm-rise-in 600ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards;
+}
+.rm-panel-col {
+  animation: rm-col-in 700ms var(--ease-out) calc(var(--i) * 80ms) both;
+}
+.rm-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--skeleton);
+}
+.rm-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--skeleton), transparent);
+  animation: rm-shimmer 1.4s var(--ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .rm-skeleton::after {
+    display: none;
+  }
+}
