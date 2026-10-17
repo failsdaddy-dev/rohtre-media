@@ -7,7 +7,7 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
-| `/` | theme preview (placeholder; real home in Phase 2) | noindex | built |
+| `/` | home page (R13): hero slider, badges, services, results, process, testimonials, founder, FAQ, final CTA | public | built (Phase 2) |
 | `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
@@ -33,13 +33,33 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
   - `leads`: page_path, name, phone, email, business_type, website, ad_spend_range, interest, message, consent + consent_at + consent_text_version, utm_*, gclid, fbclid, referrer, user_agent, ip_hash, sheet_synced_at, status. No anon access; owner/developer read/update/delete; written only by `/api/leads` with the secret key.
   - `rate_limits` + `hit_rate_limit(key, limit, window)` (service role only); `purge_old_leads()` uses `leadRetentionDays`.
   - helpers `is_staff()`, `can_manage()`, `touch_updated_at` trigger.
-- RLS check: `npm run check:rls` (13 checks against the live project; creates and removes a temporary editor).
+- `20261017160000_home_content`:
+  - `page_content` (key, data JSONB): home page text under key `home`, checked by `src/content/home-schema.ts` (section by section fallback to defaults). Public read; staff write.
+  - `badges` (label, sublabel, image_public_id, proof_url, last_verified_at, enabled, sort, notes). DB check: enabled needs a proof_url. Public sees enabled only.
+  - `testimonials` (quote, person_name, person_role, company, photo_public_id, approved, is_placeholder, sort, notes). Public sees approved and not placeholder.
+  - `results` (brand_name, logo, metric_value, metric_label, summary, image_public_id, image_alt, approved, is_placeholder, sort, notes). DB checks: an approved result can't be a placeholder and needs an image + alt.
+  - Seeded from the live site, all switched off / unapproved: 6 badges (4 with images in Cloudinary `rohtre-media/images/badges/*`), 5 testimonials, 3 placeholder results.
+- RLS check: `npm run check:rls` (20 checks against the live project; creates and removes a temporary editor).
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
 
 ## 3. Section library
 
-None yet (Phase 3). Each type will have `src/sections/<type>/{schema,render,editor}.ts(x)` plus one registry entry.
+Home page sections (Phase 2, `src/components/home/`), content in `src/content/home-schema.ts`:
+
+| Section | Fields | Variants |
+|---|---|---|
+| hero | slides[2] {desktop, mobile media, alt, href}, h1, subline, ctaLabel | – |
+| badges | enabled, cta (items from `badges` table) | – |
+| services | eyebrow, title, intro, items[] {title, text, href}, cta | – |
+| results | eyebrow, title, intro, cta (items from `results`) | – |
+| process | eyebrow, title, steps[1-5], cta | – |
+| testimonials | eyebrow, title, variant, cta (items from `testimonials`) | grid, slider |
+| founder | name, role, bio, yearsExperience (null until confirmed), photo, ctaLabel | – |
+| faq | items[] {q, a, status draft/ready}, cta | – |
+| finalCta | eyebrow, title, text, label | – |
+
+Phase 3 turns these into the general section registry (`src/sections/<type>/`).
 
 ## 4. URLs and slugs
 
@@ -80,6 +100,11 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | 2026-10-17 | WhatsApp: site number 919695747475 and HR number 919670111008, both from the live site's links. The message template uses {page}, filled at click time from the page title or `data-wa-*` attributes | Live site |
 | 2026-10-17 | The lead form uses the browser's built-in checks; Zod runs only on the server (saves 31 KB of JS on form pages) | R35 |
 | 2026-10-17 | Content-page claims left out until proved: live-site stats, awards, "Google-certified", US-style benefits | Rule 4, R19 |
+| 2026-10-17 | Placeholders and unapproved items show (striped, labelled "not shown on the live site") only while building (`npm run dev`, `SHOW_PLACEHOLDERS` in `src/lib/home-data.ts`, read with the server-only secret key); any production build leaves them out. The database refuses switched-on badges without proof and approved placeholders | R19 |
+| 2026-10-17 | Home H1 is visible (under the slider), not screen-reader-only: no official Google guidance found on hidden H1s | R14 (unverified) |
+| 2026-10-17 | Hero slider without a library (CSS scroll-snap + about 1 KB JS); slide 1 `loading=eager` + `fetchPriority=high`, slide 2 lazy; art direction with `getImageProps` + `<picture>` (Next 16 deprecated `priority`) | R14, R35 |
+| 2026-10-17 | Badge artwork is white on transparent (as on the live site); CSS `.rm-white-art` turns it black in light mode | R43 |
+| 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -103,8 +128,9 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 |---|---|
 | Gate 0 plan | done 2026-10-17 |
 | 0 Foundation | done 2026-10-17 |
-| 1 Global shell | **done 2026-10-17**, waiting for "go" |
-| 2 Home (next) · 3 Landing system · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
+| 1 Global shell | done 2026-10-17 |
+| 2 Home page | **done 2026-10-17**, waiting for "go" |
+| 3 Landing system (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
 
 ## 10. Open items
 
@@ -113,7 +139,7 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | **Free hosting.** Vercel Hobby forbids commercial use (verified). Cache Components need Node.js; Cloudflare/OpenNext doesn't support Node proxy yet. Options to check: Cloudflare Workers (drop proxy, use its free AI-bot block), a free Node VM, Netlify Free (terms unverified) | developer + founder | Phase 7 (launch) |
 | Supabase Free pauses after 1 week of inactivity and has no backups. Plan: weekly keep-alive + nightly `pg_dump` via free GitHub Actions (allowed? unverified) | developer | before launch |
 | One Supabase project for dev and live risks test data in live. Recommend 2 free projects (dev + live) | founder | before launch |
-| First-load JS (gzipped): `/` 182 KB, `/contact` 184 KB, `/login` 250 KB (Supabase auth client). The framework alone is about 175 KB, almost all framework (Next 16 + React 19); our code is under 5 KB. The 120 KB budget isn't reachable with the App Router. Proposal: budget = framework + 30 KB of our code | founder | Phase 6 budget |
+| First-load JS (gzipped): `/` 183 KB (without slides), `/contact` 184 KB, `/login` 250 KB (Supabase auth client). The framework alone is about 175 KB, almost all framework (Next 16 + React 19); our code is under 5 KB. The 120 KB budget isn't reachable with the App Router. Proposal: budget = framework + 30 KB of our code | founder | Phase 6 budget |
 | Cloudinary delete vs. version history: deleting an image breaks rollback to versions that used it. Proposal: unreferenced images go to a 30-day trash, then are deleted | founder | Phase 4 |
 | Is TOTP 2FA available on Supabase Free? The local config comment says MFA is Pro (unverified) | developer | Phase 4 |
 | Live-site claims without proof (`docs/content/wordpress-inventory.md`) | founder | publishing |
@@ -121,8 +147,10 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
 | Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
 | Owner profile name was set to "Rohan Trehan" for the existing admin login: confirm | founder | no |
+| Home inputs: 2 hero slides (desktop + mobile), badge proof links, which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience. Until the admin (Phase 4) can do it, the developer flips approvals in the database on request | founder | publishing |
+| "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
 
 ## 11. Next step
 
-Phase 2 (home page, R13/R14/R11): hero slider (2 slides, desktop + mobile images), badge strip from the database (disabled until proof URLs), services grid, results, process, testimonials, founder + Book a Call, FAQ, final CTA, and a CTA after every section. Needs from the founder: 2 hero slide images (desktop + mobile), badge proof URLs, and which testimonials are real and approved.
+Phase 3 (landing system, R1-R7, R15-R21, R25, R28, R42, R45): section registry with Zod schemas, master template, service x niche x country model, automatic slugs and headlines, per-page offer banner, results/creatives, concept work, proof tagging, country settings, page visibility with database-driven robots/sitemap, publish check, and 3 real pages (Meta ads x fashion, a D2C page, a USA page) built only from facts the founder supplies.

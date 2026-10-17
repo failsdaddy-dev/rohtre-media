@@ -11,8 +11,8 @@ export function Logo({ className = "h-9 w-auto" }: { className?: string }) {
         alt="RohTre Media"
         width={687}
         height={181}
-        priority
         unoptimized
+        loading="eager"
         className={`rm-logo-on-light ${className}`}
       />
       <Image
@@ -20,8 +20,8 @@ export function Logo({ className = "h-9 w-auto" }: { className?: string }) {
         alt=""
         width={687}
         height={181}
-        priority
         unoptimized
+        loading="eager"
         className={`rm-logo-on-dark ${className}`}
       />
     </>

@@ -1,60 +1,96 @@
 import type { Metadata } from "next";
+import { Hero } from "@/components/home/hero";
+import { CtaStrip } from "@/components/home/parts";
+import {
+  BadgeStrip,
+  Faq,
+  FinalCta,
+  Founder,
+  Process,
+  Results,
+  Services,
+  Testimonials,
+} from "@/components/home/sections";
+import { getBadges, getHomeContent, getResults, getTestimonials, SHOW_PLACEHOLDERS } from "@/lib/home-data";
 
-// PLACEHOLDER: shows the theme and button styles only. The real home page
-// (R13) arrives in Phase 2. Not indexed.
+// Home page (R13). Order: hero slider, badge strip, services, results,
+// process, testimonials, founder + Book a Call, FAQ, final CTA, with a Book a
+// Call strip after every section. No "Industries we serve" section (rule 6).
+
 export const metadata: Metadata = {
-  title: "Foundation preview",
-  robots: { index: false, follow: false },
+  title: { absolute: "RohTre Media | Digital marketing and growth agency" },
+  description:
+    "RohTre Media plans and runs Meta and Google ad campaigns, makes the creatives and videos, and builds the pages they land on.",
+  alternates: { canonical: "/" },
 };
 
-export default function FoundationPreview() {
+export default async function HomePage() {
+  const [home, badges, results, testimonials] = await Promise.all([
+    getHomeContent(),
+    getBadges(),
+    getResults(),
+    getTestimonials(),
+  ]);
+
+  const faqVisible = home.faq.items.some((f) => SHOW_PLACEHOLDERS || f.status === "ready");
+
   return (
     <>
-      <section className="rm-hero-bg flex flex-1 flex-col items-center justify-center gap-8 px-4 py-20 text-center">
-        <p className="rm-rise-in text-xs font-semibold uppercase tracking-[0.25em] text-brand">
-          Preview &middot; home page arrives in Phase 2
-        </p>
-        <h1
-          className="rm-rise-in max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.04em]"
-          style={{ "--i": 1 } as React.CSSProperties}
-        >
-          We make brands <span className="rm-text-grad">unstoppable</span>
-        </h1>
-        <p className="rm-rise-in max-w-xl text-fg-2" style={{ "--i": 2 } as React.CSSProperties}>
-          Placeholder page. It shows the colours, font, buttons and card style the site will use, in light and dark
-          mode.
-        </p>
-        <div className="rm-rise-in flex flex-wrap justify-center gap-3" style={{ "--i": 3 } as React.CSSProperties}>
-          <button
-            type="button"
-            className="rm-press inline-flex h-12 items-center rounded-full bg-brand px-6 font-semibold text-brand-fg"
-          >
-            Book a Call
-          </button>
-          <button
-            type="button"
-            className="rm-press inline-flex h-12 items-center rounded-full bg-chip-on-bg px-6 font-semibold text-chip-on-fg"
-          >
-            Primary
-          </button>
-          <button
-            type="button"
-            className="rm-press inline-flex h-12 items-center rounded-full bg-chip px-6 font-semibold"
-          >
-            Secondary
-          </button>
-        </div>
-        <div className="rm-offset rm-pop-in mt-6 w-full max-w-md p-8 text-left [--offset-surface:var(--bg-elev)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Card</p>
-          <p className="mt-2 text-xl font-bold">Red offset block</p>
-          <label className="mt-5 flex flex-col gap-1.5 text-sm font-medium">
-            Field
-            <span className="rm-field flex h-12 items-center px-4">
-              <input className="h-full w-full bg-transparent text-base outline-none" placeholder="Type here" />
-            </span>
-          </label>
-        </div>
-      </section>
+      <Hero hero={home.hero} />
+
+      {home.badges.enabled && badges.length > 0 && (
+        <>
+          <BadgeStrip badges={badges} />
+          <div className="pt-10">
+            <CtaStrip {...home.badges.cta} />
+          </div>
+        </>
+      )}
+
+      {home.services.enabled && (
+        <>
+          <Services s={home.services} />
+          <CtaStrip {...home.services.cta} />
+        </>
+      )}
+
+      {home.results.enabled && results.length > 0 && (
+        <>
+          <Results s={home.results} results={results} />
+          <div className="bg-bg-soft">
+            <CtaStrip {...home.results.cta} />
+          </div>
+        </>
+      )}
+
+      {home.process.enabled && (
+        <>
+          <Process s={home.process} />
+          <CtaStrip {...home.process.cta} />
+        </>
+      )}
+
+      {home.testimonials.enabled && testimonials.length > 0 && (
+        <>
+          <Testimonials s={home.testimonials} items={testimonials} />
+          <div className="bg-bg-soft">
+            <CtaStrip {...home.testimonials.cta} />
+          </div>
+        </>
+      )}
+
+      {home.founder.enabled && <Founder s={home.founder} />}
+
+      {home.faq.enabled && faqVisible && (
+        <>
+          <Faq s={home.faq} />
+          <div className="bg-bg-soft">
+            <CtaStrip {...home.faq.cta} />
+          </div>
+        </>
+      )}
+
+      <FinalCta s={home.finalCta} />
     </>
   );
 }

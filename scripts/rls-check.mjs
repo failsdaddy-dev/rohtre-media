@@ -106,6 +106,57 @@ try {
   });
   check("visitor cannot call the rate limiter", a6.status >= 400, `status ${a6.status}`);
 
+  // Proof that isn't approved never reaches the public (R11, R19).
+  const a7 = await rest("badges?select=id,enabled", { key: ANON });
+  check(
+    "visitor sees only switched-on badges",
+    Array.isArray(a7.json) && a7.json.every((b) => b.enabled),
+    `status ${a7.status}`,
+  );
+
+  const a8 = await rest("testimonials?select=id,approved,is_placeholder", { key: ANON });
+  check(
+    "visitor sees only approved testimonials",
+    Array.isArray(a8.json) && a8.json.every((t) => t.approved && !t.is_placeholder),
+    `status ${a8.status}`,
+  );
+
+  const a9 = await rest("results?select=id,approved,is_placeholder", { key: ANON });
+  check(
+    "visitor never sees placeholder results",
+    Array.isArray(a9.json) && a9.json.every((r) => r.approved && !r.is_placeholder),
+    `status ${a9.status}`,
+  );
+
+  const a10 = await rest("testimonials", {
+    key: ANON,
+    method: "POST",
+    body: { quote: "x", person_name: "x", approved: true },
+  });
+  check("visitor cannot add testimonials", a10.status >= 400, `status ${a10.status}`);
+
+  const a11 = await rest("page_content?key=eq.home", {
+    key: ANON,
+    method: "PATCH",
+    body: { data: {} },
+    prefer: "return=representation",
+  });
+  check(
+    "visitor cannot edit page content",
+    a11.status >= 400 || (Array.isArray(a11.json) && a11.json.length === 0),
+    `status ${a11.status}`,
+  );
+
+  // The database itself refuses an enabled badge without proof.
+  const s0 = await rest("badges", { key: SECRET, method: "POST", body: { label: "rls-test", enabled: true } });
+  check("database refuses a switched-on badge without a proof link", s0.status >= 400, `status ${s0.status}`);
+  const s00 = await rest("results", {
+    key: SECRET,
+    method: "POST",
+    body: { brand_name: "rls-test", metric_value: "1", metric_label: "x", approved: true, is_placeholder: true },
+  });
+  check("database refuses an approved placeholder result", s00.status >= 400, `status ${s00.status}`);
+
   // -------------------------------------------------------------- server (lead intake)
   const s1 = await rest("leads", { key: SECRET, method: "POST", body: testLead, prefer: "return=representation" });
   leadId = s1.json?.[0]?.id ?? null;
