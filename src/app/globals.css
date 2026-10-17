@@ -333,3 +333,22 @@ input:-webkit-autofill:focus {
     display: none;
   }
 }
+
+/* Logo: black wordmark on light backgrounds, white on dark. */
+.rm-logo-on-dark {
+  display: none;
+}
+:root[data-theme="dark"] .rm-logo-on-light {
+  display: none;
+}
+:root[data-theme="dark"] .rm-logo-on-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rm-logo-on-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .rm-logo-on-dark {
+    display: block;
+  }
+}

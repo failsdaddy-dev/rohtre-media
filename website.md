@@ -58,6 +58,10 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | 2026-10-17 | Deleting an image in admin also deletes it from Cloudinary (`destroyAsset`), once nothing references it | Founder. Details in open items |
 | 2026-10-17 | Next.js 16.4.2, `cacheComponents` + `partialPrefetching`, Tailwind v4 through the Turbopack loader (same as the vault) | Current versions; matches the vault |
 | 2026-10-17 | Content and contact details come from the live site; claims without proof stay blocked | Founder; rule 4, R19 |
+| 2026-10-17 | Supabase project `rqvugkcoohzpylbbwqlb` (free) and Cloudinary cloud `rx0ucmiq` (free) connected; keys only in `.env.local`, all three checked working | Founder |
+| 2026-10-17 | Logo: wordmark from the founder, repainted black (light theme) and white (dark theme) in `public/brand`; favicon = the R mark, transparent SVG (`src/app/icon.svg`) that is black on light browser tabs and white on dark ones; `apple-icon.png` is a white R on dark because Apple needs an opaque icon. Sources and extra versions (red R) in `docs/brand` | Founder |
+| 2026-10-17 | Social links are placeholders (`src/lib/site-defaults.ts`), hidden until real URLs are added | Founder |
+| 2026-10-17 | Leads go to Google Sheets (Meta and Google Ads lead forms). Resend and Turnstile are not needed for now | Founder |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -91,8 +95,11 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | Cloudinary delete vs. version history: deleting an image breaks rollback to versions that used it. Proposal: unreferenced images go to a 30-day trash, then are deleted | founder | Phase 4 |
 | Is TOTP 2FA available on Supabase Free? The local config comment says MFA is Pro (unverified) | developer | Phase 4 |
 | Live-site claims without proof (`docs/content/wordpress-inventory.md`) | founder | publishing |
+| Website contact form: also send to Google Sheets? Default: save in Supabase (R10) **and** add a row to your sheet through a Google Apps Script link; spam protection = hidden honeypot field + time check + rate limit (no Turnstile) | founder | Phase 1 |
+| Hosted Supabase still allows public sign-up: turn off in Dashboard -> Authentication -> Sign In / Providers -> "Allow new users to sign up" | founder | Phase 1 |
+| Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
 | Screenshots at 1440/390 px not taken (browser screenshot timed out); checked with computed styles instead | developer | no |
 
 ## 11. Next step
 
-Phase 1 (global shell): header/footer, WhatsApp button, global settings, /login (vault look), lead form + email alerts, Privacy, Terms, Careers, About. Needs the Supabase project keys in `.env.local`.
+Phase 1 (global shell): header/footer, WhatsApp button, global settings, /login (vault look), lead form + email alerts, Privacy, Terms, Careers, About. Keys are in `.env.local`. Still needed: OK to apply the roles migration to Supabase and to make the existing user the owner.
