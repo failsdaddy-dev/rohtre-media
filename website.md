@@ -165,4 +165,6 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 
 ## 11. Next step
 
+**Paused 2026-10-17; founder back Wednesday.** Before Phase 3: founder reviews the redesign on a phone (not yet checked at 390 px) and replies "go"; still open: "2B+" = conversions or views?
+
 Phase 3 (landing system, R1-R7, R15-R21, R25, R28, R42, R45): section registry with Zod schemas, master template, service x niche x country model, automatic slugs and headlines, per-page offer banner, results/creatives, concept work, proof tagging, country settings, page visibility with database-driven robots/sitemap, publish check, and 3 real pages (Meta ads x fashion, a D2C page, a USA page) built only from facts the founder supplies.
