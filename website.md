@@ -7,22 +7,35 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
-| `/` | foundation preview (placeholder; real home in Phase 2) | noindex | built (Phase 0) |
+| `/` | theme preview (placeholder; real home in Phase 2) | noindex | built |
+| `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
+| `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
+| `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
+| `/privacy`, `/terms` | legal (DPDP-based), **3 placeholders** to fill | public | built (Phase 1) |
+| `/login`, `/no-access`, `/auth/signout` | sign-in (vault look) | private | built (Phase 1) |
+| `/admin` | overview + latest 20 leads (owner/developer) | private | built (Phase 1) |
+| `/admin/settings` | global settings editor (owner/developer) | private | built (Phase 1) |
+| `/api/leads` | the one lead route | private | built (Phase 1) |
+| `/api/cloudinary/sign` | signed upload (staff only) | private | built (Phase 0) |
 | `/robots.txt` | generated from `src/lib/crawlers.ts` | public | built |
-| `/api/cloudinary/sign` | signed upload (staff only) | private | built |
 | `/lp/*` | landing pages | unlisted | Phase 3 (proxy + headers already active) |
-| `/login`, `/admin/*` | admin | private | Phases 1 and 4 |
-| `/about`, `/contact`, `/careers`, `/privacy`, `/terms` | content | public | Phase 1 |
 | `/case-studies`, `/blog` | content | public | Phase 6 |
+
+All public pages live in `src/app/(site)/` and share `SiteChrome` (header, footer, WhatsApp button).
+Header menu: Home, About, Careers, Contact + Book a Call (`/contact#enquiry`) + theme toggle. Services/Work links are added once those pages exist.
 
 ## 2. Data model
 
-Built so far (`supabase/migrations/20261017120000_staff_roles.sql`):
-- `profiles` (user_id -> auth.users, role `staff_role` = owner | developer | editor, full_name, active).
-- `current_role_name()`: security-definer helper used by RLS policies.
-- RLS: staff read their own row; the owner reads and manages all; anon has no access.
+Applied to Supabase `rqvugkcoohzpylbbwqlb`:
+- `20261017120000_staff_roles`: `profiles` (user_id, role owner|developer|editor, full_name, active); `current_role_name()`.
+- `20261017140000_settings_and_leads`:
+  - `site_settings`: one row; `data` JSONB checked by Zod in `src/lib/settings-schema.ts` (a bad key falls back to its default on its own). Anyone may read it; owner/developer update it.
+  - `leads`: page_path, name, phone, email, business_type, website, ad_spend_range, interest, message, consent + consent_at + consent_text_version, utm_*, gclid, fbclid, referrer, user_agent, ip_hash, sheet_synced_at, status. No anon access; owner/developer read/update/delete; written only by `/api/leads` with the secret key.
+  - `rate_limits` + `hit_rate_limit(key, limit, window)` (service role only); `purge_old_leads()` uses `leadRetentionDays`.
+  - helpers `is_staff()`, `can_manage()`, `touch_updated_at` trigger.
+- RLS check: `npm run check:rls` (13 checks against the live project; creates and removes a temporary editor).
 
-Planned (Gate 0 section 2.2): dimension_types/values (service tree, niches with sub-niches, countries), country_settings, pages, page_dimensions, page_versions (sections JSONB), preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works (separate table), proof_tags, badges, page_badges, settings, leads, rate_limits, redirects, ad_mappings, audit_log.
+Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
 
 ## 3. Section library
 
@@ -60,8 +73,13 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | 2026-10-17 | Content and contact details come from the live site; claims without proof stay blocked | Founder; rule 4, R19 |
 | 2026-10-17 | Supabase CLI linked (founder ran login + link + db push); migration `20261017120000_staff_roles` applied; the existing user is set as **owner**. Supabase project `rqvugkcoohzpylbbwqlb` (free) and Cloudinary cloud `rx0ucmiq` (free) connected; keys only in `.env.local`, all three checked working | Founder |
 | 2026-10-17 | Logo: wordmark from the founder, repainted black (light theme) and white (dark theme) in `public/brand`; favicon = the R mark, transparent SVG (`src/app/icon.svg`) that is black on light browser tabs and white on dark ones; `apple-icon.png` is a white R on dark because Apple needs an opaque icon. Sources and extra versions (red R) in `docs/brand` | Founder |
-| 2026-10-17 | Social links are placeholders (`src/lib/site-defaults.ts`), hidden until real URLs are added | Founder |
-| 2026-10-17 | Leads go to Google Sheets (Meta and Google Ads lead forms). Resend and Turnstile are not needed for now | Founder |
+| 2026-10-17 | Social links are placeholders (settings `socials[].url = null`), hidden until real URLs are added | Founder |
+| 2026-10-17 | Leads go to Google Sheets (Meta and Google Ads lead forms). Resend and Turnstile are not used | Founder |
+| 2026-10-17 | Website form: saved in Supabase, then copied to the founder's Google Sheet through a Google Apps Script web app (`docs/setup/google-sheets-leads.md`) after the response. The instant alert is Google Sheets' own notification email instead of a separate email service (replaces R10's email alert) | Founder (leads in Sheets) + Gate 0 default |
+| 2026-10-17 | Spam protection without third parties: honeypot field, minimum 3 s fill time, same-origin check, 5 leads per 10 min per hashed IP | Turnstile dropped |
+| 2026-10-17 | WhatsApp: site number 919695747475 and HR number 919670111008, both from the live site's links. The message template uses {page}, filled at click time from the page title or `data-wa-*` attributes | Live site |
+| 2026-10-17 | The lead form uses the browser's built-in checks; Zod runs only on the server (saves 31 KB of JS on form pages) | R35 |
+| 2026-10-17 | Content-page claims left out until proved: live-site stats, awards, "Google-certified", US-style benefits | Rule 4, R19 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -74,15 +92,19 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME | browser | delivery URLs |
 | CLOUDINARY_API_KEY | server | signed upload, delete |
 | CLOUDINARY_API_SECRET | **server only** | signing (`lib/env.server.ts`, guarded by `server-only`) |
+| LEADS_SHEET_WEBHOOK_URL | server | `lib/leads.server.ts` (optional Google Sheet copy) |
+| LEADS_SHEET_SECRET | **server only** | shared secret with the Apps Script |
+| LEAD_HASH_SALT | **server only** | optional salt for IP hashing (falls back to the secret key) |
+| SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD | terminal only | Supabase CLI (optional; the founder's CLI login is used) |
 
 ## 9. Phase checklist
 
 | Phase | Status |
 |---|---|
 | Gate 0 plan | done 2026-10-17 |
-| 0 Foundation | **done 2026-10-17**, waiting for "go" |
-| 1 Global shell | next |
-| 2 Home · 3 Landing system · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
+| 0 Foundation | done 2026-10-17 |
+| 1 Global shell | **done 2026-10-17**, waiting for "go" |
+| 2 Home (next) · 3 Landing system · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
 
 ## 10. Open items
 
@@ -90,16 +112,17 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 |---|---|---|
 | **Free hosting.** Vercel Hobby forbids commercial use (verified). Cache Components need Node.js; Cloudflare/OpenNext doesn't support Node proxy yet. Options to check: Cloudflare Workers (drop proxy, use its free AI-bot block), a free Node VM, Netlify Free (terms unverified) | developer + founder | Phase 7 (launch) |
 | Supabase Free pauses after 1 week of inactivity and has no backups. Plan: weekly keep-alive + nightly `pg_dump` via free GitHub Actions (allowed? unverified) | developer | before launch |
-| One Supabase project for dev and live risks test data in live. Recommend 2 free projects (dev + live) | founder | Phase 1 |
-| First-load JS on `/` is **175 KB gzipped**, almost all framework (Next 16 + React 19); our code is under 5 KB. The 120 KB budget isn't reachable with the App Router. Proposal: budget = framework + 30 KB of our code | founder | Phase 6 budget |
+| One Supabase project for dev and live risks test data in live. Recommend 2 free projects (dev + live) | founder | before launch |
+| First-load JS (gzipped): `/` 182 KB, `/contact` 184 KB, `/login` 250 KB (Supabase auth client). The framework alone is about 175 KB, almost all framework (Next 16 + React 19); our code is under 5 KB. The 120 KB budget isn't reachable with the App Router. Proposal: budget = framework + 30 KB of our code | founder | Phase 6 budget |
 | Cloudinary delete vs. version history: deleting an image breaks rollback to versions that used it. Proposal: unreferenced images go to a 30-day trash, then are deleted | founder | Phase 4 |
 | Is TOTP 2FA available on Supabase Free? The local config comment says MFA is Pro (unverified) | developer | Phase 4 |
 | Live-site claims without proof (`docs/content/wordpress-inventory.md`) | founder | publishing |
-| Website contact form: also send to Google Sheets? Default: save in Supabase (R10) **and** add a row to your sheet through a Google Apps Script link; spam protection = hidden honeypot field + time check + rate limit (no Turnstile) | founder | Phase 1 |
-| Hosted Supabase still allows public sign-up: turn off in Dashboard -> Authentication -> Sign In / Providers -> "Allow new users to sign up" | founder | Phase 1 |
+| Set up the Google Sheet link (`docs/setup/google-sheets-leads.md`) | founder | no (leads are safe in Supabase) |
+| Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
+| Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
+| Owner profile name was set to "Rohan Trehan" for the existing admin login: confirm | founder | no |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
-| Screenshots at 1440/390 px not taken (browser screenshot timed out); checked with computed styles instead | developer | no |
 
 ## 11. Next step
 
-Phase 1 (global shell): header/footer, WhatsApp button, global settings, /login (vault look), lead form + email alerts, Privacy, Terms, Careers, About. Keys are in `.env.local`. Database and owner are set up; Phase 1 can start on "go".
+Phase 2 (home page, R13/R14/R11): hero slider (2 slides, desktop + mobile images), badge strip from the database (disabled until proof URLs), services grid, results, process, testimonials, founder + Book a Call, FAQ, final CTA, and a CTA after every section. Needs from the founder: 2 hero slide images (desktop + mobile), badge proof URLs, and which testimonials are real and approved.

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { FoundationFrame } from "@/components/foundation-frame";
 
-// PLACEHOLDER (Phase 0): shows the theme and button styles only. The real
-// home page (R13) arrives in Phase 2. Not indexed.
+// PLACEHOLDER: shows the theme and button styles only. The real home page
+// (R13) arrives in Phase 2. Not indexed.
 export const metadata: Metadata = {
   title: "Foundation preview",
   robots: { index: false, follow: false },
@@ -10,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function FoundationPreview() {
   return (
-    <FoundationFrame>
+    <>
       <section className="rm-hero-bg flex flex-1 flex-col items-center justify-center gap-8 px-4 py-20 text-center">
         <p className="rm-rise-in text-xs font-semibold uppercase tracking-[0.25em] text-brand">
-          Phase 0 &middot; foundation preview
+          Preview &middot; home page arrives in Phase 2
         </p>
         <h1
           className="rm-rise-in max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.04em]"
@@ -56,6 +55,6 @@ export default function FoundationPreview() {
           </label>
         </div>
       </section>
-    </FoundationFrame>
+    </>
   );
 }

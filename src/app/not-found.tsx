@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { FoundationFrame } from "@/components/foundation-frame";
+import { SiteChrome } from "@/components/site-chrome";
 
 export default function NotFound() {
   return (
-    <FoundationFrame>
+    <SiteChrome>
       <section className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-24 text-center">
         <p className="text-7xl font-bold tracking-[-0.05em] text-brand">404</p>
         <h1 className="text-2xl font-bold">Page not found</h1>
@@ -15,6 +15,6 @@ export default function NotFound() {
           Go to the home page
         </Link>
       </section>
-    </FoundationFrame>
+    </SiteChrome>
   );
 }
