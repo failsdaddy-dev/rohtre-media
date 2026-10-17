@@ -1,0 +1,273 @@
+/* ------------------------------------------------------------- site design
+   Layout patterns and motion for the public site: alternating dark/light
+   sections, an overlay header on dark heroes, scroll reveals, marquee rows,
+   stacking cards and a word-by-word quote reveal. Colours and buttons come
+   from globals.css; this file adds no new colours.
+
+   All motion is CSS only. Scroll-driven animations (animation-timeline) run
+   where the browser supports them; elsewhere the content is simply shown.
+   Everything is off for people who prefer reduced motion. */
+
+/* ---------------------------------------------------------------- header
+   Solid white by default. On pages that start with a dark hero
+   (.rm-hero-dark) it begins transparent over the hero and turns solid as the
+   page scrolls (scroll-driven, no JavaScript). */
+.rm-header {
+  --header-bg: color-mix(in srgb, #ffffff 92%, transparent);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body:has(.rm-hero-dark) .rm-header {
+      animation: rm-header-solid linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+    body:has(.rm-hero-dark) .rm-header .rm-header-on-hero {
+      animation: rm-fade-out-scroll linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+    body:has(.rm-hero-dark) .rm-header .rm-header-on-solid {
+      animation: rm-fade-in-scroll linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+    body:has(.rm-hero-dark) .rm-header .rm-nav-link {
+      animation: rm-nav-ink linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+  }
+}
+@keyframes rm-header-solid {
+  from {
+    background: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
+  }
+  to {
+    background: var(--header-bg);
+    border-bottom-color: var(--line);
+  }
+}
+@keyframes rm-nav-ink {
+  from {
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+@keyframes rm-fade-out-scroll {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes rm-fade-in-scroll {
+  from {
+    opacity: 0;
+  }
+}
+/* Two logos stacked: white on the hero, black once solid. Without scroll
+   timelines only the black one shows (solid header). */
+.rm-header-logos {
+  display: grid;
+}
+.rm-header-logos > * {
+  grid-area: 1 / 1;
+}
+.rm-header-on-hero {
+  opacity: 0;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body:has(.rm-hero-dark) .rm-header-on-hero {
+      opacity: 1;
+    }
+  }
+}
+
+/* A dark hero sits under the sticky header. */
+.rm-hero-dark {
+  margin-top: calc(-1 * var(--header-h));
+  padding-top: var(--header-h);
+}
+
+/* ------------------------------------------------------------ backgrounds */
+/* Fine grid lines on dark sections, fading towards the edges. */
+.rm-grid-bg {
+  position: relative;
+  isolation: isolate;
+}
+.rm-grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 30%, transparent 85%);
+  pointer-events: none;
+}
+/* Soft red glow behind a section's heading. */
+.rm-glow {
+  position: relative;
+  isolation: isolate;
+}
+.rm-glow::after {
+  content: "";
+  position: absolute;
+  inset: auto 10% 0;
+  height: 60%;
+  z-index: -1;
+  background: radial-gradient(50% 60% at 50% 100%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ eyebrow pill */
+.rm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--brand) 45%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.rm-dark .rm-pill {
+  color: color-mix(in srgb, var(--brand) 55%, #ffffff);
+}
+.rm-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+/* Tag chips on cards */
+.rm-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+/* ---------------------------------------------------------- scroll reveal
+   .rm-reveal fades and rises into view as it scrolls in. --i staggers a
+   group (0, 1, 2…). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rm-reveal {
+      animation: rm-reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 6%) entry calc(70% + var(--i, 0) * 6%);
+    }
+  }
+}
+@keyframes rm-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------------- marquee
+   Two copies of the list slide left forever; hover or focus pauses it. The
+   second copy is aria-hidden. Reduced motion: a normal swipeable row. */
+.rm-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
+.rm-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 20px;
+  animation: rm-marquee var(--marquee-duration, 60s) linear infinite;
+}
+.rm-marquee[data-reverse] .rm-marquee-track {
+  animation-direction: reverse;
+}
+.rm-marquee:hover .rm-marquee-track,
+.rm-marquee:focus-within .rm-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes rm-marquee {
+  to {
+    transform: translateX(calc(-50% - 10px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .rm-marquee-track {
+    animation: none;
+  }
+  .rm-marquee-track > [aria-hidden="true"] {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------- stacking cards
+   Each card sticks a little lower than the one before, so they pile up as
+   the page scrolls. */
+.rm-stack > * {
+  position: sticky;
+  top: calc(var(--header-h) + 24px + var(--i, 0) * 28px);
+}
+
+/* ---------------------------------------------------- word-by-word reveal
+   Words start dim and light up as the quote scrolls through the viewport.
+   Each word gets its own slice of the scroll range (set inline). */
+.rm-words {
+  view-timeline-name: --rm-words;
+}
+.rm-words .rm-word {
+  color: inherit;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rm-words .rm-word {
+      animation: rm-word-in linear both;
+      animation-timeline: --rm-words;
+    }
+  }
+}
+@keyframes rm-word-in {
+  from {
+    opacity: 0.18;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ----------------------------------------------------- decorative accents */
+.rm-squiggle {
+  stroke: var(--brand);
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

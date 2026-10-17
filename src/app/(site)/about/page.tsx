@@ -67,7 +67,7 @@ export default function AboutPage() {
         </p>
       </Section>
 
-      <Section soft eyebrow="How we work" title="What we stand for">
+      <Section dark eyebrow="How we work" title="What we stand for">
         <ul className="grid gap-6 md:grid-cols-3">
           {VALUES.map((v) => (
             <li key={v.title}>

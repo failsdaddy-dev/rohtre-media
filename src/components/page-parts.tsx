@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { ArrowRightIcon } from "./icons";
+import { ArrowRightIcon, ChatIcon } from "./icons";
 import { BOOK_CALL_HREF } from "./site-header";
 
 // Building blocks shared by the content pages (About, Careers, Contact, legal).
@@ -21,11 +21,11 @@ export function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="rm-hero-bg overflow-hidden border-b border-line">
-      <Container className="flex flex-col items-start gap-5 py-16 sm:py-24">
-        <p className="rm-rise-in text-xs font-semibold uppercase tracking-[0.25em] text-brand">{eyebrow}</p>
+    <section className="rm-dark rm-hero-dark rm-hero-bg rm-glow overflow-hidden">
+      <Container className="flex flex-col items-start gap-5 pb-20 pt-16 sm:pb-28 sm:pt-24">
+        <p className="rm-pill rm-rise-in">{eyebrow}</p>
         <h1
-          className="rm-rise-in max-w-4xl text-[clamp(2.25rem,5.5vw,4.25rem)] font-bold leading-[0.98] tracking-[-0.04em]"
+          className="rm-rise-in max-w-4xl text-[clamp(2.4rem,6vw,4.75rem)] font-bold leading-[0.96] tracking-[-0.045em]"
           style={{ "--i": 1 } as CSSProperties}
         >
           {title}
@@ -51,6 +51,7 @@ export function Section({
   intro,
   children,
   soft,
+  dark,
   id,
 }: {
   eyebrow?: string;
@@ -58,18 +59,19 @@ export function Section({
   intro?: ReactNode;
   children?: ReactNode;
   soft?: boolean;
+  /** A dark band (alternating light and dark sections). */
+  dark?: boolean;
   id?: string;
 }) {
+  const tone = dark ? "rm-dark rm-grid-bg" : soft ? "bg-bg-soft" : "";
   return (
-    <section id={id} className={`py-16 sm:py-20 ${soft ? "bg-bg-soft" : ""}`}>
+    <section id={id} className={`py-20 sm:py-24 ${tone}`}>
       <Container>
         {(eyebrow || title || intro) && (
-          <div className="mb-10 flex max-w-3xl flex-col gap-3">
-            {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand">{eyebrow}</p>}
+          <div className="rm-reveal mb-12 flex max-w-3xl flex-col gap-3">
+            {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.28em] text-brand">{eyebrow}</p>}
             {title && (
-              <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-                {title}
-              </h2>
+              <h2 className="text-[clamp(2rem,4.2vw,3.25rem)] font-bold leading-[1.03] tracking-[-0.04em]">{title}</h2>
             )}
             {intro && <p className="text-lg text-fg-2">{intro}</p>}
           </div>
@@ -120,25 +122,80 @@ export function ButtonLink({
   );
 }
 
-/** The closing call to action used at the end of content pages (wording from the live site). */
-export function CtaBand() {
+/** Decorative accents for the dark CTA panel: a red squiggle and a striped corner. */
+function PanelAccents() {
   return (
-    <section className="py-16 sm:py-20">
+    <>
+      <svg aria-hidden="true" viewBox="0 0 140 24" className="absolute right-8 top-8 hidden w-32 sm:block">
+        <path
+          className="rm-squiggle"
+          d="M4 12c6-8 12-8 18 0s12 8 18 0 12-8 18 0 12 8 18 0 12-8 18 0 12 8 18 0 12-8 18 0"
+        />
+      </svg>
+      <div
+        aria-hidden="true"
+        className="rm-stripes absolute -bottom-10 -left-10 hidden size-40 rotate-12 rounded-[28px] opacity-70 sm:block"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -right-6 bottom-10 hidden size-20 rounded-full border-[10px] border-[color-mix(in_srgb,var(--brand)_55%,transparent)] sm:block"
+      />
+    </>
+  );
+}
+
+/** The dark closing call-to-action panel (home and content pages). */
+export function CtaPanel({
+  eyebrow = "Ready to unlock growth?",
+  title = "Let’s talk",
+  accent = "about your brand.",
+  text = "Tell us about your brand and goals. We’ll get back to you with a plan.",
+  label = "Book a Call",
+  whatsappHref,
+}: {
+  eyebrow?: string;
+  title?: string;
+  accent?: string;
+  text?: string;
+  label?: string;
+  whatsappHref?: string | null;
+}) {
+  return (
+    <section className="py-20 sm:py-24">
       <Container>
-        <div className="rm-offset flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-12 [--offset-surface:var(--bg-elev)]">
-          <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand">Ready to unlock growth?</p>
-            <p className="mt-2 text-[clamp(1.75rem,4vw,3rem)] font-bold leading-none tracking-[-0.03em]">Let’s talk!</p>
-          </div>
-          <div className="relative">
-            <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-              Book a Call <ArrowRightIcon size={18} />
-            </ButtonLink>
+        <div className="rm-dark rm-grid-bg rm-reveal relative overflow-hidden rounded-[32px] px-6 py-16 text-center sm:px-12 sm:py-20">
+          <PanelAccents />
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5">
+            <p className="rm-pill">{eyebrow}</p>
+            <h2 className="text-[clamp(2.2rem,5vw,3.75rem)] font-bold leading-[1] tracking-[-0.045em]">
+              {title} <span className="rm-text-grad block pb-1">{accent}</span>
+            </h2>
+            {text && <p className="text-lg text-fg-2">{text}</p>}
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
+                {label} <ArrowRightIcon size={18} />
+              </ButtonLink>
+              {whatsappHref && (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener"
+                  className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-line px-6 font-semibold hover:bg-hover"
+                >
+                  <ChatIcon size={18} /> WhatsApp us
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </Container>
     </section>
   );
+}
+
+/** Closing CTA for content pages, with the default wording. */
+export function CtaBand({ whatsappHref }: { whatsappHref?: string | null }) {
+  return <CtaPanel whatsappHref={whatsappHref} />;
 }
 
 /**

@@ -141,7 +141,7 @@ export default async function CareersPage() {
         </div>
       </Section>
 
-      <Section soft eyebrow="Values" title="We raise the bar for what an agency should be.">
+      <Section dark eyebrow="Values" title="We raise the bar for what an agency should be.">
         <ul className="grid gap-6 md:grid-cols-3">
           {VALUES.map((v) => (
             <li key={v.title}>

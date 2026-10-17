@@ -7,7 +7,7 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
-| `/` | home page (R13): hero slider, badges, services, results, process, testimonials, founder, FAQ, final CTA | public | built (Phase 2) |
+| `/` | home page (R13): dark hero + slider, badge bar, services (dark), results (stacking), process (dark timeline), testimonials (marquee), founder (dark, quote reveal), FAQ, CTA panel | public | built (Phase 2, redesigned) |
 | `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
@@ -39,7 +39,8 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
   - `testimonials` (quote, person_name, person_role, company, photo_public_id, approved, is_placeholder, sort, notes). Public sees approved and not placeholder.
   - `results` (brand_name, logo, metric_value, metric_label, summary, image_public_id, image_alt, approved, is_placeholder, sort, notes). DB checks: an approved result can't be a placeholder and needs an image + alt.
   - Seeded from the live site, all switched off / unapproved: 6 badges (4 with images in Cloudinary `rohtre-media/images/badges/*`), 5 testimonials, 3 placeholder results.
-- RLS check: `npm run check:rls` (20 checks against the live project; creates and removes a temporary editor).
+- `20261017180000_badges_showcase`: drops the badge proof rule; switches on 5 badges.
+- RLS check: `npm run check:rls` (19 checks against the live project; creates and removes a temporary editor).
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
 
@@ -49,15 +50,15 @@ Home page sections (Phase 2, `src/components/home/`), content in `src/content/ho
 
 | Section | Fields | Variants |
 |---|---|---|
-| hero | slides[2] {desktop, mobile media, alt, href}, h1, subline, ctaLabel | – |
-| badges | enabled, cta (items from `badges` table) | – |
-| services | eyebrow, title, intro, items[] {title, text, href}, cta | – |
-| results | eyebrow, title, intro, cta (items from `results`) | – |
-| process | eyebrow, title, steps[1-5], cta | – |
-| testimonials | eyebrow, title, variant, cta (items from `testimonials`) | grid, slider |
-| founder | name, role, bio, yearsExperience (null until confirmed), photo, ctaLabel | – |
-| faq | items[] {q, a, status draft/ready}, cta | – |
-| finalCta | eyebrow, title, text, label | – |
+| hero | eyebrow, h1, h1Accent, subline, ctaLabel, slides[2] {desktop, mobile media, alt, href} | – |
+| badges | enabled, eyebrow, cta (items from `badges` table) | – |
+| services | eyebrow, title, accent, intro, items[] {title, text, icon, tags[], href}, cta | – |
+| results | eyebrow, title, accent, intro, cta (items from `results`) | – |
+| process | eyebrow, title, accent, intro, steps[1-5], cta | – |
+| testimonials | eyebrow, title, accent, variant, cta (items from `testimonials`) | grid, slider (marquee) |
+| founder | eyebrow, quote (live-site CEO quote), name, role, bio, yearsExperience (null until confirmed), photo, ctaLabel | – |
+| faq | eyebrow, title, accent, items[] {q, a, status draft/ready}, cta | – |
+| finalCta | eyebrow, title, accent, text, label | – |
 
 Phase 3 turns these into the general section registry (`src/sections/<type>/`).
 
@@ -66,9 +67,10 @@ Phase 3 turns these into the general section registry (`src/sections/<type>/`).
 - Landing pages: `/lp/{service}-{niche}-brands-{country}` (Gate 0 option B, default). Unique, editable; a slug change adds a 301.
 - Everything under `/lp/` is unlisted by default.
 
-## 5. Theme tokens (`src/app/globals.css`)
+## 5. Theme tokens and design (`src/app/globals.css`, `src/app/design.css`)
 
-Light and dark values live in one `light-dark()` per token. `color-scheme` follows the system unless `<html data-theme>` is set by the toggle (saved in localStorage `rm-theme`; `src/lib/theme.ts` boot script prevents a flash).
+**No theme toggle** (founder, 2026-10-17). The site is light; sections with `.rm-dark` set `color-scheme: dark`, so every `light-dark()` token inside them resolves to its dark value. Pages alternate light and dark bands.
+Design language (inspired by peakpilots.in, not copied; our colours, font, buttons and content): dark hero with a pill label and two-tone H1 (`.rm-text-grad` accent line); header transparent over a dark hero (`.rm-hero-dark`), turning solid white on scroll (CSS scroll timeline); dark bands with a fine grid (`.rm-grid-bg`) and red glow (`.rm-glow`); service cards with icon tile + tag chips (`.rm-tag`); badges in one bar on the red offset block; results as sticky stacking cards (`.rm-stack`); process as a timeline beside a sticky heading; testimonials as marquee rows (`.rm-marquee`, pause on hover); founder quote lighting up word by word (`.rm-words`); two-column FAQ cards; dark CTA panel with squiggle/stripe accents (`CtaPanel`); scroll reveals (`.rm-reveal`, `--i` stagger). All motion is CSS only, progressive (shown normally where scroll timelines aren't supported) and off for reduced motion.
 Key pairs (light / dark): bg #ffffff / #0f0f0f · fg #0f0f0f / #f1f1f1 · fg-2 #606060 / #aaaaaa · brand #d4000f / #e50914 · focus #c4000f / #ff3b3b.
 Styles copied from rohtre-vault with an `rm-` prefix: `.rm-press` (button lift on a red block), `.rm-offset` (card on a red offset block), `.rm-field`, `.rm-stripes`, `.rm-text-grad`, `.rm-hero-bg`, motion keyframes, reduced motion. Font: Space Grotesk via next/font (self-hosted).
 Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>= 3:1) in both themes. All pass.
@@ -103,7 +105,10 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | 2026-10-17 | Placeholders and unapproved items show (striped, labelled "not shown on the live site") only while building (`npm run dev`, `SHOW_PLACEHOLDERS` in `src/lib/home-data.ts`, read with the server-only secret key); any production build leaves them out. The database refuses switched-on badges without proof and approved placeholders | R19 |
 | 2026-10-17 | Home H1 is visible (under the slider), not screen-reader-only: no official Google guidance found on hidden H1s | R14 (unverified) |
 | 2026-10-17 | Hero slider without a library (CSS scroll-snap + about 1 KB JS); slide 1 `loading=eager` + `fetchPriority=high`, slide 2 lazy; art direction with `getImageProps` + `<picture>` (Next 16 deprecated `priority`) | R14, R35 |
-| 2026-10-17 | Badge artwork is white on transparent (as on the live site); CSS `.rm-white-art` turns it black in light mode | R43 |
+| 2026-10-17 | Badge artwork is white on transparent (as on the live site); CSS `.rm-white-art` turns it black outside dark sections | R43 |
+| 2026-10-17 | **Theme toggle removed**; alternating light/dark sections instead. Redesign after peakpilots.in as a reference only (layout and motion ideas; colours, font, buttons and content stay ours). Not taken: their colours, stats, "industries" strip, copy | Founder |
+| 2026-10-17 | **Badges are a showcase**: shown when switched on, no proof link needed (DB constraint dropped in `20261017180000_badges_showcase`). 5 badges live; "2B+" off until conversions-vs-views is confirmed. Replaces R11's proof rule and R25's badge check | Founder |
+| 2026-10-17 | Home sections end with their own centred CTA (button + small line) instead of a separate strip; final CTA is the dark `CtaPanel` with Book a Call + WhatsApp | R13 |
 | 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
@@ -129,7 +134,7 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | Gate 0 plan | done 2026-10-17 |
 | 0 Foundation | done 2026-10-17 |
 | 1 Global shell | done 2026-10-17 |
-| 2 Home page | **done 2026-10-17**, waiting for "go" |
+| 2 Home page | **done 2026-10-17, redesigned**, waiting for the founder's review |
 | 3 Landing system (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
 
 ## 10. Open items
@@ -147,7 +152,7 @@ Contrast: `tests/theme.test.ts` checks 9 text pairs (>= 4.5:1) and 3 UI pairs (>
 | Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
 | Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
 | Owner profile name was set to "Rohan Trehan" for the existing admin login: confirm | founder | no |
-| Home inputs: 2 hero slides (desktop + mobile), badge proof links, which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience. Until the admin (Phase 4) can do it, the developer flips approvals in the database on request | founder | publishing |
+| Home inputs: 2 hero slides (desktop + mobile), which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience. Until the admin (Phase 4) can do it, the developer flips approvals in the database on request | founder | publishing |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
 

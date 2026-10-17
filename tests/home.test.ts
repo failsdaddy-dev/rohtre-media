@@ -30,16 +30,22 @@ describe("home content (R13, R14)", () => {
     for (const banned of ['"price', '"package', '"industries', "what's included"]) expect(keys).not.toContain(banned);
   });
 
+  it("every heading has its accent line and every service has an icon", () => {
+    for (const key of ["services", "results", "process", "testimonials", "faq"] as const) {
+      expect(DEFAULT_HOME[key].accent.length).toBeGreaterThan(0);
+    }
+    expect(DEFAULT_HOME.services.items.every((i) => i.icon && i.tags.length > 0)).toBe(true);
+  });
+
   it("founder years stay unset until confirmed (no invented facts)", () => {
     expect(DEFAULT_HOME.founder.yearsExperience).toBeNull();
   });
 });
 
-describe("what may go live (R11, R19)", () => {
-  it("a badge needs to be switched on AND have a proof link", () => {
-    expect(isLiveBadge({ enabled: true, proof_url: "https://example.com" })).toBe(true);
-    expect(isLiveBadge({ enabled: true, proof_url: null })).toBe(false);
-    expect(isLiveBadge({ enabled: false, proof_url: "https://example.com" })).toBe(false);
+describe("what may go live (R11 as changed by the founder, R19)", () => {
+  it("a badge shows when switched on (showcase, no proof link needed)", () => {
+    expect(isLiveBadge({ enabled: true })).toBe(true);
+    expect(isLiveBadge({ enabled: false })).toBe(false);
   });
 
   it("proof needs approval and must not be a placeholder", () => {

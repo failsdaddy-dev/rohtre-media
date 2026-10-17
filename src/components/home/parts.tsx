@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ArrowRightIcon } from "../icons";
-import { ButtonLink, Container } from "../page-parts";
+import { ButtonLink } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 
 /**
@@ -43,28 +43,54 @@ export function NotLiveTag({ children }: { children: ReactNode }) {
   );
 }
 
-/** The Book a Call strip after every home section (R13). */
-export function CtaStrip({ text, label }: { text: string; label: string }) {
+/** Eyebrow + two-tone heading (title, then an accent line in the red gradient). */
+export function SectionHead({
+  eyebrow,
+  title,
+  accent,
+  intro,
+  center,
+  as: Tag = "h2",
+}: {
+  eyebrow: string;
+  title: string;
+  accent?: string;
+  intro?: string;
+  center?: boolean;
+  as?: "h1" | "h2";
+}) {
   return (
-    <div className="pb-16 sm:pb-20">
-      <Container>
-        <div className="flex flex-col items-start justify-between gap-4 border-y border-line py-5 sm:flex-row sm:items-center">
-          <p className="text-lg font-semibold tracking-[-0.01em]">{text}</p>
-          <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-            {label} <ArrowRightIcon size={18} />
-          </ButtonLink>
-        </div>
-      </Container>
+    <div className={`mb-12 flex max-w-3xl flex-col gap-4 ${center ? "mx-auto items-center text-center" : ""}`}>
+      <p className="rm-reveal text-xs font-bold uppercase tracking-[0.28em] text-brand">{eyebrow}</p>
+      <Tag
+        className="rm-reveal text-[clamp(2rem,4.6vw,3.6rem)] font-bold leading-[1.02] tracking-[-0.04em]"
+        style={{ "--i": 1 } as CSSProperties}
+      >
+        {title}
+        {accent && (
+          <>
+            {" "}
+            <span className="rm-text-grad block">{accent}</span>
+          </>
+        )}
+      </Tag>
+      {intro && (
+        <p className="rm-reveal max-w-2xl text-lg text-fg-2" style={{ "--i": 2 } as CSSProperties}>
+          {intro}
+        </p>
+      )}
     </div>
   );
 }
 
-export function SectionHead({ eyebrow, title, intro }: { eyebrow: string; title: string; intro?: string }) {
+/** The call to action that closes every home section (R13). */
+export function SectionCta({ text, label, center = true }: { text: string; label: string; center?: boolean }) {
   return (
-    <div className="mb-10 flex max-w-3xl flex-col gap-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand">{eyebrow}</p>
-      <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold leading-[1.05] tracking-[-0.03em]">{title}</h2>
-      {intro && <p className="text-lg text-fg-2">{intro}</p>}
+    <div className={`rm-reveal mt-14 flex flex-col gap-3 ${center ? "items-center text-center" : "items-start"}`}>
+      <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
+        {label} <ArrowRightIcon size={18} />
+      </ButtonLink>
+      {text && <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-2">{text}</p>}
     </div>
   );
 }

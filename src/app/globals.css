@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ tokens
-   Red / white / black theme taken from RohTre Vault (R43). Each token holds
-   its light and dark value in light-dark(); the active pair follows
-   `color-scheme`, which follows the visitor's system setting unless
-   <html data-theme="light|dark"> is set by the toggle (see lib/theme.ts).
-   Re-theme by editing the values here only. tests/theme.test.ts checks the
-   contrast of the text/background pairs in both themes. */
+   Red / white / black theme taken from RohTre Vault (R43). There is no
+   theme toggle: the site is light, and sections marked .rm-dark switch to
+   the dark palette (alternating light and dark sections). Each token holds
+   its light and dark value in light-dark(), which follows the element's
+   `color-scheme`, so everything inside a .rm-dark section turns dark on its
+   own. Re-theme by editing the values here only. tests/theme.test.ts checks
+   the contrast of the text/background pairs in both palettes. */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --bg: light-dark(#ffffff, #0f0f0f);
   --bg-elev: light-dark(#ffffff, #212121);
@@ -51,11 +52,11 @@
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
 }
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-:root[data-theme="dark"] {
+/* A dark section: every token inside it resolves to its dark value. */
+.rm-dark {
   color-scheme: dark;
+  background-color: var(--bg);
+  color: var(--fg);
 }
 
 @theme inline {
@@ -334,35 +335,22 @@ input:-webkit-autofill:focus {
   }
 }
 
-/* Logo: black wordmark on light backgrounds, white on dark. */
+/* Logo: black wordmark on light backgrounds, white inside dark sections. */
 .rm-logo-on-dark {
   display: none;
 }
-:root[data-theme="dark"] .rm-logo-on-light {
+.rm-dark .rm-logo-on-light {
   display: none;
 }
-:root[data-theme="dark"] .rm-logo-on-dark {
+.rm-dark .rm-logo-on-dark {
   display: block;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .rm-logo-on-light {
-    display: none;
-  }
-  :root:not([data-theme="light"]) .rm-logo-on-dark {
-    display: block;
-  }
 }
 
 /* White-on-transparent artwork (partner badges): shown black on light
-   backgrounds, as-is on dark. */
+   backgrounds, as-is inside dark sections. */
 .rm-white-art {
   filter: invert(1);
 }
-:root[data-theme="dark"] .rm-white-art {
+.rm-dark .rm-white-art {
   filter: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .rm-white-art {
-    filter: none;
-  }
 }

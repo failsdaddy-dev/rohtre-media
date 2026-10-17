@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { SITE_URL } from "@/lib/env";
-import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
+import "./design.css";
 
 // Space Grotesk (SIL Open Font License 1.1). next/font downloads it at build
 // time and serves it from this site, so browsers make no request to Google (R35).
@@ -19,20 +19,15 @@ export const metadata: Metadata = {
   description: "RohTre Media is a digital marketing and growth agency.",
 };
 
+// No theme toggle: the site is light with dark sections (see globals.css).
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
-  ],
-  colorScheme: "light dark",
+  themeColor: "#0f0f0f",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={spaceGrotesk.variable} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-      </head>
+    <html lang="en" className={spaceGrotesk.variable}>
       <body className="min-h-dvh">
         <a
           href="#main"

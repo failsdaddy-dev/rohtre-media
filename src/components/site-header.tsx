@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { ArrowRightIcon } from "./icons";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
-import { ThemeToggle } from "./theme-toggle";
 
-// Header on every page, landing pages included (R8). Book a Call is always
-// visible (R13).
+// Header on every page, landing pages included (R8), with Book a Call always
+// visible (R13). Over a dark hero it starts transparent with a white logo and
+// turns solid white as the page scrolls (CSS only, see design.css).
 
 export const NAV = [
   { href: "/", label: "Home" },
@@ -17,10 +18,15 @@ export const BOOK_CALL_HREF = "/contact#enquiry";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] backdrop-blur-md">
+    <header className="rm-header sticky top-0 z-30">
       <div className="mx-auto flex h-[var(--header-h)] max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="shrink-0 rounded-md" aria-label="RohTre Media home">
-          <Logo className="h-8 w-auto sm:h-9" />
+        <Link href="/" className="rm-header-logos shrink-0 rounded-md" aria-label="RohTre Media home">
+          <span className="rm-header-on-hero">
+            <Logo tone="white" className="h-8 w-auto sm:h-9" />
+          </span>
+          <span className="rm-header-on-solid">
+            <Logo tone="black" className="h-8 w-auto sm:h-9" />
+          </span>
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -28,7 +34,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-3.5 py-2 text-[15px] font-medium text-fg-2 transition-colors hover:bg-hover hover:text-fg"
+              className="rm-nav-link rounded-full px-3.5 py-2 text-[15px] font-medium text-fg-2 transition-colors hover:text-brand"
             >
               {item.label}
             </Link>
@@ -36,13 +42,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
           <Link
             href={BOOK_CALL_HREF}
             data-track="book_call_click"
-            className="rm-press hidden h-10 items-center rounded-full bg-brand px-5 text-sm font-semibold text-brand-fg sm:inline-flex"
+            className="rm-press hidden h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-brand-fg sm:inline-flex"
           >
-            Book a Call
+            Book a Call <ArrowRightIcon size={16} />
           </Link>
           <MobileMenu items={NAV} bookHref={BOOK_CALL_HREF} />
         </div>

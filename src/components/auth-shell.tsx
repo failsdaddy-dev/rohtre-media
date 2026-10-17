@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { Logo } from "./logo";
-import { ThemeToggle } from "./theme-toggle";
 
 // Frame for sign-in and "no access" (R44), matching RohTre Vault: an animated
 // red striped brand panel on the left (a band on phones) and the content in a
@@ -54,7 +53,6 @@ export function AuthShell({ children }: { children: ReactNode }) {
           <Link href="/" className="rounded-md lg:invisible" aria-label="RohTre Media home">
             <Logo className="h-8 w-auto" />
           </Link>
-          <ThemeToggle />
         </header>
         <main id="main" className="flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
           {children}

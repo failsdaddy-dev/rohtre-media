@@ -113,3 +113,48 @@ export const SocialIcon = ({ network, ...p }: P & { network: string }) => (
     {network === "x" && <path d="M4 4l16 16M20 4 4 20" />}
   </Svg>
 );
+
+/** Service card icons (keys match SERVICE_ICONS in content/home-schema.ts). */
+export const ServiceIcon = ({ name, ...p }: P & { name: string }) => (
+  <Svg {...p}>
+    {name === "megaphone" && (
+      <path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Zm14-2a5 5 0 0 1 0 8m2.5-10.5a9 9 0 0 1 0 13" />
+    )}
+    {name === "search" && (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.5-3.5" />
+      </>
+    )}
+    {name === "bag" && <path d="M5 8h14l-1 12H6L5 8Zm4 0V6a3 3 0 0 1 6 0v2" />}
+    {name === "users" && (
+      <>
+        <circle cx="9" cy="8" r="3.5" />
+        <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
+      </>
+    )}
+    {name === "play" && (
+      <>
+        <rect x="2.5" y="5" width="19" height="14" rx="4" />
+        <path d="m10 9 5 3-5 3V9Z" />
+      </>
+    )}
+    {name === "monitor" && (
+      <>
+        <rect x="3" y="4" width="18" height="12" rx="2" />
+        <path d="M8 20h8M12 16v4" />
+      </>
+    )}
+    {name === "pen" && <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Zm9.5-13.5 4 4" />}
+    {name === "cart" && (
+      <>
+        <path d="M3 4h2l2.4 11h10.2L20 7H6.2" />
+        <circle cx="9" cy="19.5" r="1.2" />
+        <circle cx="17" cy="19.5" r="1.2" />
+      </>
+    )}
+    {name === "sparkles" && (
+      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Zm7 11 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" />
+    )}
+  </Svg>
+);

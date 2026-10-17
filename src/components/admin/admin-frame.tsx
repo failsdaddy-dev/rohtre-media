@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { canManage, type Staff } from "@/lib/auth";
 import { LogoutIcon } from "../icons";
 import { Logo } from "../logo";
-import { ThemeToggle } from "../theme-toggle";
 import { AdminTabs } from "./ui";
 
 export function AdminFrame({
@@ -31,7 +30,6 @@ export function AdminFrame({
             <span className="hidden text-sm text-fg-2 sm:inline">
               {staff.name ?? staff.email} · <span className="capitalize">{staff.role}</span>
             </span>
-            <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button
                 type="submit"

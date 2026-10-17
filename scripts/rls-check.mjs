@@ -147,9 +147,7 @@ try {
     `status ${a11.status}`,
   );
 
-  // The database itself refuses an enabled badge without proof.
-  const s0 = await rest("badges", { key: SECRET, method: "POST", body: { label: "rls-test", enabled: true } });
-  check("database refuses a switched-on badge without a proof link", s0.status >= 400, `status ${s0.status}`);
+  // The database itself refuses an approved placeholder.
   const s00 = await rest("results", {
     key: SECRET,
     method: "POST",

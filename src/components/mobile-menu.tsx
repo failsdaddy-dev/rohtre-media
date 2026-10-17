@@ -39,7 +39,7 @@ export function MobileMenu({ items, bookHref }: { items: { href: string; label: 
         aria-controls="mobile-menu"
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
-        className="grid size-10 place-items-center rounded-full hover:bg-hover"
+        className="rm-nav-link grid size-10 place-items-center rounded-full text-fg hover:bg-hover"
       >
         {open ? <CloseIcon /> : <MenuIcon />}
       </button>

@@ -3,7 +3,8 @@ import { z } from "zod";
 // Home page content (R13, R14). Stored as JSON in public.page_content
 // (key "home"), checked here. Any section that is missing or invalid falls
 // back to its default on its own, so the page always renders. Phase 4's
-// admin edits exactly these fields.
+// admin edits exactly these fields. Headings are two-tone: `title` plus an
+// optional `accent` line shown in the red gradient.
 
 export const mediaSchema = z.object({
   publicId: z.string().regex(/^rohtre-media\/[A-Za-z0-9_./-]+$/),
@@ -12,7 +13,7 @@ export const mediaSchema = z.object({
 });
 export type Media = z.infer<typeof mediaSchema>;
 
-/** Text for the Book a Call strip that follows a section (R13). */
+/** The call to action at the end of a section (R13: one after every section). */
 const cta = z.object({ text: z.string().max(140), label: z.string().min(1).max(40) });
 
 const slide = z.object({
@@ -24,39 +25,60 @@ const slide = z.object({
   href: z.string().startsWith("/").nullable(),
 });
 
+export const SERVICE_ICONS = [
+  "megaphone",
+  "search",
+  "bag",
+  "users",
+  "play",
+  "monitor",
+  "pen",
+  "cart",
+  "sparkles",
+] as const;
+
 export const homeSchema = z.object({
   hero: z
     .object({
-      slides: z.array(slide).length(2), // R14: exactly two
+      eyebrow: z.string().max(60),
       h1: z.string().min(1).max(120),
+      h1Accent: z.string().max(60),
       subline: z.string().max(240),
       ctaLabel: z.string().min(1).max(40),
+      slides: z.array(slide).length(2), // R14: exactly two
     })
     .default({
+      eyebrow: "Digital marketing & growth agency",
+      h1: "We make brands",
+      h1Accent: "unstoppable.",
+      subline: "Meta ads, Google Ads, scroll-stopping creatives and websites for brands that want to grow.",
+      ctaLabel: "Book a Call",
       slides: [
         { desktop: null, mobile: null, alt: "", href: null },
         { desktop: null, mobile: null, alt: "", href: null },
       ],
-      h1: "We make brands unstoppable.",
-      subline: "Meta ads, Google Ads, scroll-stopping creatives and websites for brands that want to grow.",
-      ctaLabel: "Book a Call",
     }),
 
-  badges: z
-    .object({ enabled: z.boolean(), cta })
-    .default({ enabled: true, cta: { text: "Want results like these for your brand?", label: "Book a Call" } }),
+  badges: z.object({ enabled: z.boolean(), eyebrow: z.string().max(60), cta }).default({
+    enabled: true,
+    eyebrow: "Partners & recognition",
+    cta: { text: "Want this team on your brand?", label: "Book a Call" },
+  }),
 
   services: z
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      title: z.string().max(140),
+      title: z.string().max(100),
+      accent: z.string().max(60),
       intro: z.string().max(400),
       items: z
         .array(
           z.object({
             title: z.string().min(1).max(60),
             text: z.string().max(240),
+            icon: z.enum(SERVICE_ICONS),
+            tags: z.array(z.string().min(1).max(24)).max(4),
             href: z.string().startsWith("/").nullable(),
           }),
         )
@@ -66,52 +88,71 @@ export const homeSchema = z.object({
     .default({
       enabled: true,
       eyebrow: "Services",
-      title: "See what we’ll do to build your brand.",
+      title: "See what we’ll do",
+      accent: "to build your brand.",
       intro: "Everything you need to get more customers, from the first ad to the page it lands on.",
       items: [
         {
           title: "Meta ads",
           text: "Facebook and Instagram campaigns built around scroll-stopping creative, sharp targeting and constant optimisation.",
+          icon: "megaphone",
+          tags: ["Facebook", "Instagram", "Reels"],
           href: null,
         },
         {
           title: "Google Ads",
           text: "Search, Shopping, Performance Max and YouTube campaigns that reach people when they’re ready to buy.",
+          icon: "search",
+          tags: ["Search", "Shopping", "YouTube"],
           href: null,
         },
         {
           title: "D2C & e-commerce growth",
           text: "Full-funnel growth for direct-to-consumer brands: ads, creatives, landing pages and retention working together.",
+          icon: "bag",
+          tags: ["Ads", "Creatives", "Retention"],
           href: null,
         },
         {
           title: "Social media",
           text: "Content calendars, posts and community management that keep your brand active and on-message.",
+          icon: "users",
+          tags: ["Strategy", "Content", "Community"],
           href: null,
         },
         {
           title: "YouTube & video",
           text: "Video ads, reels and YouTube content made by our own video production team.",
+          icon: "play",
+          tags: ["Video ads", "Reels", "YouTube"],
           href: null,
         },
         {
           title: "Websites",
           text: "Fast, conversion-focused websites and landing pages that turn visitors into leads.",
+          icon: "monitor",
+          tags: ["Design", "Landing pages", "Speed"],
           href: null,
         },
         {
           title: "Content",
           text: "Copy, graphics and motion design that make your brand look and sound the same everywhere.",
+          icon: "pen",
+          tags: ["Copy", "Graphics", "Motion"],
           href: null,
         },
         {
           title: "Shopify development",
           text: "Shopify store setup, themes and improvements that make buying easy.",
+          icon: "cart",
+          tags: ["Setup", "Themes", "Conversion"],
           href: null,
         },
         {
           title: "AI automation",
           text: "AI tools and automations for content, lead follow-up and reporting, so your team saves time.",
+          icon: "sparkles",
+          tags: ["Content", "Leads", "Reporting"],
           href: null,
         },
       ],
@@ -122,14 +163,16 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      title: z.string().max(140),
+      title: z.string().max(100),
+      accent: z.string().max(60),
       intro: z.string().max(400),
       cta,
     })
     .default({
       enabled: true,
       eyebrow: "Results",
-      title: "Ads that build brands.",
+      title: "Ads that",
+      accent: "build brands.",
       intro: "Real numbers from real campaigns, with the dashboards to prove them.",
       cta: { text: "Let’s plan your numbers.", label: "Book a Call" },
     }),
@@ -138,7 +181,9 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      title: z.string().max(140),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      intro: z.string().max(300),
       steps: z
         .array(z.object({ title: z.string().min(1).max(60), text: z.string().max(200) }))
         .min(1)
@@ -148,7 +193,9 @@ export const homeSchema = z.object({
     .default({
       enabled: true,
       eyebrow: "How we work",
-      title: "From first call to growing sales.",
+      title: "From first call",
+      accent: "to growing sales.",
+      intro: "A simple path from a 15-minute call to campaigns that keep improving.",
       steps: [
         { title: "Discovery call", text: "A 15-minute call to understand your brand, goals and budget." },
         { title: "Strategy & creatives", text: "We plan the channels and make the first ads and creatives." },
@@ -162,15 +209,17 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      title: z.string().max(140),
-      variant: z.enum(["grid", "slider"]), // R27
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      variant: z.enum(["grid", "slider"]), // R27: slider = gently scrolling rows
       cta,
     })
     .default({
       enabled: true,
       eyebrow: "Testimonials",
-      title: "Hear what clients say about RohTre Media.",
-      variant: "grid",
+      title: "Hear what clients",
+      accent: "say about us.",
+      variant: "slider",
       cta: { text: "Want to be our next success story?", label: "Book a Call" },
     }),
 
@@ -178,6 +227,8 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
+      /** Shown large, lighting up word by word as it scrolls into view. */
+      quote: z.string().max(300),
       name: z.string().min(1).max(80),
       role: z.string().max(80),
       bio: z.string().max(800),
@@ -189,6 +240,9 @@ export const homeSchema = z.object({
     .default({
       enabled: true,
       eyebrow: "Meet the founder",
+      // The CEO quote from the live home page.
+      quote:
+        "We build brands with precision: knowing where to focus, how much to invest, and how to turn attention into sales.",
       name: "Rohan Trehan",
       role: "CEO & Consultant",
       bio: "Rohan is the founder and CEO of RohTre Media and a digital growth consultant. He leads the team’s strategy and creative direction.",
@@ -201,7 +255,8 @@ export const homeSchema = z.object({
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
-      title: z.string().max(140),
+      title: z.string().max(100),
+      accent: z.string().max(60),
       items: z
         .array(
           z.object({
@@ -211,13 +266,14 @@ export const homeSchema = z.object({
             status: z.enum(["draft", "ready"]),
           }),
         )
-        .max(15),
+        .max(16),
       cta,
     })
     .default({
       enabled: true,
       eyebrow: "FAQ",
-      title: "Questions brands ask us.",
+      title: "Questions brands",
+      accent: "ask us.",
       items: [
         {
           q: "What does RohTre Media do?",
@@ -257,13 +313,15 @@ export const homeSchema = z.object({
     .object({
       eyebrow: z.string().max(60),
       title: z.string().min(1).max(80),
+      accent: z.string().max(40),
       text: z.string().max(240),
       label: z.string().min(1).max(40),
     })
     .default({
       eyebrow: "Ready to unlock growth?",
-      title: "Let’s talk!",
-      text: "Tell us about your brand. We’ll get back to you with a plan.",
+      title: "Let’s talk",
+      accent: "about your brand.",
+      text: "Tell us about your brand and goals. We’ll get back to you with a plan.",
       label: "Book a Call",
     }),
 });
