@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
-import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
+import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS, SELECT_SM_CLASS } from "@/components/admin/ui";
 import type { PublishIssue } from "@/lib/publish-check";
 import type { PageContent, Section, SectionType } from "@/sections/schemas";
 import {
@@ -211,7 +211,7 @@ export function PageEditor(props: {
                   {VARIANTS[s.type].length > 1 && (
                     <select
                       aria-label="Layout"
-                      className="rm-field h-9 px-2 text-sm"
+                      className={SELECT_SM_CLASS}
                       value={s.variant}
                       onChange={(e) => setSection(i, { ...s, variant: e.target.value } as Section)}
                     >
@@ -413,7 +413,7 @@ export function PageEditor(props: {
               </Field>
               <Field label="Visibility" hint="Unlisted: anyone with the link, no search engines or AI crawlers.">
                 <select
-                  className={INPUT_CLASS}
+                  className={SELECT_CLASS}
                   value={settings.visibility}
                   onChange={(e) => setSettings({ ...settings, visibility: e.target.value })}
                 >
@@ -443,7 +443,7 @@ export function PageEditor(props: {
         <Panel title="Duplicate for another country">
           <div className="flex gap-2">
             <select
-              className={INPUT_CLASS}
+              className={SELECT_CLASS}
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               aria-label="Country"

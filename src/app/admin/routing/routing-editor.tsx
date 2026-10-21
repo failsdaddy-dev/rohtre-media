@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
+import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS as SELECT } from "@/components/admin/ui";
 import { deleteMapping, deleteRedirect, saveMapping, saveRedirect, type Result } from "./actions";
 
 // Redirects (owner/developer) and the ad-group → page reference table (all
@@ -19,7 +19,6 @@ export type Mapping = {
   notes: string | null;
 };
 
-const SELECT = `${INPUT_CLASS} bg-transparent`;
 const BLANK: Omit<Mapping, "id"> & { id?: string } = {
   platform: "google",
   campaign: "",

@@ -1,6 +1,7 @@
 "use client";
 
 import { MediaField } from "./media-field";
+import { SELECT_CLASS } from "./ui";
 
 // A form drawn from a JSON Schema (made from the Zod schemas with
 // z.toJSONSchema on the server). Every section type and proof record gets
@@ -275,7 +276,7 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
     return (
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="font-semibold">{label}</span>
-        <select className={INPUT} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
+        <select className={SELECT_CLASS} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
           {schema.enum.map((o) => (
             <option key={String(o)} value={String(o)}>
               {humanize(String(o))}

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
+import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS as SELECT, SELECT_SM_CLASS } from "@/components/admin/ui";
 import { createStaff, resetPassword, updateStaff, type Result } from "./actions";
 
 export type StaffRow = {
@@ -20,7 +20,6 @@ const ROLES = [
   { value: "owner", label: "Owner — everything, including users" },
 ] as const;
 
-const SELECT = `${INPUT_CLASS} bg-transparent`;
 const fmt = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
 
 export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
@@ -122,60 +121,78 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
         <ul className="divide-y divide-line">
           {rows.map((r) => (
             <li key={r.userId} className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
-                <p className="font-semibold">
-                  {r.name ?? "—"} {r.userId === me && <span className="text-xs text-fg-2">(you)</span>}
-                  {!r.active && (
-                    <span className="ml-2 rounded-full bg-chip px-2 py-0.5 text-xs font-bold uppercase">Inactive</span>
-                  )}
-                </p>
-                <p className="break-all text-sm text-fg-2">
-                  {r.email ?? "unknown email"} · last sign-in{" "}
-                  {r.lastSignIn ? fmt.format(new Date(r.lastSignIn)) : "never"}
-                </p>
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="grid size-10 shrink-0 place-items-center rounded-full bg-chip-on-bg text-sm font-bold uppercase text-chip-on-fg"
+                >
+                  {(r.name ?? r.email ?? "?").slice(0, 1)}
+                </span>
+                <div className="min-w-0">
+                  <p className="flex flex-wrap items-center gap-2 font-semibold">
+                    {r.name ?? r.email ?? "Unknown"}
+                    {r.userId === me && <span className="text-xs font-normal text-fg-2">(you)</span>}
+                    <span className="rounded-full bg-chip px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider">
+                      {r.role}
+                    </span>
+                    {!r.active && (
+                      <span className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-fg">
+                        Inactive
+                      </span>
+                    )}
+                  </p>
+                  <p className="break-all text-sm text-fg-2">
+                    {r.name && r.email ? `${r.email} · ` : ""}last sign-in{" "}
+                    {r.lastSignIn ? fmt.format(new Date(r.lastSignIn)) : "never"}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <select
-                  aria-label={`Role for ${r.name ?? r.email}`}
-                  value={r.role}
-                  disabled={pending}
-                  onChange={(e) => run(() => updateStaff(r.userId, { role: e.target.value }), "Role changed.")}
-                  className={`${SELECT} h-9 w-auto py-1 text-sm`}
-                >
-                  {ROLES.map((x) => (
-                    <option key={x.value} value={x.value}>
-                      {x.value}
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  className="h-9 text-xs"
-                  disabled={pending}
-                  variant={armed === `active-${r.userId}` ? "danger" : "plain"}
-                  onClick={() =>
-                    confirmFirst(`active-${r.userId}`, () =>
-                      run(
-                        () => updateStaff(r.userId, { active: !r.active }),
-                        r.active ? "Access removed." : "Access restored.",
-                      ),
-                    )
-                  }
-                >
-                  {armed === `active-${r.userId}` ? "Confirm" : r.active ? "Deactivate" : "Reactivate"}
-                </Button>
-                <Button
-                  className="h-9 text-xs"
-                  disabled={pending}
-                  variant={armed === `pw-${r.userId}` ? "danger" : "ghost"}
-                  onClick={() =>
-                    confirmFirst(`pw-${r.userId}`, () =>
-                      run(() => resetPassword(r.userId), "Password reset.", r.email ?? "this person"),
-                    )
-                  }
-                >
-                  {armed === `pw-${r.userId}` ? "Confirm" : "Reset password"}
-                </Button>
-              </div>
+              {r.userId === me ? (
+                <p className="text-xs text-fg-2">Change your own password on the Password tab.</p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    aria-label={`Role for ${r.name ?? r.email}`}
+                    value={r.role}
+                    disabled={pending}
+                    onChange={(e) => run(() => updateStaff(r.userId, { role: e.target.value }), "Role changed.")}
+                    className={SELECT_SM_CLASS}
+                  >
+                    {ROLES.map((x) => (
+                      <option key={x.value} value={x.value}>
+                        {x.value[0].toUpperCase() + x.value.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    className="h-9 px-4 text-xs"
+                    disabled={pending}
+                    variant={armed === `active-${r.userId}` ? "danger" : "plain"}
+                    onClick={() =>
+                      confirmFirst(`active-${r.userId}`, () =>
+                        run(
+                          () => updateStaff(r.userId, { active: !r.active }),
+                          r.active ? "Access removed." : "Access restored.",
+                        ),
+                      )
+                    }
+                  >
+                    {armed === `active-${r.userId}` ? "Confirm" : r.active ? "Deactivate" : "Reactivate"}
+                  </Button>
+                  <Button
+                    className="h-9 px-4 text-xs"
+                    disabled={pending}
+                    variant={armed === `pw-${r.userId}` ? "danger" : "plain"}
+                    onClick={() =>
+                      confirmFirst(`pw-${r.userId}`, () =>
+                        run(() => resetPassword(r.userId), "Password reset.", r.email ?? "this person"),
+                      )
+                    }
+                  >
+                    {armed === `pw-${r.userId}` ? "Confirm" : "Reset password"}
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>

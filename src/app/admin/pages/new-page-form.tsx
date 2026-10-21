@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, Field, INPUT_CLASS } from "@/components/admin/ui";
+import { Button, Field, SELECT_CLASS } from "@/components/admin/ui";
 import { createPage } from "./actions";
 
 type Option = { id: string; label: string };
@@ -23,7 +23,7 @@ export function NewPageForm({
 
   const select = (key: keyof typeof pick, label: string, options: Option[]) => (
     <Field label={label}>
-      <select className={INPUT_CLASS} value={pick[key]} onChange={(e) => setPick({ ...pick, [key]: e.target.value })}>
+      <select className={SELECT_CLASS} value={pick[key]} onChange={(e) => setPick({ ...pick, [key]: e.target.value })}>
         <option value="">Choose…</option>
         {options.map((o) => (
           <option key={o.id} value={o.id}>

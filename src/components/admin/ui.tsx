@@ -20,7 +20,10 @@ export const ADMIN_TABS: { href: string; label: string; manage?: boolean; owner?
 
 export function AdminTabs({ current, canManage, isOwner }: { current: string; canManage: boolean; isOwner: boolean }) {
   return (
-    <nav aria-label="Admin" className="no-scrollbar -mx-1.5 flex gap-3 overflow-x-auto px-1.5 py-3">
+    <nav
+      aria-label="Admin"
+      className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
+    >
       {ADMIN_TABS.filter((t) => (!t.manage || canManage) && (!t.owner || isOwner)).map((t) => {
         const on = t.href === "/admin" ? current === "/admin" : current.startsWith(t.href);
         return (
@@ -59,6 +62,10 @@ export function Button({ variant = "plain", className = "", ...rest }: BtnProps)
 }
 
 export const INPUT_CLASS = "rm-field w-full px-3.5 py-2.5 text-[15px] outline-none";
+/** Full-width dropdown, same height as text fields. */
+export const SELECT_CLASS = "rm-field h-[46px] w-full cursor-pointer bg-transparent px-3.5 text-[15px] outline-none";
+/** Compact dropdown for table rows. */
+export const SELECT_SM_CLASS = "rm-field h-9 cursor-pointer bg-transparent pl-3 pr-2 text-sm leading-none outline-none";
 
 export function Field({
   label,
