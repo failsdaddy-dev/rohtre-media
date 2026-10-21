@@ -1,5 +1,6 @@
 import "server-only";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { secretLoginPath } from "./login-path";
 import { SUPABASE_CONFIGURED } from "./env";
 import { supabaseServer } from "./supabase/server";
 
@@ -43,7 +44,11 @@ export const canManage = (role: Role) => role === "owner" || role === "developer
 /** For admin pages and actions: sends visitors without access away. */
 export async function requireStaff(opts: { manage?: boolean; owner?: boolean } = {}): Promise<Staff> {
   const s = await readSession();
-  if (s.state === "signed-out") redirect("/login?next=/admin");
+  if (s.state === "signed-out") {
+    // With a secret sign-in address, signed-out visitors just see a 404.
+    if (secretLoginPath()) notFound();
+    redirect("/login?next=/admin");
+  }
   if (s.state === "no-access") redirect("/no-access");
   if (opts.owner && s.staff.role !== "owner") redirect("/admin?denied=1");
   if (opts.manage && !canManage(s.staff.role)) redirect("/admin?denied=1");

@@ -1,9 +1,11 @@
 // Runs before matching requests (Next.js 16 "proxy", formerly middleware).
 // 1. Unlisted landing pages: refuse known AI crawlers with 403 (R42, second
 //    layer after robots.txt). Ad-review bots always pass.
-// 2. /admin: refresh the Supabase session cookie and send signed-out visitors
-//    to /login. Pages and actions still check roles themselves; this is only
-//    the fast first gate.
+// 2. /login: answers 404 when a secret sign-in address is set (the secret
+//    address is rewritten to the login page in next.config.ts, after this runs).
+// 3. /admin: refresh the Supabase session cookie; signed-out visitors get a
+//    404 (when the secret address is set) so the admin's existence isn't
+//    revealed. Pages and actions still check roles themselves.
 // The matcher keeps it off every other page, so public pages stay cached.
 // verified: node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md
 import { createServerClient } from "@supabase/ssr";
@@ -11,6 +13,13 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_AI_BOTS, isBlockedAiBot, UNLISTED_PREFIX } from "@/lib/crawlers";
 import { SUPABASE_CONFIGURED, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/env";
+import { secretLoginPath } from "@/lib/login-path";
+
+const notFound = (request: NextRequest) =>
+  NextResponse.rewrite(new URL("/_hidden-404", request.url), {
+    status: 404,
+    headers: { "X-Robots-Tag": "noindex", "Cache-Control": "private, no-store" },
+  });
 
 // The AI block list from admin settings, re-read at most every 5 minutes per
 // server instance so landing pages don't wait on the database.
@@ -35,6 +44,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const loginPath = secretLoginPath();
+  if (path === "/login" || path.startsWith("/login/")) return loginPath ? notFound(request) : NextResponse.next();
+
   // /admin from here on.
   if (!SUPABASE_CONFIGURED) return NextResponse.next();
   let response = NextResponse.next({ request });
@@ -50,6 +62,7 @@ export async function proxy(request: NextRequest) {
   });
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims?.sub) {
+    if (loginPath) return notFound(request);
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
@@ -62,5 +75,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/lp/:path*", "/admin/:path*", "/admin"],
+  matcher: ["/lp/:path*", "/admin/:path*", "/admin", "/login", "/login/:path*"],
 };

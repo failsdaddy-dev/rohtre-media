@@ -41,7 +41,7 @@ export const AD_BOTS = ["AdsBot-Google", "AdsBot-Google-Mobile", "facebookextern
 export const UNLISTED_PREFIX = "/lp/";
 
 /** Never crawled by anyone. */
-export const PRIVATE_PATHS = ["/admin", "/login", "/preview", "/api"];
+export const PRIVATE_PATHS = ["/admin", "/preview", "/api"];
 
 const has = (ua: string, token: string) => ua.toLowerCase().includes(token.toLowerCase());
 

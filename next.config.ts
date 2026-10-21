@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { secretLoginPath } from "./src/lib/login-path";
 
 // Content Security Policy (production only; `next dev` needs eval for hot
 // reload). Third parties are added here one by one as phases need them
@@ -18,6 +19,7 @@ const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 const isProd = process.env.NODE_ENV === "production";
+const loginPath = secretLoginPath();
 
 const noindex = { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" };
 
@@ -34,6 +36,10 @@ const nextConfig: NextConfig = {
     // Cloudinary does the resizing and format choice (f_auto, q_auto).
     loader: "custom",
     loaderFile: "./src/lib/cloudinary/url.ts",
+  },
+  // The sign-in page is served at the secret address (see src/lib/login-path.ts).
+  async rewrites() {
+    return loginPath ? { beforeFiles: [{ source: loginPath, destination: "/login" }] } : { beforeFiles: [] };
   },
   async headers() {
     return [
@@ -53,6 +59,9 @@ const nextConfig: NextConfig = {
       // Never indexed.
       { source: "/admin/:path*", headers: [noindex] },
       { source: "/login", headers: [noindex] },
+      ...(loginPath
+        ? [{ source: loginPath, headers: [noindex, { key: "Cache-Control", value: "private, no-store" }] }]
+        : []),
       { source: "/preview/:path*", headers: [noindex] },
       { source: "/api/:path*", headers: [noindex] },
     ];
