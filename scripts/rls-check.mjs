@@ -61,6 +61,8 @@ const testLead = {
 
 let editorId = null;
 let leadId = null;
+let tmpPageId = null;
+const tmpSlugs = [];
 try {
   // ---------------------------------------------------------- signed-out visitor
   const a1 = await rest("leads?select=id&limit=1", { key: ANON });
@@ -228,11 +230,77 @@ try {
     "editor sees only their own profile",
     Array.isArray(e4.json) && e4.json.length === 1 && e4.json[0].user_id === editorId,
   );
+
+  // ------------------------------------------------------------ landing pages (Phase 3)
+  const tmpSlug = `rls-check-${randomUUID().slice(0, 8)}`;
+  const tmp = await rest("pages", {
+    key: SECRET,
+    method: "POST",
+    body: { slug: tmpSlug, status: "draft", visibility: "unlisted" },
+    prefer: "return=representation",
+  });
+  tmpPageId = tmp.json?.[0]?.id ?? null;
+  const tv = await rest("page_versions", {
+    key: SECRET,
+    method: "POST",
+    body: { page_id: tmpPageId, number: 1, content: { meta: {}, sections: [] } },
+    prefer: "return=representation",
+  });
+  await rest(`pages?id=eq.${tmpPageId}`, {
+    key: SECRET,
+    method: "PATCH",
+    body: { draft_version_id: tv.json?.[0]?.id },
+  });
+
+  const l1 = await rest(`pages?select=id&id=eq.${tmpPageId}`, { key: ANON });
+  check(
+    "visitor cannot see draft landing pages",
+    Array.isArray(l1.json) && l1.json.length === 0,
+    `status ${l1.status}`,
+  );
+  const l2 = await rest(`page_versions?select=id&page_id=eq.${tmpPageId}`, { key: ANON });
+  check(
+    "visitor cannot read draft page content",
+    Array.isArray(l2.json) && l2.json.length === 0,
+    `status ${l2.status}`,
+  );
+  const l3 = await rest("pages", { key: ANON, method: "POST", body: { slug: `${tmpSlug}-x` } });
+  check("visitor cannot create pages", l3.status >= 400, `status ${l3.status}`);
+  const l4 = await rest(`pages?id=eq.${tmpPageId}`, {
+    key: ANON,
+    token,
+    method: "PATCH",
+    body: { status: "published", published_version_id: tv.json?.[0]?.id },
+    prefer: "return=representation",
+  });
+  const l4b = await rest(`pages?select=status&id=eq.${tmpPageId}`, { key: SECRET });
+  check("editor cannot publish a page", l4.status >= 400 && l4b.json?.[0]?.status === "draft", `status ${l4.status}`);
+  const l5 = await rest(`pages?id=eq.${tmpPageId}`, {
+    key: ANON,
+    token,
+    method: "PATCH",
+    body: { visibility: "public" },
+  });
+  check("editor cannot change visibility", l5.status >= 400, `status ${l5.status}`);
+
+  await rest(`pages?id=eq.${tmpPageId}`, { key: SECRET, method: "PATCH", body: { slug: `${tmpSlug}-new` } });
+  const l6 = await rest(`redirects?select=to_path&from_path=eq./lp/${tmpSlug}`, { key: ANON });
+  check(
+    "changing a slug adds a 301 from the old address (R3)",
+    Array.isArray(l6.json) && l6.json[0]?.to_path === `/lp/${tmpSlug}-new`,
+    JSON.stringify(l6.json),
+  );
+  tmpSlugs.push(tmpSlug, `${tmpSlug}-new`);
+
+  const l7 = await rest("concept_works", { key: SECRET, method: "POST", body: { kind: "image", approved: true } });
+  check("database refuses approved concept work without media", l7.status >= 400, `status ${l7.status}`);
 } finally {
+  if (tmpPageId) await rest(`pages?id=eq.${tmpPageId}`, { key: SECRET, method: "DELETE" });
+  for (const sl of tmpSlugs) await rest(`redirects?from_path=eq./lp/${sl}`, { key: SECRET, method: "DELETE" });
   if (leadId) await rest(`leads?id=eq.${leadId}`, { key: SECRET, method: "DELETE" });
   await rest("rate_limits?key=like.rls-*", { key: SECRET, method: "DELETE" });
   if (editorId) await admin(`users/${editorId}`, { method: "DELETE" });
-  console.log("cleanup: test lead and test editor removed");
+  console.log("cleanup: test lead, test page, redirects and test editor removed");
 }
 
 const failed = results.filter((r) => !r).length;

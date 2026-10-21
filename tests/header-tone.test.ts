@@ -18,9 +18,12 @@ function pages(dir: string): string[] {
 }
 
 /** Public page files with the route group they sit in (or null). */
+/** Landing pages take their tone from their first section (tests/landing.test.ts), not from a group. */
+const LANDING = "(landing)/lp/[slug]/page.tsx";
+
 const PUBLIC_PAGES = pages(APP)
   .map((file) => relative(APP, file).split(sep).join("/"))
-  .filter((path) => !PRIVATE.test(path))
+  .filter((path) => !PRIVATE.test(path) && path !== LANDING)
   .map((path) => ({ path, group: path.match(/^(\([^)]+\))\//)?.[1] ?? null }));
 
 const URL_OF = (path: string) => "/" + path.replace(/^\([^)]+\)\//, "").replace(/\/?page\.tsx$/, "");
@@ -40,6 +43,11 @@ describe("header tone (resolution)", () => {
 });
 
 describe("header tone (every public page)", () => {
+  it("landing pages read their tone from their sections", () => {
+    const layout = readFileSync(join(APP, "(landing)", "lp", "[slug]", "layout.tsx"), "utf8");
+    expect(layout).toContain("pageHeaderTone(");
+  });
+
   it("finds the public pages", () => {
     expect(PUBLIC_PAGES.map((p) => URL_OF(p.path)).sort()).toEqual(
       ["/", "/about", "/careers", "/contact", "/privacy", "/terms"].sort(),

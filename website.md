@@ -18,7 +18,9 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/api/leads` | the one lead route | private | built (Phase 1) |
 | `/api/cloudinary/sign` | signed upload (staff only) | private | built (Phase 0) |
 | `/robots.txt` | generated from `src/lib/crawlers.ts` | public | built |
-| `/lp/*` | landing pages | unlisted | Phase 3 (proxy + headers already active) |
+| `/lp/[slug]` | landing pages (`src/app/(landing)/lp/[slug]/`): rendered from sections; drafts only while building; old slugs 301 | unlisted by default | built (Phase 3) |
+| `/lp/meta-ads-fashion-brands-india`, `/lp/d2c-marketing-fashion-brands-india`, `/lp/meta-ads-fashion-brands-usa` | the 3 Phase 3 pages | unlisted, **draft** (publish-blocked) | waiting for founder content |
+| `/sitemap.xml` | static pages + published *public* landing pages | public | built (Phase 3) |
 | `/case-studies`, `/blog` | content | public | Phase 6 |
 
 Public pages live in two route groups that both render `SiteChrome` (header, footer, WhatsApp button); the group sets the header tone (see section 5a):
@@ -46,6 +48,14 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
 
+- `20261021120000_landing_system`:
+  - `dimension_types` (service, niche, country) + `dimension_values` (type, parent_id for hierarchy, slug, label, headline_label, attrs). Seeded: services meta-ads, google-ads, d2c-marketing (children d2c-meta-ads, d2c-google-ads, R2); niche fashion (children clothing, shoes, jewellery, R6); countries india, usa, uk, australia, uae with attrs {iso, currency, locale, timeZone} (R7).
+  - `pages` (slug unique, slug_auto, headline_auto, visibility public|unlisted|private default unlisted, status draft|published|archived, draft_version_id, published_version_id) + `page_versions` (number, content JSON = {meta, sections}) + `page_dimensions`.
+  - `redirects` (from_path, to_path, 301); trigger `pages_slug_redirect` adds one on every slug change and collapses chains (R3).
+  - `creatives` (client work: image|reel, brand, media, poster, approved, is_placeholder) and `concept_works` (separate table, no client, no metric, label_text default "Concept work - not a client project", R45).
+  - `proof_tags` (item_type result|testimonial|creative|concept_work, item_id, value_id) (R18).
+  - RLS: public reads published public/unlisted pages and only their published version; drafts and private pages hidden; editors can edit drafts but a trigger (`pages_guard_editor`) stops them publishing or changing visibility (R24).
+
 ## 3. Section library
 
 Home page sections (Phase 2, `src/components/home/`), content in `src/content/home-schema.ts`:
@@ -62,11 +72,31 @@ Home page sections (Phase 2, `src/components/home/`), content in `src/content/ho
 | faq | eyebrow, title, accent, items[] {q, a, status draft/ready}, cta | – |
 | finalCta | eyebrow, title, accent, text, label | – |
 
-Phase 3 turns these into the general section registry (`src/sections/<type>/`).
+Landing-page section registry (Phase 3, R28) - `src/sections/schemas.ts` (data), `src/sections/render.tsx` (components), `src/sections/master-template.ts` (default page), `src/sections/tone.ts` (header tone):
+
+| Type | Fields | Variants | Header tone when first |
+|---|---|---|---|
+| hero | eyebrow, h1 (auto), subline, ctaLabel, offerBanner {desktop, mobile, alt} | banner-right, banner-below | transparent-light-text |
+| badges | eyebrow, badgeIds (empty = all switched on) | bar | – |
+| painPoints | eyebrow, title, accent, items[1-6] | cards, list | – |
+| results | eyebrow, title, accent, intro, limit 1-3, cta (items = matched proof) | stack, grid | – |
+| creatives | eyebrow, title, accent, intro, limit, showConcept | images-first, reels-first | – |
+| platforms | eyebrow, title, accent, items[] | cards | – |
+| testimonials | eyebrow, title, accent, cta (matched) | slider, grid | – |
+| process | eyebrow, title, accent, intro, steps, cta (off by default) | timeline | – |
+| faq | eyebrow, title, accent, items {q, a, status}, cta (fresh per page) | two-column | – |
+| form | eyebrow, title, accent, intro, formTitle, defaultInterest (id="enquiry") | split | – |
+
+Master template order (R15): hero, badges, pain points, results, creatives, platforms, testimonials, process (off), FAQ, form. Angle by channel (R21): Meta → reels-first + Facebook/Instagram; Google → images-first + Search/Shopping/YouTube; D2C → both.
+Adding a section type = schema + entry in `SECTION_TYPES` + renderer case + test; no migration.
+Proof matching (`src/lib/proof-match.ts`): an item shows if, for every dimension, it is untagged or tagged with the page's value or an ancestor; exact > ancestor > untagged, then sort.
+Publish check (`src/lib/publish-check.ts`, R25): slug format/unique, visibility, schema-valid content, meta title/description, one hero first with H1, offer banner desktop + mobile + alt, form on, proof sections must have approved matched items (else switch off), FAQ answers "ready", chosen badges switched on, concept items labelled, no [NEEDS DATA] / TO CONFIRM.
+Page tool (until the Phase 4 admin): `npm run lp -- list | seed | check <slug> | publish <slug> | duplicate <slug> <country>` (`scripts/landing.ts`, runs through vite-node with the server-only key).
 
 ## 4. URLs and slugs
 
-- Landing pages: `/lp/{service}-{niche}-brands-{country}` (Gate 0 option B, default). Unique, editable; a slug change adds a 301.
+- Landing pages: `/lp/{service}-{niche}-brands-{country}` (Gate 0 option B), from `slugFor()`; duplicates get -2, -3 (`uniqueSlug()`). Editable; a slug change adds a 301 (DB trigger) and the page route follows `redirects`.
+- H1: `headlineFor()` = "{Service} for {Niche} Brands in {Country}", e.g. "Meta Ads for Fashion Brands in the USA" (R4).
 - Everything under `/lp/` is unlisted by default.
 
 ## 5. Theme tokens and design (`src/app/globals.css`, `src/app/design.css`)
@@ -130,6 +160,9 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-17 | Redesign v2 after founder review: dark sections were rendering light (light-dark() bug), motion not smooth. Rebuilt to match the reference effects: explicit dark tokens, Lenis smooth scroll, IntersectionObserver reveals, glow cards, stacking cards, stripe band, fill lines, intro splash, header over hero. Light sections now warm off-white #f5f4f0 like the reference | Founder |
 | 2026-10-17 | **Theme toggle removed**; alternating light/dark sections instead. Redesign after peakpilots.in as a reference only (layout and motion ideas; colours, font, buttons and content stay ours). Not taken: their colours, stats, "industries" strip, copy | Founder |
 | 2026-10-17 | **Badges are a showcase**: shown when switched on, no proof link needed (DB constraint dropped in `20261017180000_badges_showcase`). 5 badges live; "2B+" off until conversions-vs-views is confirmed. Replaces R11's proof rule and R25's badge check | Founder |
+| 2026-10-21 | Landing pages: data in Supabase (dimensions, pages, versions, proof tags); sections validated by Zod; rendered and cached by Next (`use cache`, tags `landing` / `lp:{slug}`); `generateStaticParams` returns published slugs or the reserved `_` (Cache Components needs at least one) | R28, R35 |
+| 2026-10-21 | The 3 Phase 3 pages are drafts built only from the master template's generic copy; no client facts invented. They stay publish-blocked until the founder supplies offer banners, tagged results/creatives/testimonials and approved FAQ answers | Rule 4, R19 |
+| 2026-10-21 | Badge rule kept as "switched on = shown" (founder did not choose the proof rule) | R11 |
 | 2026-10-21 | Git: only `dev` (all work) and `main` (whole code when the site is done; starts at the Phase 0 commit). No phase/fix branches | Founder |
 | 2026-10-21 | Header tone system (solid default) set per route group on the server; `body:has(.rm-hero-dark)` removed (it matched hidden previous pages) | Fix request |
 | 2026-10-21 | Disabled badges never render, dev included; strip columns follow the visible count | Fix request |
@@ -160,8 +193,9 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Gate 0 plan | done 2026-10-17 |
 | 0 Foundation | done 2026-10-17 |
 | 1 Global shell | done 2026-10-17 |
-| 2 Home page | **done 2026-10-17, redesigned**, waiting for the founder's review |
-| 3 Landing system (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
+| 2 Home page | done 2026-10-17 (redesigned, fixes 2026-10-21) |
+| 3 Landing system | **done 2026-10-21**, waiting for "go" |
+| 4 Admin (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
 
 ## 9a. Launch blockers
 
@@ -197,8 +231,15 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
 
+## 10a. Phase 3 not done (needs founder input or later phases)
+
+- Booking widget in the visitor's time zone (R7): booking tool not chosen yet; Book a Call goes to the on-page form.
+- Country phone numbers per landing page: phones live in global settings (IN, US); per-country display on landing pages arrives with country-specific contact blocks in Phase 4.
+- Custom HTML section (R26) needs an HTML sanitizer dependency: Phase 4, with the admin.
+- AI-crawler block list in settings (R42 d) and instant cache refresh on publish: Phase 4 admin (the script publishes; a running site refreshes on its next build).
+
 ## 11. Next step
 
 **Paused 2026-10-17; founder back Wednesday.** Before Phase 3: founder reviews the redesign on a phone (not yet checked at 390 px) and replies "go"; still open: "2B+" = conversions or views?
 
-Phase 3 (landing system, R1-R7, R15-R21, R25, R28, R42, R45): section registry with Zod schemas, master template, service x niche x country model, automatic slugs and headlines, per-page offer banner, results/creatives, concept work, proof tagging, country settings, page visibility with database-driven robots/sitemap, publish check, and 3 real pages (Meta ads x fashion, a D2C page, a USA page) built only from facts the founder supplies.
+Phase 4 (admin, R22-R27): page editor on the section registry (edit text/images, on/off, reorder, variants), Cloudinary uploads (with delete-on-remove), proof/badge/testimonial/creative managers with tagging, publish (developer-only, publish check, instant refresh), versions + rollback, preview links, audit log, redirects, ad-mapping table, lead list with CSV export and delete, AI-bot list in settings, custom HTML section.
