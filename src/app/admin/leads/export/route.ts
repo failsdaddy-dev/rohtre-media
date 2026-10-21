@@ -1,5 +1,5 @@
 import { audit } from "@/lib/audit";
-import { canManage, getStaff, needsSecondFactor } from "@/lib/auth";
+import { canManage, getStaff } from "@/lib/auth";
 import { toCsv } from "@/lib/csv";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -31,7 +31,7 @@ const COLUMNS = [
 
 export async function GET() {
   const staff = await getStaff();
-  if (!staff || !canManage(staff.role) || needsSecondFactor(staff)) return new Response("Forbidden", { status: 403 });
+  if (!staff || !canManage(staff.role)) return new Response("Forbidden", { status: 403 });
   const sb = await supabaseServer();
   const { data, error } = await sb.from("leads").select(COLUMNS.join(",")).order("created_at", { ascending: false });
   if (error) return new Response("Export failed", { status: 500 });

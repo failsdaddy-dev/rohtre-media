@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AdminFrame, AdminLoading } from "@/components/admin/admin-frame";
-import { needsSecondFactor, requireStaff } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { SecurityPanel } from "./security-panel";
 
-export const metadata: Metadata = { title: "Security" };
+export const metadata: Metadata = { title: "Password" };
 
-// Two-factor sign-in with an authenticator app (R22) and password change.
-// The owner and developer are sent here until they've confirmed a code.
+// Change your own password.
 
 async function SecurityScreen() {
-  const staff = await requireStaff({ securityPage: true });
+  const staff = await requireStaff();
   return (
-    <AdminFrame staff={staff} current="/admin/security" title="Security">
-      <SecurityPanel required={needsSecondFactor(staff)} aal={staff.aal} />
+    <AdminFrame staff={staff} current="/admin/security" title="Password">
+      <SecurityPanel />
     </AdminFrame>
   );
 }

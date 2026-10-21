@@ -15,7 +15,7 @@ export const ADMIN_TABS: { href: string; label: string; manage?: boolean; owner?
   { href: "/admin/settings", label: "Settings", manage: true },
   { href: "/admin/users", label: "Users", owner: true },
   { href: "/admin/audit", label: "Audit log", manage: true },
-  { href: "/admin/security", label: "Security" },
+  { href: "/admin/security", label: "Password" },
 ];
 
 export function AdminTabs({ current, canManage, isOwner }: { current: string; canManage: boolean; isOwner: boolean }) {

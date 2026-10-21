@@ -21,12 +21,13 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/admin/leads`, `/admin/leads/export` | lead list: search, status, delete on request (audited), purge older than retention, CSV export (formula-safe) | owner/developer | built (Phase 4) |
 | `/admin/routing` | redirects (owner/developer) + ad-group → page reference table (all staff) | private | built (Phase 4) |
 | `/admin/settings` | global settings incl. legal details and AI-crawler block list (owner/developer) | private | built (Phase 1, extended Phase 4) |
-| `/admin/users` | staff: add (one-time password shown once), role, deactivate, reset password, reset 2FA; always one active owner | owner | built (Phase 4) |
+| `/admin/users` | staff: add (one-time password shown once), role, deactivate, reset password; always one active owner | owner | built (Phase 4) |
 | `/admin/audit` | audit log, filter by area | owner/developer | built (Phase 4) |
-| `/admin/security` | authenticator-app 2FA set-up/confirm, change password. Owner and developer are sent here until their session is AAL2 | private | built (Phase 4) |
+| `/admin/security` | "Password" tab: change your own password | private | built (Phase 4) |
 | `/preview/[token]` | draft preview by link (sha256-hashed token, 7 days, noindex) | private | built (Phase 4) |
 | `/api/leads` | the one lead route | private | built (Phase 1) |
 | `/api/cloudinary/sign` | signed upload (staff only) | private | built (Phase 0) |
+| (all pages) | floating WhatsApp button: thin white icon, pop-in, pulsing halo, hover wiggle (`.rm-wa` in `design.css`; still under reduced motion) | public | updated 2026-10-21 |
 | `/robots.txt` | generated from `src/lib/crawlers.ts` + settings `aiBots` | public | built |
 | `/lp/[slug]` | landing pages (`src/app/(landing)/lp/[slug]/`): rendered from sections; drafts only while building; old slugs 301 | unlisted by default | built (Phase 3) |
 | `/lp/meta-ads-fashion-brands-india`, `/lp/d2c-marketing-fashion-brands-india`, `/lp/meta-ads-fashion-brands-usa` | the 3 Phase 3 pages | unlisted, **draft** (publish-blocked) | waiting for founder content |
@@ -191,8 +192,8 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
 | 2026-10-21 | All content (banners, slides, results, creatives, testimonial approvals, "2B+", legal details, founder years) is added by the founder through the admin after the build; placeholders stay until then | Founder |
 | 2026-10-21 | Booking tool: option A, form only (Book a Call → `#enquiry`) | Founder |
-| 2026-10-21 | 2FA: Supabase TOTP (free, on by default, verified). Owner and developer must reach AAL2 before any admin page, action, upload signing or CSV export; editors may opt in. Lost phone → owner resets 2FA on Users | R22 |
-| 2026-10-21 | New staff get a random 20-character one-time password shown once to the owner (no email service needed); they change it on Security | R22, no paid services |
+| 2026-10-21 | **No 2FA**: admin sign-in is email + password only (2FA screens and checks removed after Phase 4). R22 "offer 2FA" declined | Founder |
+| 2026-10-21 | New staff get a random 20-character one-time password shown once to the owner (no email service needed); they change it on the Password tab | R22, no paid services |
 | 2026-10-21 | Media delete: only files uploaded through the admin, only when nothing uses them (pages, home content, proof). No trash folder | Founder (delete from Cloudinary) |
 | 2026-10-21 | Confirmations in the admin are two-click buttons, never browser dialogs | R44 |
 
@@ -265,4 +266,4 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 Phase 4 done 2026-10-21 (commits on `dev`). Waiting for the founder's "go". Phase 5 (AI page creation, R29-R32) needs `docs/design-guide.md`; if it's missing, stop and ask.
 
-Founder to try in the admin (`npm run dev`, then /login): set up 2FA on Security, add an editor on Users, edit and preview a landing page, fill Settings → Legal details.
+Founder to try in the admin (`npm run dev`, then /login): add an editor on Users, edit and preview a landing page, fill Settings → Legal details.

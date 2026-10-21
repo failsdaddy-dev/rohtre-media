@@ -2,7 +2,7 @@
 // Returns what the admin's browser needs to upload ONE file straight to
 // Cloudinary (signed upload); the file never passes through our server and
 // the API secret never leaves it (R39).
-import { getStaff, needsSecondFactor } from "@/lib/auth";
+import { getStaff } from "@/lib/auth";
 import { cloudinaryServerEnv } from "@/lib/env.server";
 import { isUploadKind, UPLOAD_KINDS } from "@/lib/cloudinary/kinds";
 import { apiSignature } from "@/lib/cloudinary/sign";
@@ -10,7 +10,6 @@ import { apiSignature } from "@/lib/cloudinary/sign";
 export async function POST(request: Request) {
   const staff = await getStaff();
   if (!staff) return Response.json({ error: "not_signed_in" }, { status: 401 });
-  if (needsSecondFactor(staff)) return Response.json({ error: "second_factor_required" }, { status: 403 });
 
   const env = cloudinaryServerEnv();
   if (!env) return Response.json({ error: "cloudinary_not_configured" }, { status: 500 });

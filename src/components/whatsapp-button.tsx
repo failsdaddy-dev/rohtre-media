@@ -12,7 +12,7 @@ import { ChatIcon } from "./icons";
 // Phase 3); otherwise the page title is used.
 // It also records the visit's campaign data once per page view (R10) and
 // reports clicks on Book a Call and phone links. It is the site's only
-// always-loaded script besides the theme toggle.
+// always-loaded script.
 
 function pageVars(): WhatsAppVars {
   const el = document.querySelector<HTMLElement>("[data-wa-page]");
@@ -49,9 +49,11 @@ export function WhatsAppButton({ number, template, enabled }: { number: string; 
       target="_blank"
       rel="noopener"
       aria-label="Chat with us on WhatsApp"
-      className="rm-press no-lift fixed bottom-5 right-5 z-40 grid size-14 place-items-center rounded-full bg-[#25d366] text-[#0b3d1f] shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)] hover:scale-105 max-sm:bottom-4 max-sm:right-4"
+      className="rm-wa fixed bottom-5 right-5 z-40 grid size-14 place-items-center rounded-full bg-[#25d366] text-white shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)] max-sm:bottom-4 max-sm:right-4"
     >
-      <ChatIcon size={28} strokeWidth={2.2} />
+      <span className="rm-wa-icon grid place-items-center">
+        <ChatIcon size={26} strokeWidth={1.6} />
+      </span>
     </a>
   );
 }

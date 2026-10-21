@@ -26,7 +26,6 @@ async function UsersScreen() {
       active: p.active as boolean,
       email: u?.email ?? null,
       lastSignIn: u?.last_sign_in_at ?? null,
-      twoFactor: (u?.factors ?? []).some((f) => f.status === "verified"),
     };
   });
   return (

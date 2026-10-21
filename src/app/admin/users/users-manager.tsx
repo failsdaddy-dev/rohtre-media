@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
-import { createStaff, resetPassword, resetTwoFactor, updateStaff, type Result } from "./actions";
+import { createStaff, resetPassword, updateStaff, type Result } from "./actions";
 
 export type StaffRow = {
   userId: string;
@@ -12,7 +12,6 @@ export type StaffRow = {
   active: boolean;
   email: string | null;
   lastSignIn: string | null;
-  twoFactor: boolean;
 };
 
 const ROLES = [
@@ -61,7 +60,7 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
           <p className="font-semibold">One-time password for {secret.email}</p>
           <p className="mt-2 break-all font-mono text-base">{secret.password}</p>
           <p className="mt-2 text-fg-2">
-            Copy it now and send it to them privately. It isn’t shown again. They should change it on the Security page
+            Copy it now and send it to them privately. It isn’t shown again. They should change it on the Password page
             after signing in.
           </p>
           <Button className="mt-3" onClick={() => setSecret(null)}>
@@ -131,7 +130,7 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
                   )}
                 </p>
                 <p className="break-all text-sm text-fg-2">
-                  {r.email ?? "unknown email"} · 2FA {r.twoFactor ? "on" : "off"} · last sign-in{" "}
+                  {r.email ?? "unknown email"} · last sign-in{" "}
                   {r.lastSignIn ? fmt.format(new Date(r.lastSignIn)) : "never"}
                 </p>
               </div>
@@ -176,23 +175,6 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
                 >
                   {armed === `pw-${r.userId}` ? "Confirm" : "Reset password"}
                 </Button>
-                {r.twoFactor && (
-                  <Button
-                    className="h-9 text-xs"
-                    disabled={pending}
-                    variant={armed === `2fa-${r.userId}` ? "danger" : "ghost"}
-                    onClick={() =>
-                      confirmFirst(`2fa-${r.userId}`, () =>
-                        run(
-                          () => resetTwoFactor(r.userId),
-                          "Two-factor sign-in reset. They set it up again next time.",
-                        ),
-                      )
-                    }
-                  >
-                    {armed === `2fa-${r.userId}` ? "Confirm" : "Reset 2FA"}
-                  </Button>
-                )}
               </div>
             </li>
           ))}

@@ -97,15 +97,3 @@ export async function resetPassword(userId: string): Promise<Result> {
   await audit(staff, "user.reset_password", "user", userId);
   return { ok: true, tempPassword: password };
 }
-
-/** Removes someone's authenticator apps (lost phone). They set one up again at next sign-in. */
-export async function resetTwoFactor(userId: string): Promise<Result> {
-  const staff = await requireStaff({ owner: true });
-  const admin = supabaseAdmin();
-  if (!admin) return { ok: false, error: "The server key isn’t set." };
-  const { data, error } = await admin.auth.admin.mfa.listFactors({ userId });
-  if (error) return { ok: false, error: "Couldn’t read their sign-in methods." };
-  for (const f of data.factors) await admin.auth.admin.mfa.deleteFactor({ userId, id: f.id });
-  await audit(staff, "user.reset_2fa", "user", userId, { removed: data.factors.length });
-  return { ok: true };
-}
