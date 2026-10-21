@@ -66,9 +66,8 @@ export function LoginForm() {
   return (
     <form onSubmit={signIn} className="flex flex-col gap-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand">Welcome back</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-[-0.03em]">Sign in</h1>
-        <p className="mt-1.5 text-sm text-fg-2">Use the login your admin gave you.</p>
+        <h2 className="text-xl font-semibold tracking-[-0.02em]">Sign in to the admin</h2>
+        <p className="mt-1 text-sm text-fg-2">Use the email and password the site owner gave you.</p>
       </div>
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Email
@@ -117,13 +116,13 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={busy}
-        className="rm-press inline-flex h-12 items-center justify-center gap-2 rounded-full bg-chip-on-bg font-semibold text-chip-on-fg hover:opacity-90 disabled:opacity-60"
+        className="rm-press mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand font-semibold text-brand-fg disabled:opacity-60"
       >
         {busy ? "Checking…" : "Sign in"}
         {!busy && <ArrowRightIcon size={18} />}
       </button>
       <p className="border-t border-line pt-4 text-xs leading-5 text-fg-2">
-        No public sign-up. Forgot your password or lost access? Ask the site owner.
+        Forgot your password or lost access? Ask the site owner.
       </p>
     </form>
   );

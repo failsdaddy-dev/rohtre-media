@@ -1,72 +1,69 @@
-import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
+import { ArrowRightIcon } from "./icons";
 import { Logo } from "./logo";
 
-// Frame for sign-in and "no access" (R44), matching RohTre Vault: an animated
-// red striped brand panel on the left (a band on phones) and the content in a
-// card that sits on a red offset block.
+// Frame for sign-in and "no access" (R44), in the main website's look: a
+// full-screen dark band with drifting light beams, a fine grid and a red
+// glow (like the home hero), a pill label and a two-tone headline, and the
+// form in a glow card that lights up in brand colours on hover or focus.
 
-const COLUMNS = 6;
+const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
-function StripePanel({ className = "" }: { className?: string }) {
+export function AuthShell({
+  eyebrow = "Team access",
+  title = "Welcome back to",
+  accent = "RohTre Media",
+  children,
+}: {
+  eyebrow?: string;
+  title?: string;
+  accent?: string;
+  children: ReactNode;
+}) {
   return (
-    <div aria-hidden="true" className={`overflow-hidden ${className}`}>
-      <div className="absolute inset-0 flex">
-        {Array.from({ length: COLUMNS }, (_, i) => (
-          <div
-            key={i}
-            style={{ "--i": i } as CSSProperties}
-            className="rm-panel-col rm-stripes h-full flex-1 border-r border-[var(--stripe-line)] last:border-r-0"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+    <div className="rm-dark rm-beams relative flex min-h-dvh flex-col overflow-hidden text-fg">
+      <div aria-hidden="true" className="rm-grid-bg rm-glow pointer-events-none absolute inset-0" />
+      <header className="relative flex items-center justify-between px-5 py-5 sm:px-10">
+        <Link href="/" className="rounded-md" aria-label="RohTre Media home">
+          <Logo tone="white" className="h-8 w-auto sm:h-9" />
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-fg-2 transition-colors hover:text-fg"
+        >
+          Back to website <ArrowRightIcon size={16} />
+        </Link>
+      </header>
 
-export function AuthShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-      <div className="relative hidden lg:block">
-        <StripePanel className="absolute inset-0" />
-        <div className="rm-rise-in relative flex h-full flex-col justify-between p-10 text-[var(--stripe-fg)] [--i:5]">
-          <Link href="/" className="w-fit rounded-md">
-            <Logo className="h-9 w-auto" />
-          </Link>
-          <div>
-            <p className="text-[clamp(2.5rem,4.2vw,4rem)] font-bold leading-[0.95] tracking-[-0.04em]">
-              ROHTRE
-              <br />
-              MEDIA
-            </p>
-            <p className="mt-4 max-w-sm text-base opacity-80">
-              Website admin: pages, images, leads and settings in one place.
-            </p>
-          </div>
-          <p className="text-xs opacity-70">For the RohTre Media team only</p>
-        </div>
-      </div>
-
-      <div className="flex min-h-dvh flex-col">
-        <StripePanel className="relative h-24 lg:hidden" />
-        <header className="flex items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="rounded-md lg:invisible" aria-label="RohTre Media home">
-            <Logo className="h-8 w-auto" />
-          </Link>
-        </header>
-        <main id="main" className="flex flex-1 items-center justify-center px-5 pb-16 pt-4 sm:px-8">
+      <main id="main" className="relative flex flex-1 flex-col items-center justify-center px-5 pb-16 pt-6 sm:px-8">
+        <p className="rm-rise-in" style={at(0)}>
+          <span className="rm-pill mb-6">{eyebrow}</span>
+        </p>
+        <h1
+          style={at(1)}
+          className="rm-rise-in mb-10 text-center text-[clamp(2rem,4.6vw,3.5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
+        >
+          {title} <span className="rm-text-grad block pb-1">{accent}</span>
+        </h1>
+        <div style={at(2)} className="rm-rise-in w-full max-w-[440px]">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
+
+      <footer className="relative px-5 pb-6 text-center text-xs text-fg-2 sm:px-10">
+        For the RohTre Media team only · No public sign-up
+      </footer>
     </div>
   );
 }
 
-/** The card the form or message sits in. */
+/** The glow card the form or message sits in. */
 export function AuthCard({ children }: { children: ReactNode }) {
   return (
-    <div className="rm-offset rm-pop-in w-full max-w-[420px] p-8 [--offset-surface:var(--bg-elev)] max-sm:p-6">
-      <div className="relative">{children}</div>
+    <div className="rm-glow-card">
+      <span aria-hidden="true" className="rm-glow-face" />
+      <div className="p-8 max-sm:p-6">{children}</div>
     </div>
   );
 }

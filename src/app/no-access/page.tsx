@@ -6,13 +6,12 @@ export const metadata: Metadata = { title: "No access", robots: { index: false, 
 
 export default function NoAccess() {
   return (
-    <AuthShell>
+    <AuthShell eyebrow="Team access" title="This account has" accent="no access">
       <AuthCard>
         <span className="grid size-12 place-items-center rounded-2xl bg-[color-mix(in_srgb,var(--brand)_12%,transparent)] text-brand">
           <LockIcon size={22} />
         </span>
-        <h1 className="mt-4 text-3xl font-bold tracking-[-0.03em]">No access</h1>
-        <p className="mt-2 text-fg-2">
+        <p className="mt-4 text-fg-2">
           Your account isn’t set up for the admin, or it has been switched off. Ask the site owner to check it.
         </p>
         <form action="/auth/signout" method="post" className="mt-6">

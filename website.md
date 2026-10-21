@@ -12,7 +12,7 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
 | `/privacy`, `/terms` | legal (DPDP-based); company name/type/address, privacy contact and jurisdiction city come from Settings → Legal details, shown as placeholders while empty | public | built (Phase 1, wired to settings Phase 4) |
-| `/login`, `/no-access`, `/auth/signout` | sign-in (vault look). With `ADMIN_LOGIN_PATH` set, the sign-in page is only at that secret address (rewrite in `next.config.ts`); `/login` and signed-out `/admin/*` answer 404 (`src/proxy.ts`, `src/lib/login-path.ts`). Unset = plain `/login` | private | built (Phase 1, secret address 2026-10-21) |
+| `/login`, `/no-access`, `/auth/signout` | sign-in in the main site's look (`src/components/auth-shell.tsx`: dark beams + grid + red glow, pill, two-tone headline, glow card, red button); no longer the vault's split stripe panel. With `ADMIN_LOGIN_PATH` set, the sign-in page is only at that secret address (rewrite in `next.config.ts`); `/login` and signed-out `/admin/*` answer 404 (`src/proxy.ts`, `src/lib/login-path.ts`). Unset = plain `/login` | private | built (Phase 1, secret address 2026-10-21) |
 | `/admin` | overview + latest 20 leads (owner/developer) | private | built (Phase 1) |
 | `/admin/pages`, `/admin/pages/[id]` | landing pages: create (service × niche × country), section editor (text, images, on/off, reorder, variants, custom HTML), save draft, publish check, publish/unpublish (developer, or owner if allowed), visibility, preview link (7 days), versions + restore, duplicate for another country | private (all staff; publish = developer) | built (Phase 4) |
 | `/admin/home` | home page text/images editor (`page_content` key `home`) | private | built (Phase 4) |
@@ -193,6 +193,7 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-21 | All content (banners, slides, results, creatives, testimonial approvals, "2B+", legal details, founder years) is added by the founder through the admin after the build; placeholders stay until then | Founder |
 | 2026-10-21 | Booking tool: option A, form only (Book a Call → `#enquiry`) | Founder |
 | 2026-10-21 | Secret admin sign-in address from env `ADMIN_LOGIN_PATH` (value only in `.env.local` / host settings; changing it needs a restart/rebuild). It hides the admin; the password and RLS still do the protecting | Founder |
+| 2026-10-21 | Login and no-access pages redesigned in the main website's style so they don't look like rohtre-vault | Founder |
 | 2026-10-21 | **No 2FA**: admin sign-in is email + password only (2FA screens and checks removed after Phase 4). R22 "offer 2FA" declined | Founder |
 | 2026-10-21 | New staff get a random 20-character one-time password shown once to the owner (no email service needed); they change it on the Password tab | R22, no paid services |
 | 2026-10-21 | Media delete: only files uploaded through the admin, only when nothing uses them (pages, home content, proof). No trash folder | Founder (delete from Cloudinary) |
