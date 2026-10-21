@@ -267,6 +267,8 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-Phase 4 done 2026-10-21 (commits on `dev`). Waiting for the founder's "go". Phase 5 (AI page creation, R29-R32) needs `docs/design-guide.md`; if it's missing, stop and ask.
+**On hold (2026-10-21), founder back when their Claude limit resets.**
+1. Founder will send small home page changes (not a full redesign). Make them on the home page, then update the admin Home page editor (`src/content/home-schema.ts` → admin forms are generated from it) so every new field is editable.
+2. Then Phase 5 (AI page creation, R29-R32), which needs `docs/design-guide.md`; if it's missing, stop and ask.
 
-Founder to try in the admin (`npm run dev`, then /login): add an editor on Users, edit and preview a landing page, fill Settings → Legal details.
+Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.
