@@ -7,7 +7,10 @@ import { SECTION_TYPES, type SectionType } from "../sections/schemas";
 // the site validates with (one source of truth). "input" mode describes what
 // an editor may type (defaults allowed to be missing).
 
-const toJson = (schema: z.ZodType) => z.toJSONSchema(schema, { io: "input", unrepresentable: "any" }) as JsonSchema;
+// The JSON round trip drops the hidden "~standard" helper (with functions) that
+// Zod attaches to the result: React can only send plain data to the browser.
+const toJson = (schema: z.ZodType) =>
+  JSON.parse(JSON.stringify(z.toJSONSchema(schema, { io: "input", unrepresentable: "any" }))) as JsonSchema;
 
 export function sectionJsonSchemas(): Record<SectionType, JsonSchema> {
   return Object.fromEntries(Object.entries(SECTION_TYPES).map(([type, def]) => [type, toJson(def.schema)])) as Record<

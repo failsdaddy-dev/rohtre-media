@@ -61,3 +61,17 @@ describe("custom HTML (R26)", () => {
     expect(clean).toContain('rel="noopener noreferrer"');
   });
 });
+
+describe("admin form schemas are plain data (server → browser)", () => {
+  it("carry no functions or hidden helpers", () => {
+    const plain = (v: unknown): boolean =>
+      typeof v !== "function" &&
+      (!v ||
+        typeof v !== "object" ||
+        Object.entries(Object.getOwnPropertyDescriptors(v)).every(
+          ([k, d]) => (d.enumerable || (Array.isArray(v) && k === "length")) && !d.get && plain(d.value),
+        ));
+    expect(plain(sectionJsonSchemas())).toBe(true);
+    expect(plain(homeJsonSchemas())).toBe(true);
+  });
+});
