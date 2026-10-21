@@ -6,8 +6,10 @@ import { useEffect } from "react";
 // (element.animate), which never changes HTML attributes, so it can't clash
 // with React hydration even when parts of the page hydrate later.
 //   [data-reveal]  fades and rises in when it enters the viewport. Its hidden
-//                  start state comes from CSS (design.css); the animation's
-//                  end state is kept (fill: "both"). Value "up-lg" rises
+//                  start state comes from CSS (design.css). The fade keeps
+//                  its end state (fill: "both"); the rise lets go when done
+//                  (fill: "backwards"), so hover lifts (.rm-offset, cards)
+//                  can move the element afterwards. Value "up-lg" rises
 //                  further, "fade" doesn't rise. --d (inline) delays it.
 //   .rm-fill-line  fills with white as it moves up the screen: a paused
 //                  animation whose time follows the scroll position.
@@ -26,13 +28,12 @@ export function Motion() {
     const reveal = (el: HTMLElement) => {
       const rise = RISE[el.dataset.reveal ?? ""] ?? RISE[""];
       const delay = parseFloat(getComputedStyle(el).getPropertyValue("--d")) * 1000 || 0;
-      el.animate(
-        [
-          { opacity: 0, transform: `translate3d(0, ${rise}, 0)` },
-          { opacity: 1, transform: "translate3d(0, 0, 0)" },
-        ],
-        { duration: 800, delay, easing: EASE, fill: "both" },
-      );
+      const timing = { duration: 800, delay, easing: EASE };
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { ...timing, fill: "both" });
+      el.animate([{ transform: `translate3d(0, ${rise}, 0)` }, { transform: "translate3d(0, 0, 0)" }], {
+        ...timing,
+        fill: "backwards",
+      });
     };
 
     const io = new IntersectionObserver(

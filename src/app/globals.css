@@ -242,11 +242,12 @@ input:-webkit-autofill:focus {
   transform: translate(0, 0);
 }
 @media (hover: hover) {
+  /* The card lifts up-left while the red block stays where it was (3D press). */
   .rm-offset:hover {
-    transform: translate(-3px, -3px);
+    transform: translate(-5px, -5px);
   }
   .rm-offset:hover::before {
-    transform: translate(9px, 9px);
+    transform: translate(12px, 12px);
   }
   .rm-offset.on-hover:hover::before,
   .rm-offset.on-hover:hover::after {
