@@ -44,7 +44,7 @@ export function AdminFrame({
         </div>
       </header>
       <main id="main" className="mx-auto max-w-[1200px] px-4 pb-16 sm:px-6">
-        <AdminTabs current={current} canManage={canManage(staff.role)} />
+        <AdminTabs current={current} canManage={canManage(staff.role)} isOwner={staff.role === "owner"} />
         <h1 className="pb-5 pt-3 text-2xl font-bold tracking-[-0.02em]">{title}</h1>
         {children}
       </main>

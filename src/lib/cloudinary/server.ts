@@ -25,3 +25,33 @@ export async function destroyAsset(
   const json = (await res.json()) as { result?: string };
   return json.result === "ok" ? "ok" : json.result === "not found" ? "not found" : "error";
 }
+
+export type CloudinaryResource = { publicId: string; width?: number; height?: number; bytes: number; format?: string };
+
+/**
+ * Cloudinary's own record of an uploaded file (Admin API), so sizes and
+ * dimensions come from Cloudinary, not from the browser.
+ * verified: https://cloudinary.com/documentation/admin_api#get_details_of_a_single_resource_by_public_id
+ */
+export async function fetchResource(
+  publicId: string,
+  resourceType: "image" | "video",
+): Promise<CloudinaryResource | null> {
+  const env = cloudinaryServerEnv();
+  if (!env || !isOurPublicId(publicId)) return null;
+  const auth = Buffer.from(`${env.apiKey}:${env.secret}`).toString("base64");
+  const path = publicId.split("/").map(encodeURIComponent).join("/");
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${env.cloud}/resources/${resourceType}/upload/${path}`, {
+    headers: { Authorization: `Basic ${auth}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const j = (await res.json()) as {
+    public_id: string;
+    width?: number;
+    height?: number;
+    bytes: number;
+    format?: string;
+  };
+  return { publicId: j.public_id, width: j.width, height: j.height, bytes: j.bytes, format: j.format };
+}

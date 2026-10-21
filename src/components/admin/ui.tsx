@@ -4,16 +4,25 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 // Small, consistent building blocks for the admin panel (R44), in the
 // RohTre Vault style: chip tabs, pill buttons, rounded fields.
 
-export const ADMIN_TABS = [
+export const ADMIN_TABS: { href: string; label: string; manage?: boolean; owner?: boolean }[] = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/pages", label: "Landing pages" },
+  { href: "/admin/home", label: "Home page" },
+  { href: "/admin/proof", label: "Proof & badges" },
+  { href: "/admin/media", label: "Media" },
+  { href: "/admin/leads", label: "Leads", manage: true },
+  { href: "/admin/routing", label: "Redirects & ads" },
   { href: "/admin/settings", label: "Settings", manage: true },
+  { href: "/admin/users", label: "Users", owner: true },
+  { href: "/admin/audit", label: "Audit log", manage: true },
+  { href: "/admin/security", label: "Security" },
 ];
 
-export function AdminTabs({ current, canManage }: { current: string; canManage: boolean }) {
+export function AdminTabs({ current, canManage, isOwner }: { current: string; canManage: boolean; isOwner: boolean }) {
   return (
     <nav aria-label="Admin" className="no-scrollbar -mx-1.5 flex gap-3 overflow-x-auto px-1.5 py-3">
-      {ADMIN_TABS.filter((t) => !t.manage || canManage).map((t) => {
-        const on = t.href === current;
+      {ADMIN_TABS.filter((t) => (!t.manage || canManage) && (!t.owner || isOwner)).map((t) => {
+        const on = t.href === "/admin" ? current === "/admin" : current.startsWith(t.href);
         return (
           <Link
             key={t.href}

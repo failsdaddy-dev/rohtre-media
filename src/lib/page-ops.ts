@@ -46,15 +46,13 @@ export async function createLandingPage(
     id: string;
   };
   await must(
-    db
-      .from("page_dimensions")
-      .insert(
-        (["service", "niche", "country"] as const).map((t) => ({
-          page_id: page.id,
-          type_key: t,
-          value_id: dims[t].id,
-        })),
-      ),
+    db.from("page_dimensions").insert(
+      (["service", "niche", "country"] as const).map((t) => ({
+        page_id: page.id,
+        type_key: t,
+        value_id: dims[t].id,
+      })),
+    ),
   );
   const content = opts.content ?? masterTemplate(dims);
   const version = (await must(
