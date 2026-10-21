@@ -253,7 +253,7 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Set up the Google Sheet link (`docs/setup/google-sheets-leads.md`) | founder | no (leads are safe in Supabase) |
 | Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
 | Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
-| Owner profile name was set to "Rohan Trehan" for the existing admin login: confirm | founder | no |
+| 2026-10-21: the only login (founder) had no `profiles` row ("no access"); an active **owner** profile was added. Name is empty: set it on Admin → Users | founder | no |
 | Home inputs: 2 hero slides (desktop + mobile), which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience: all through the admin (Home page, Proof & badges) | founder | publishing |
 | Admin screens were checked by typecheck, lint, unit tests, RLS checks and a production build only; the founder runs the site, so nobody has clicked through them in a browser yet | founder | no |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
