@@ -21,8 +21,10 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/lp/*` | landing pages | unlisted | Phase 3 (proxy + headers already active) |
 | `/case-studies`, `/blog` | content | public | Phase 6 |
 
-All public pages live in `src/app/(site)/` and share `SiteChrome` (header, footer, WhatsApp button).
-Header menu: Home, About, Careers, Contact + Book a Call (`/contact#enquiry`) + theme toggle. Services/Work links are added once those pages exist.
+Public pages live in two route groups that both render `SiteChrome` (header, footer, WhatsApp button); the group sets the header tone (see section 5a):
+- `src/app/(dark-hero)/`: `/`, `/about`, `/careers`, `/contact` (first screen is a dark hero) → `transparent-light-text`.
+- `src/app/(site)/`: `/privacy`, `/terms` and **any new page by default** → `solid`. Root `not-found.tsx` → `solid`.
+Header menu: Home, About, Careers, Contact + Book a Call (`/contact#enquiry`). No theme toggle. Services/Work links are added once those pages exist.
 
 ## 2. Data model
 
@@ -35,7 +37,7 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
   - helpers `is_staff()`, `can_manage()`, `touch_updated_at` trigger.
 - `20261017160000_home_content`:
   - `page_content` (key, data JSONB): home page text under key `home`, checked by `src/content/home-schema.ts` (section by section fallback to defaults). Public read; staff write.
-  - `badges` (label, sublabel, image_public_id, proof_url, last_verified_at, enabled, sort, notes). DB check: enabled needs a proof_url. Public sees enabled only.
+  - `badges` (label, sublabel, image_public_id, proof_url, last_verified_at, enabled, sort, notes). The proof constraint was dropped in `20261017180000` (badges are a showcase). Public sees enabled only. No fields yet for a stat's number, unit, "as of" date or proof note (recommended for Phase 4).
   - `testimonials` (quote, person_name, person_role, company, photo_public_id, approved, is_placeholder, sort, notes). Public sees approved and not placeholder.
   - `results` (brand_name, logo, metric_value, metric_label, summary, image_public_id, image_alt, approved, is_placeholder, sort, notes). DB checks: an approved result can't be a placeholder and needs an image + alt.
   - Seeded from the live site, all switched off / unapproved: 6 badges (4 with images in Cloudinary `rohtre-media/images/badges/*`), 5 testimonials, 3 placeholder results.
@@ -80,6 +82,20 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 - Results: `.rm-stack` sticky stacking cards (white / red / black). `.rm-stripe-band`: "ROHTRE MEDIA" in moving red/off-white stripes. Testimonials: `.rm-marquee` two rows, opposite directions, pause on hover. FAQ: `.rm-faq` details with smooth height. Final CTA: dark `CtaPanel` with dots, squiggles, quarter circles.
 - All motion off for prefers-reduced-motion.
 
+## 5a. Header tone (`src/lib/header-tone.ts`)
+
+- `HeaderTone` = `"solid"` (default) | `"transparent-dark-text"` | `"transparent-light-text"`. In every tone the scrolled header is the same white bar with dark logo and links (unchanged).
+- Set on the server: the route-group layout passes `tone` (from `GROUP_TONES`) to `SiteChrome` → `SiteHeader`, which writes `data-tone` on `<header>`; CSS in `design.css` styles `html:not([data-scrolled]) .rm-header[data-tone=…]`. First paint is correct (no flash, no layout shift). `resolveHeaderTone()` turns anything missing/unknown into `solid`, so forgetting a tone is harmless.
+- Never style the header from other page content (`body:has(...)`): with Cache Components, pages you navigated away from stay in the DOM hidden (React Activity), which is what made the header white on Privacy/Terms (fixed 2026-10-21).
+- Where each page declares its tone: `(dark-hero)/layout.tsx` → `transparent-light-text` (home, About, Careers, Contact); `(site)/layout.tsx` → none → `solid` (Privacy, Terms, new pages); `not-found.tsx` → `solid`.
+- **Phase 3 hook:** every hero/section type in the future section registry declares the header tone it needs, and a page takes its header tone from its first enabled section; if none declares one the default is solid. The registry reuses the exported `HeaderTone` type.
+- Test: `tests/header-tone.test.ts` (every public page is in a group with a valid tone; dark-hero pages and only those get white text).
+
+## 5b. Badge render rule (`src/lib/proof.ts` → `publicBadges`)
+
+A badge renders on the public strip only if `enabled` is true, in every environment (dev included), applied in both the data query (`getBadges`, public client) and the `BadgeBar` component. Disabled badges never render; there is no dev preview of them on public pages. The strip has one column per visible badge from 768 px up; on phones 2 columns with an odd last badge spanning the row.
+Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not placeholder"; with today's data that hides all 5 badges (none has `proof_url`; no proof-note or placeholder field exists), which contradicts the founder's 2026-10-17 showcase decision. Kept the showcase rule until the founder decides.
+
 ## 6. Visibility and bots (`src/lib/crawlers.ts`)
 
 - robots.txt: `*` allowed except /admin /login /preview /api. 17 AI tokens disallowed from `/lp/`. AdsBot-Google, AdsBot-Google-Mobile, facebookexternalhit and meta-externalads have their own allow group (AdsBot ignores `*`).
@@ -114,6 +130,8 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 | 2026-10-17 | Redesign v2 after founder review: dark sections were rendering light (light-dark() bug), motion not smooth. Rebuilt to match the reference effects: explicit dark tokens, Lenis smooth scroll, IntersectionObserver reveals, glow cards, stacking cards, stripe band, fill lines, intro splash, header over hero. Light sections now warm off-white #f5f4f0 like the reference | Founder |
 | 2026-10-17 | **Theme toggle removed**; alternating light/dark sections instead. Redesign after peakpilots.in as a reference only (layout and motion ideas; colours, font, buttons and content stay ours). Not taken: their colours, stats, "industries" strip, copy | Founder |
 | 2026-10-17 | **Badges are a showcase**: shown when switched on, no proof link needed (DB constraint dropped in `20261017180000_badges_showcase`). 5 badges live; "2B+" off until conversions-vs-views is confirmed. Replaces R11's proof rule and R25's badge check | Founder |
+| 2026-10-21 | Header tone system (solid default) set per route group on the server; `body:has(.rm-hero-dark)` removed (it matched hidden previous pages) | Fix request |
+| 2026-10-21 | Disabled badges never render, dev included; strip columns follow the visible count | Fix request |
 | 2026-10-17 | Lenis added as a dependency (smooth scrolling the founder asked for; about 4 KB, lazy) | R35 rule 8 |
 | 2026-10-17 | Home sections end with their own centred CTA (button + small line) instead of a separate strip; final CTA is the dark `CtaPanel` with Book a Call + WhatsApp | R13 |
 | 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
@@ -143,6 +161,21 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 | 1 Global shell | done 2026-10-17 |
 | 2 Home page | **done 2026-10-17, redesigned**, waiting for the founder's review |
 | 3 Landing system (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
+
+## 9a. Launch blockers
+
+| Item | What's owed | Where |
+|---|---|---|
+| Privacy: registered company name and type | founder | `src/app/(site)/privacy/page.tsx` |
+| Privacy: name and email of the person handling privacy requests | founder | same |
+| Terms: registered company name and address | founder | `src/app/(site)/terms/page.tsx` |
+| Terms: city for court jurisdiction | founder | same |
+| "2B+" stat badge (disabled): exact number, unit (conversions / views / other), "as of" date, proof source. Conflict: live home says 2 Billion conversions, live About says 2B views, the brief says 2,000,000+ conversions (1,000x and metric differ) | founder | `badges` row `e474c465…` |
+| 5 live badges have no proof link (shown as a showcase by founder decision) | founder (optional) | `badges` |
+| Home placeholders (dev only, never in production): 2 hero slides, 3 result blocks, founder years of experience | founder | home |
+| 5 testimonials need written permission; 6 FAQ answers need approval | founder | `testimonials`, home FAQ |
+
+Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` renders "[TO CONFIRM: …]" (legal pages); home uses `PlaceholderBox` / `NotLiveTag` (`src/components/home/parts.tsx`) behind `SHOW_PLACEHOLDERS` (dev only).
 
 ## 10. Open items
 

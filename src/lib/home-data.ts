@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { DEFAULT_HOME, parseHome, type HomeContent } from "@/content/home-schema";
-import { isLiveBadge, isLiveProof } from "./proof";
+import { isLiveProof, publicBadges } from "./proof";
 import { supabaseAdmin } from "./supabase/admin";
 import { supabasePublic } from "./supabase/public";
 
@@ -70,14 +70,15 @@ export async function getBadges(): Promise<Badge[]> {
   "use cache";
   cacheTag(PROOF_TAG);
   cacheLife("max");
-  const sb = client();
+  const sb = supabasePublic(); // RLS: the public sees switched-on badges only
   if (!sb) return [];
   const { data } = await sb
     .from("badges")
     .select("id, label, sublabel, image_public_id, proof_url, enabled, notes")
     .order("sort");
-  const rows = (data ?? []) as Badge[];
-  return SHOW_PLACEHOLDERS ? rows : rows.filter(isLiveBadge);
+  // Badges are filtered in every environment, dev included: the home page is
+  // public, so a switched-off badge (like the unconfirmed "2B+") never shows.
+  return publicBadges((data ?? []) as Badge[]);
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {

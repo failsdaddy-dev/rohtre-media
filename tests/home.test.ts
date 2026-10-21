@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_HOME, homeSchema, parseHome } from "../src/content/home-schema";
-import { isLiveBadge, isLiveProof } from "../src/lib/proof";
+import { isLiveBadge, isLiveProof, publicBadges } from "../src/lib/proof";
 
 describe("home content (R13, R14)", () => {
   it("has exactly two hero slides", () => {
@@ -46,6 +46,22 @@ describe("what may go live (R11 as changed by the founder, R19)", () => {
   it("a badge shows when switched on (showcase, no proof link needed)", () => {
     expect(isLiveBadge({ enabled: true })).toBe(true);
     expect(isLiveBadge({ enabled: false })).toBe(false);
+  });
+
+  it("the public strip shows only switched-on badges, in any order or mix", () => {
+    const list = [
+      { id: "proved", enabled: true, proof_url: "https://example.com/proof" },
+      { id: "off", enabled: false, proof_url: null },
+      { id: "no-proof", enabled: true, proof_url: null },
+    ];
+    // Showcase rule (founder, 2026-10-17): switched on = shown, proof optional.
+    expect(publicBadges(list).map((b) => b.id)).toEqual(["proved", "no-proof"]);
+    expect(publicBadges([{ enabled: false }])).toEqual([]);
+  });
+
+  it("the strip's column count follows the visible badges (no empty slot)", () => {
+    const six = Array.from({ length: 6 }, (_, i) => ({ enabled: i < 5 }));
+    expect(publicBadges(six)).toHaveLength(5); // --cols = 5 on 768 px and wider
   });
 
   it("proof needs approval and must not be a placeholder", () => {

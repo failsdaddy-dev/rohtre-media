@@ -6,3 +6,6 @@ export const isLiveBadge = (b: { enabled: boolean }) => b.enabled;
 
 /** Proof (testimonials, results) goes live only when approved and not a placeholder. */
 export const isLiveProof = (p: { approved: boolean; is_placeholder: boolean }) => p.approved && !p.is_placeholder;
+
+/** The badges the public strip shows (data query and component both use this). */
+export const publicBadges = <T extends { enabled: boolean }>(badges: T[]): T[] => badges.filter(isLiveBadge);

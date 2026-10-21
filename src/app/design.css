@@ -65,24 +65,36 @@ html.lenis body {
   opacity: 0;
 }
 
-/* Over a dark hero, until the page is scrolled: transparent, white text. */
-html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header {
+/* Header tone (data-tone, set on the server per route group; see
+   src/lib/header-tone.ts). The rules above are the "solid" look, which is
+   also every tone's scrolled look. Until the page is scrolled:
+   - transparent-light-text: transparent bar, white logo and links (dark hero)
+   - transparent-dark-text:  transparent bar, dark logo and links (light top)
+   The selectors look only at the header's own attribute, never at other
+   page content: with Cache Components a page you navigated away from stays
+   in the DOM, hidden, so a selector like body:has(.rm-hero-dark) matched the
+   previous page's hero and turned the header white on light pages. */
+html:not([data-scrolled]) .rm-header:is([data-tone="transparent-light-text"], [data-tone="transparent-dark-text"]) {
   background: transparent;
   border-bottom-color: transparent;
   box-shadow: none;
   backdrop-filter: none;
 }
-html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-nav-link {
+html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] .rm-nav-link {
   color: rgba(255, 255, 255, 0.86);
 }
-html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-nav-link:hover {
+html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] .rm-nav-link:hover {
   color: #ffffff;
 }
-html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-header-on-hero {
+html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] .rm-header-on-hero {
   opacity: 1;
 }
-html:not([data-scrolled]) body:has(.rm-hero-dark) .rm-header .rm-header-on-solid {
+html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] .rm-header-on-solid {
   opacity: 0;
+}
+/* Keyboard focus stays visible on the dark hero: white ring instead of red. */
+html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-visible {
+  outline-color: #ffffff;
 }
 
 /* A dark hero sits under the sticky header. */

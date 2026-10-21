@@ -1,14 +1,8 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import type { HomeContent } from "@/content/home-schema";
-import {
-  isLiveBadge,
-  isLiveProof,
-  SHOW_PLACEHOLDERS,
-  type Badge,
-  type Result,
-  type Testimonial,
-} from "@/lib/home-data";
+import { isLiveProof, SHOW_PLACEHOLDERS, type Badge, type Result, type Testimonial } from "@/lib/home-data";
+import { publicBadges } from "@/lib/proof";
 import { ArrowRightIcon, AwardIcon, ServiceIcon, StepIcon } from "../icons";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
@@ -24,24 +18,29 @@ import { NotLiveTag, PlaceholderBox, reveal, SectionCta, SectionHead } from "./p
 const PAD = "py-20 md:py-28";
 
 // ------------------------------------------------------------------- badges
-/** Partner badges in one bordered bar on the red offset block (R11). */
-export function BadgeBar({ s, badges }: { s: HomeContent["badges"]; badges: Badge[] }) {
+/**
+ * Partner badges in one bordered bar on the red offset block (R11). Only live
+ * (switched-on) badges render, in every environment; the data query applies
+ * the same rule. The grid has one column per badge from 768 px up; on phones
+ * it is two columns and an odd last badge spans the full row, so there is
+ * never an empty slot or a stray divider.
+ */
+export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges: Badge[] }) {
+  const badges = publicBadges(all);
+  if (badges.length === 0) return null;
   return (
     <section aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
         <div className="rm-offset mx-auto max-w-6xl [--offset-surface:#ffffff]" {...reveal(2, "up-lg")}>
           <ul
-            className="relative grid grid-cols-2 overflow-hidden rounded-[16px] sm:grid-cols-3 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)]"
+            className="relative grid grid-cols-2 overflow-hidden rounded-[16px] md:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)] max-md:[&>li:last-child:nth-child(odd)]:col-span-2"
             style={{ "--cols": badges.length } as CSSProperties}
           >
             {badges.map((b) => (
               <li
                 key={b.id}
-                className={`flex min-h-44 flex-col items-center justify-center gap-3 px-4 py-8 text-center ${
-                  isLiveBadge(b) ? "" : "outline-2 -outline-offset-8 outline-dashed outline-brand"
-                }`}
-                title={isLiveBadge(b) ? undefined : (b.notes ?? undefined)}
+                className="flex min-h-44 min-w-0 flex-col items-center justify-center gap-3 px-5 py-8 text-center md:px-3 lg:px-5"
               >
                 <span className="grid h-12 place-items-center">
                   {b.image_public_id ? (
@@ -62,17 +61,16 @@ export function BadgeBar({ s, badges }: { s: HomeContent["badges"]; badges: Badg
                 </span>
                 <span>
                   {!/^\d/.test(b.label) && (
-                    <span className="block text-[12px] font-bold uppercase leading-snug tracking-[0.18em]">
+                    <span className="block text-balance text-[12px] font-bold uppercase leading-snug tracking-[0.14em] md:text-[11px] lg:text-[12px] lg:tracking-[0.16em]">
                       {b.label}
                     </span>
                   )}
                   {b.sublabel && (
-                    <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-2">
+                    <span className="mt-1 block text-balance text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-2">
                       {b.sublabel}
                     </span>
                   )}
                 </span>
-                {!isLiveBadge(b) && <NotLiveTag>Switched off</NotLiveTag>}
               </li>
             ))}
           </ul>
