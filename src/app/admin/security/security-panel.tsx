@@ -8,40 +8,78 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 
 export function SecurityPanel() {
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [show, setShow] = useState(false);
 
   const changePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const el = e.currentTarget;
     const form = new FormData(el);
     const password = String(form.get("password") ?? "");
-    if (password.length < 12) return setMessage("Use at least 12 characters.");
-    if (password !== String(form.get("confirm") ?? "")) return setMessage("The two passwords don’t match.");
+    if (password.length < 12) return setMessage({ ok: false, text: "Use at least 12 characters." });
+    if (password !== String(form.get("confirm") ?? ""))
+      return setMessage({ ok: false, text: "The two passwords don’t match." });
     setBusy(true);
     const { error } = await supabaseBrowser().auth.updateUser({ password });
     setBusy(false);
     if (!error) el.reset();
-    setMessage(error ? "Couldn’t change the password. Try a different one." : "Password changed.");
+    setMessage(
+      error
+        ? { ok: false, text: "Couldn’t change the password. Try a different one." }
+        : { ok: true, text: "Password changed." },
+    );
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      {message && (
-        <p role="status" className="text-sm font-medium">
-          {message}
-        </p>
-      )}
+    <div className="max-w-xl">
       <Panel title="Change password">
-        <form onSubmit={changePassword} className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+        <p className="-mt-2 mb-5 text-sm text-fg-2">
+          Choose a new password for your sign-in. You stay signed in on this device.
+        </p>
+        <form onSubmit={changePassword} className="flex flex-col gap-4">
           <Field label="New password" hint="At least 12 characters.">
-            <input name="password" type="password" autoComplete="new-password" className={INPUT_CLASS} />
+            <input
+              name="password"
+              type={show ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={12}
+              className={INPUT_CLASS}
+            />
           </Field>
           <Field label="Repeat new password">
-            <input name="confirm" type="password" autoComplete="new-password" className={INPUT_CLASS} />
+            <input
+              name="confirm"
+              type={show ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              className={INPUT_CLASS}
+            />
           </Field>
-          <Button type="submit" variant="primary" disabled={busy}>
-            Change password
-          </Button>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={show}
+              onChange={(e) => setShow(e.target.checked)}
+              className="size-4 accent-[var(--brand)]"
+            />
+            Show passwords
+          </label>
+          {message && (
+            <p
+              role="status"
+              className={`rounded-xl px-3 py-2 text-sm ${
+                message.ok ? "bg-chip" : "bg-[color-mix(in_srgb,var(--danger)_15%,transparent)]"
+              }`}
+            >
+              {message.text}
+            </p>
+          )}
+          <div className="flex justify-end border-t border-line pt-4">
+            <Button type="submit" variant="primary" disabled={busy}>
+              {busy ? "Saving…" : "Change password"}
+            </Button>
+          </div>
         </form>
       </Panel>
     </div>
