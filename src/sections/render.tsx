@@ -4,12 +4,14 @@ import { reveal, NotLiveTag, PlaceholderBox, SectionHead } from "@/components/ho
 import { BadgeBar, Faq, Process, Results, Testimonials } from "@/components/home/sections";
 import { ArrowRightIcon, ChatIcon, CheckIcon, ServiceIcon } from "@/components/icons";
 import { LeadForm } from "@/components/lead-form";
+import { RawHtml } from "@/components/raw-html";
 import { ButtonLink, Container } from "@/components/page-parts";
 import { cloudinaryUrl } from "@/lib/cloudinary/url";
 import type { Badge } from "@/lib/home-data";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import type { Creative, LandingProof } from "@/lib/landing-data";
 import { isLiveProof, publicBadges } from "@/lib/proof";
+import { sanitizeHtml } from "@/lib/sanitize";
 import type { SiteSettings } from "@/lib/settings-schema";
 import type { Section, SectionOf } from "./schemas";
 
@@ -360,6 +362,19 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
     }
     case "form":
       return <Form s={s} ctx={ctx} />;
+    case "customHtml": {
+      if (!s.props.html.trim()) return null;
+      const wrap = s.variant === "full-width" ? "" : "mx-auto w-full max-w-[1200px] px-4 sm:px-6";
+      return (
+        <section className="rm-custom-html py-16">
+          {s.props.mode === "raw" ? (
+            <RawHtml html={s.props.html} className={wrap} />
+          ) : (
+            <div className={wrap} dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.props.html) }} />
+          )}
+        </section>
+      );
+    }
   }
 }
 

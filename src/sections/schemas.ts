@@ -117,6 +117,16 @@ export const formSchema = z.object({
   defaultInterest: text(80),
 });
 
+/**
+ * R26: custom HTML. "sanitized" (default, any staff member): cleaned of
+ * scripts, iframes and event handlers. "raw" (owner/developer only, checked
+ * when saving): kept as written, scripts allowed, under the site's CSP.
+ */
+export const customHtmlSchema = z.object({
+  html: z.string().max(20000),
+  mode: z.enum(["sanitized", "raw"]),
+});
+
 /** Every section type: schema, allowed variants, and the header tone it needs when first. */
 export const SECTION_TYPES = {
   hero: { schema: heroSchema, variants: ["banner-right", "banner-below"], headerTone: "transparent-light-text" },
@@ -129,6 +139,7 @@ export const SECTION_TYPES = {
   process: { schema: processSchema, variants: ["timeline"], headerTone: undefined },
   faq: { schema: faqSchema, variants: ["two-column"], headerTone: undefined },
   form: { schema: formSchema, variants: ["split"], headerTone: undefined },
+  customHtml: { schema: customHtmlSchema, variants: ["contained", "full-width"], headerTone: undefined },
 } as const satisfies Record<
   string,
   { schema: z.ZodType; variants: readonly string[]; headerTone: HeaderTone | undefined }
@@ -159,6 +170,7 @@ export const sectionSchema = z.discriminatedUnion("type", [
   sectionOf("process"),
   sectionOf("faq"),
   sectionOf("form"),
+  sectionOf("customHtml"),
 ]);
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
