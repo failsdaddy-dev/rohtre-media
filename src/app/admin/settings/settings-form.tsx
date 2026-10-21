@@ -157,6 +157,55 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
         </div>
       </Panel>
 
+      <Panel title="Legal details">
+        <p className="-mt-2 mb-4 text-sm text-fg-2">
+          Used in the Privacy Notice and Terms. Empty fields show as a placeholder there.
+        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Registered company name" error={e["legal.companyName"]}>
+            <input name="legalCompanyName" defaultValue={settings.legal.companyName ?? ""} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Company type" hint="e.g. Private Limited, LLP, Proprietorship" error={e["legal.companyType"]}>
+            <input name="legalCompanyType" defaultValue={settings.legal.companyType ?? ""} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Registered address" error={e["legal.registeredAddress"]} className="md:col-span-2">
+            <input name="legalAddress" defaultValue={settings.legal.registeredAddress ?? ""} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Person handling privacy requests" error={e["legal.privacyContactName"]}>
+            <input
+              name="legalPrivacyName"
+              defaultValue={settings.legal.privacyContactName ?? ""}
+              className={INPUT_CLASS}
+            />
+          </Field>
+          <Field label="Privacy request email" error={e["legal.privacyEmail"]}>
+            <input
+              name="legalPrivacyEmail"
+              type="email"
+              defaultValue={settings.legal.privacyEmail ?? ""}
+              className={INPUT_CLASS}
+            />
+          </Field>
+          <Field label="City for court jurisdiction" error={e["legal.jurisdictionCity"]}>
+            <input
+              name="legalJurisdiction"
+              defaultValue={settings.legal.jurisdictionCity ?? ""}
+              className={INPUT_CLASS}
+            />
+          </Field>
+        </div>
+      </Panel>
+
+      <Panel title="AI crawler block list">
+        <Field
+          label="Blocked on unlisted pages"
+          hint="One user-agent name per line. These bots get “Disallow” in robots.txt and a 403 on unlisted landing pages. Ad-review bots (Google AdsBot, Meta) are always allowed."
+          error={e.aiBots}
+        >
+          <textarea name="aiBots" rows={8} defaultValue={settings.aiBots.join("\n")} className={AREA} />
+        </Field>
+      </Panel>
+
       <div className="sticky bottom-4 flex flex-wrap items-center gap-3 rounded-full border border-line bg-bg-elev p-2 pl-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
         <p role="status" className="flex-1 text-sm">
           {status}

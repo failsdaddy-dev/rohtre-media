@@ -51,3 +51,13 @@ describe("robots.txt rules", () => {
     expect(all?.disallow).toContain("/admin");
   });
 });
+
+describe("AI crawler list from settings", () => {
+  it("uses the given list and drops the AI group when it is empty", () => {
+    expect(isBlockedAiBot(UA.gptbot, ["ClaudeBot"])).toBe(false);
+    expect(isBlockedAiBot(UA.claudebot, ["ClaudeBot"])).toBe(true);
+    const rules = robotsRules([]);
+    expect(rules.some((r) => Array.isArray(r.userAgent) && r.userAgent.length === 0)).toBe(false);
+    expect(rules).toHaveLength(2);
+  });
+});

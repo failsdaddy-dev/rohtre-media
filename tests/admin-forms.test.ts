@@ -23,7 +23,10 @@ describe("admin forms from schemas (R23, R28)", () => {
   it("a blank new section of any type passes validation once its required text is filled", () => {
     const schemas = sectionJsonSchemas();
     const blank = blankFor(schemas.customHtml);
-    expect(sectionSchema.safeParse({ id: "x", type: "customHtml", variant: "contained", enabled: true, props: blank }).success).toBe(true);
+    expect(
+      sectionSchema.safeParse({ id: "x", type: "customHtml", variant: "contained", enabled: true, props: blank })
+        .success,
+    ).toBe(true);
   });
 
   it("labels read like words", () => {
@@ -38,7 +41,9 @@ describe("media references (delete-on-remove)", () => {
     expect([...ids].sort()).toEqual(["rohtre-media/images/a", "rohtre-media/video/b"]);
   });
   it("knows which files an edit stopped using", () => {
-    expect(removedMedia({ x: "rohtre-media/images/old" }, { x: "rohtre-media/images/new" })).toEqual(["rohtre-media/images/old"]);
+    expect(removedMedia({ x: "rohtre-media/images/old" }, { x: "rohtre-media/images/new" })).toEqual([
+      "rohtre-media/images/old",
+    ]);
   });
 });
 

@@ -25,7 +25,13 @@ export default async function PrivacyPage() {
 
       <h2>Who we are</h2>
       <p>
-        RohTre Media (<Placeholder>registered company name and type</Placeholder>), based in {s.location}
+        RohTre Media (
+        {s.legal.companyName ? (
+          [s.legal.companyName, s.legal.companyType].filter(Boolean).join(", ")
+        ) : (
+          <Placeholder>registered company name and type</Placeholder>
+        )}
+        ), based in {s.location}
         {s.address ? ` (${s.address})` : ""}, is the data fiduciary for the personal data described here. Contact us at{" "}
         <a href={`mailto:${s.email}`} className="text-fg underline">
           {s.email}
@@ -96,7 +102,17 @@ export default async function PrivacyPage() {
           {s.email}
         </a>{" "}
         with the subject “Privacy request”. Grievance contact:{" "}
-        <Placeholder>name and email of the person handling privacy requests</Placeholder>.
+        {s.legal.privacyContactName && s.legal.privacyEmail ? (
+          <>
+            {s.legal.privacyContactName},{" "}
+            <a href={`mailto:${s.legal.privacyEmail}`} className="text-fg underline">
+              {s.legal.privacyEmail}
+            </a>
+          </>
+        ) : (
+          <Placeholder>name and email of the person handling privacy requests</Placeholder>
+        )}
+        .
       </p>
 
       <h2>Cookies and similar storage</h2>

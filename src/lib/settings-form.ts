@@ -47,12 +47,22 @@ export function settingsFromForm(f: FormData, current: SiteSettings, isOwner: bo
     leadRetentionDays: Number(str("leadRetentionDays")),
     adSpendRanges: lines(f.get("adSpendRanges")),
     interests: lines(f.get("interests")),
+    legal: {
+      companyName: str("legalCompanyName") || null,
+      companyType: str("legalCompanyType") || null,
+      registeredAddress: str("legalAddress") || null,
+      privacyContactName: str("legalPrivacyName") || null,
+      privacyEmail: str("legalPrivacyEmail") || null,
+      jurisdictionCity: str("legalJurisdiction") || null,
+    },
+    aiBots: f.has("aiBots") ? [...new Set(lines(f.get("aiBots")))] : current.aiBots,
   };
   const parsed = settingsSchema.safeParse(raw);
   if (parsed.success) return { ok: true, settings: parsed.data };
   const errors: Record<string, string> = {};
   for (const issue of parsed.error.issues) {
-    const key = issue.path[0] === "whatsapp" ? `whatsapp.${String(issue.path[1])}` : String(issue.path[0]);
+    const nested = issue.path[0] === "whatsapp" || issue.path[0] === "legal";
+    const key = nested ? `${String(issue.path[0])}.${String(issue.path[1])}` : String(issue.path[0]);
     const where = typeof issue.path[1] === "number" ? ` (line ${issue.path[1] + 1})` : "";
     errors[key] ??= `${issue.message}${where}`;
   }

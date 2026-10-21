@@ -294,9 +294,77 @@ try {
 
   const l7 = await rest("concept_works", { key: SECRET, method: "POST", body: { kind: "image", approved: true } });
   check("database refuses approved concept work without media", l7.status >= 400, `status ${l7.status}`);
+
+  // ------------------------------------------------------------------ admin (Phase 4)
+  for (const table of ["media", "audit_log", "preview_tokens", "ad_mappings"]) {
+    const r = await rest(`${table}?select=*&limit=1`, { key: ANON });
+    check(
+      `visitor cannot read ${table}`,
+      r.status >= 400 || (Array.isArray(r.json) && r.json.length === 0),
+      `status ${r.status}`,
+    );
+  }
+  const p1 = await rest("audit_log", {
+    key: ANON,
+    token,
+    method: "POST",
+    body: { actor_id: editorId, action: "rls.check", entity: "test" },
+  });
+  check("editor can append to the audit log as themself", p1.status === 201, `status ${p1.status}`);
+  const p2 = await rest("audit_log", {
+    key: ANON,
+    token,
+    method: "POST",
+    body: { actor_id: randomUUID(), action: "rls.check", entity: "test" },
+  });
+  check("editor cannot write audit entries as someone else", p2.status >= 400, `status ${p2.status}`);
+  const p3 = await rest("audit_log?select=id&limit=5", { key: ANON, token });
+  check(
+    "editor cannot read the audit log",
+    p3.status >= 400 || (Array.isArray(p3.json) && p3.json.length === 0),
+    `status ${p3.status}`,
+  );
+  const p4 = await rest(`audit_log?actor_id=eq.${editorId}`, { key: ANON, token, method: "DELETE" });
+  const p4b = await rest(`audit_log?select=id&actor_id=eq.${editorId}`, { key: SECRET });
+  check(
+    "nobody signed in can delete audit history",
+    p4.status >= 400 && Array.isArray(p4b.json) && p4b.json.length === 1,
+    `status ${p4.status}`,
+  );
+  const p5 = await rest("redirects", {
+    key: ANON,
+    token,
+    method: "POST",
+    body: { from_path: `/rls-${tmpSlug}`, to_path: "/" },
+  });
+  check("editor cannot add redirects", p5.status >= 400, `status ${p5.status}`);
+  const p6 = await rest("ad_mappings", {
+    key: ANON,
+    token,
+    method: "POST",
+    body: { platform: "google", campaign: "RLS check" },
+    prefer: "return=representation",
+  });
+  const mappingId = p6.json?.[0]?.id;
+  check("editor can add an ad-mapping row", p6.status === 201 && Boolean(mappingId), `status ${p6.status}`);
+  if (mappingId) await rest(`ad_mappings?id=eq.${mappingId}`, { key: ANON, token, method: "DELETE" });
+  const p7 = await rest("page_content?select=key", {
+    key: ANON,
+    token,
+    method: "DELETE",
+    prefer: "return=representation",
+  });
+  check(
+    "editor cannot delete home page content",
+    p7.status >= 400 || (Array.isArray(p7.json) && p7.json.length === 0),
+    `status ${p7.status}`,
+  );
 } finally {
+  if (editorId) await rest(`audit_log?actor_id=eq.${editorId}`, { key: SECRET, method: "DELETE" });
   if (tmpPageId) await rest(`pages?id=eq.${tmpPageId}`, { key: SECRET, method: "DELETE" });
   for (const sl of tmpSlugs) await rest(`redirects?from_path=eq./lp/${sl}`, { key: SECRET, method: "DELETE" });
+  await rest("redirects?from_path=like./rls-rls-check-*", { key: SECRET, method: "DELETE" });
+  await rest("ad_mappings?campaign=eq.RLS check", { key: SECRET, method: "DELETE" });
   if (leadId) await rest(`leads?id=eq.${leadId}`, { key: SECRET, method: "DELETE" });
   await rest("rate_limits?key=like.rls-*", { key: SECRET, method: "DELETE" });
   if (editorId) await admin(`users/${editorId}`, { method: "DELETE" });

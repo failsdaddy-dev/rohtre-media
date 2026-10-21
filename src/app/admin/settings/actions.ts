@@ -1,6 +1,7 @@
 "use server";
 
 import { updateTag } from "next/cache";
+import { audit } from "@/lib/audit";
 import { requireStaff } from "@/lib/auth";
 import { SETTINGS_TAG } from "@/lib/settings";
 import { settingsFromForm } from "@/lib/settings-form";
@@ -25,6 +26,11 @@ export async function saveSettings(_prev: SaveState, form: FormData): Promise<Sa
     .eq("id", true);
   if (error) return { status: "error", errors: {}, message: "Couldn’t save. Please try again." };
 
+  const changed = Object.keys(result.settings).filter(
+    (k) =>
+      JSON.stringify(result.settings[k as keyof typeof current]) !== JSON.stringify(current[k as keyof typeof current]),
+  );
+  await audit(staff, "settings.save", "settings", null, { changed });
   updateTag(SETTINGS_TAG); // every public page picks up the new details
   return { status: "saved", errors: {} };
 }

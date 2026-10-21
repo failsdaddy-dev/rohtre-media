@@ -11,13 +11,23 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
-| `/privacy`, `/terms` | legal (DPDP-based), **3 placeholders** to fill | public | built (Phase 1) |
+| `/privacy`, `/terms` | legal (DPDP-based); company name/type/address, privacy contact and jurisdiction city come from Settings → Legal details, shown as placeholders while empty | public | built (Phase 1, wired to settings Phase 4) |
 | `/login`, `/no-access`, `/auth/signout` | sign-in (vault look) | private | built (Phase 1) |
 | `/admin` | overview + latest 20 leads (owner/developer) | private | built (Phase 1) |
-| `/admin/settings` | global settings editor (owner/developer) | private | built (Phase 1) |
+| `/admin/pages`, `/admin/pages/[id]` | landing pages: create (service × niche × country), section editor (text, images, on/off, reorder, variants, custom HTML), save draft, publish check, publish/unpublish (developer, or owner if allowed), visibility, preview link (7 days), versions + restore, duplicate for another country | private (all staff; publish = developer) | built (Phase 4) |
+| `/admin/home` | home page text/images editor (`page_content` key `home`) | private | built (Phase 4) |
+| `/admin/proof` | results, testimonials, creatives, concept work, badges: edit, approve, tag to service/niche/country | private | built (Phase 4) |
+| `/admin/media` | Cloudinary library: upload, see where used, delete (only when unused; also deletes from Cloudinary) | private | built (Phase 4) |
+| `/admin/leads`, `/admin/leads/export` | lead list: search, status, delete on request (audited), purge older than retention, CSV export (formula-safe) | owner/developer | built (Phase 4) |
+| `/admin/routing` | redirects (owner/developer) + ad-group → page reference table (all staff) | private | built (Phase 4) |
+| `/admin/settings` | global settings incl. legal details and AI-crawler block list (owner/developer) | private | built (Phase 1, extended Phase 4) |
+| `/admin/users` | staff: add (one-time password shown once), role, deactivate, reset password, reset 2FA; always one active owner | owner | built (Phase 4) |
+| `/admin/audit` | audit log, filter by area | owner/developer | built (Phase 4) |
+| `/admin/security` | authenticator-app 2FA set-up/confirm, change password. Owner and developer are sent here until their session is AAL2 | private | built (Phase 4) |
+| `/preview/[token]` | draft preview by link (sha256-hashed token, 7 days, noindex) | private | built (Phase 4) |
 | `/api/leads` | the one lead route | private | built (Phase 1) |
 | `/api/cloudinary/sign` | signed upload (staff only) | private | built (Phase 0) |
-| `/robots.txt` | generated from `src/lib/crawlers.ts` | public | built |
+| `/robots.txt` | generated from `src/lib/crawlers.ts` + settings `aiBots` | public | built |
 | `/lp/[slug]` | landing pages (`src/app/(landing)/lp/[slug]/`): rendered from sections; drafts only while building; old slugs 301 | unlisted by default | built (Phase 3) |
 | `/lp/meta-ads-fashion-brands-india`, `/lp/d2c-marketing-fashion-brands-india`, `/lp/meta-ads-fashion-brands-usa` | the 3 Phase 3 pages | unlisted, **draft** (publish-blocked) | waiting for founder content |
 | `/sitemap.xml` | static pages + published *public* landing pages | public | built (Phase 3) |
@@ -44,7 +54,7 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
   - `results` (brand_name, logo, metric_value, metric_label, summary, image_public_id, image_alt, approved, is_placeholder, sort, notes). DB checks: an approved result can't be a placeholder and needs an image + alt.
   - Seeded from the live site, all switched off / unapproved: 6 badges (4 with images in Cloudinary `rohtre-media/images/badges/*`), 5 testimonials, 3 placeholder results.
 - `20261017180000_badges_showcase`: drops the badge proof rule; switches on 5 badges.
-- RLS check: `npm run check:rls` (19 checks against the live project; creates and removes a temporary editor).
+- RLS check: `npm run check:rls` (37 checks against the live project; creates and removes a temporary editor, test lead, page and audit rows).
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
 
@@ -55,6 +65,14 @@ Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, p
   - `creatives` (client work: image|reel, brand, media, poster, approved, is_placeholder) and `concept_works` (separate table, no client, no metric, label_text default "Concept work - not a client project", R45).
   - `proof_tags` (item_type result|testimonial|creative|concept_work, item_id, value_id) (R18).
   - RLS: public reads published public/unlisted pages and only their published version; drafts and private pages hidden; editors can edit drafts but a trigger (`pages_guard_editor`) stops them publishing or changing visibility (R24).
+
+- `20261021160000_admin`:
+  - `media` (public_id, resource_type, bytes, width, height, format, uploaded_by): files uploaded through the admin. Only these can be deleted from Cloudinary, and only when nothing uses them (`src/lib/media.server.ts`).
+  - `audit_log` (at, actor_id, actor_email, action, entity, entity_id, details): insert-only (update/delete revoked), staff append as themselves, owner/developer read.
+  - `preview_tokens` (token_hash, page_id, version_id, expires_at): hidden from visitors; the preview page reads with the secret key.
+  - `ad_mappings` (platform, campaign, ad_group, keyword_theme, page_id, notes): staff read/write, reference only (R5).
+  - `page_content` delete revoked from signed-in users.
+- Settings JSON gained `legal` {companyName, companyType, registeredAddress, privacyContactName, privacyEmail, jurisdictionCity} and `aiBots` (Phase 4; no migration, Zod defaults).
 
 ## 3. Section library
 
@@ -86,12 +104,14 @@ Landing-page section registry (Phase 3, R28) - `src/sections/schemas.ts` (data),
 | process | eyebrow, title, accent, intro, steps, cta (off by default) | timeline | – |
 | faq | eyebrow, title, accent, items {q, a, status}, cta (fresh per page) | two-column | – |
 | form | eyebrow, title, accent, intro, formTitle, defaultInterest (id="enquiry") | split | – |
+| customHtml | html, mode sanitized (allow-list, no scripts/iframes/handlers) or raw (owner/developer only; scripts run under the site CSP, so third-party script hosts must be added to `next.config.ts`) | contained, full-width | – |
 
 Master template order (R15): hero, badges, pain points, results, creatives, platforms, testimonials, process (off), FAQ, form. Angle by channel (R21): Meta → reels-first + Facebook/Instagram; Google → images-first + Search/Shopping/YouTube; D2C → both.
 Adding a section type = schema + entry in `SECTION_TYPES` + renderer case + test; no migration.
 Proof matching (`src/lib/proof-match.ts`): an item shows if, for every dimension, it is untagged or tagged with the page's value or an ancestor; exact > ancestor > untagged, then sort.
 Publish check (`src/lib/publish-check.ts`, R25): slug format/unique, visibility, schema-valid content, meta title/description, one hero first with H1, offer banner desktop + mobile + alt, form on, proof sections must have approved matched items (else switch off), FAQ answers "ready", chosen badges switched on, concept items labelled, no [NEEDS DATA] / TO CONFIRM.
-Page tool (until the Phase 4 admin): `npm run lp -- list | seed | check <slug> | publish <slug> | duplicate <slug> <country>` (`scripts/landing.ts`, runs through vite-node with the server-only key).
+Admin forms are generated from the same Zod schemas (`src/lib/json-schemas.ts` → `src/components/admin/schema-form.tsx`), so a new section type gets an editor automatically. Shared page operations (create, save, publish, duplicate) live in `src/lib/page-ops.ts`, used by both the admin and the script.
+Page tool (script, still works): `npm run lp -- list | seed | check <slug> | publish <slug> | duplicate <slug> <country>` (`scripts/landing.ts`, runs through vite-node with the server-only key).
 
 ## 4. URLs and slugs
 
@@ -128,8 +148,8 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 
 ## 6. Visibility and bots (`src/lib/crawlers.ts`)
 
-- robots.txt: `*` allowed except /admin /login /preview /api. 17 AI tokens disallowed from `/lp/`. AdsBot-Google, AdsBot-Google-Mobile, facebookexternalhit and meta-externalads have their own allow group (AdsBot ignores `*`).
-- `src/proxy.ts`: AI user agents get 403 on `/lp/*`; ad bots always pass. It also gates `/admin`.
+- robots.txt: `*` allowed except /admin /login /preview /api. AI tokens from settings `aiBots` (default 17) disallowed from `/lp/`; an empty list drops that group. AdsBot-Google, AdsBot-Google-Mobile, facebookexternalhit and meta-externalads have their own allow group (AdsBot ignores `*`).
+- `src/proxy.ts`: AI user agents (settings `aiBots`, re-read at most every 5 min per server instance) get 403 on `/lp/*`; ad bots always pass. It also gates `/admin`.
 - Headers (`next.config.ts`): `/lp/*` sends `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet`; admin, login, preview and api send noindex.
 - Limit: bots that fake a browser user agent, and AI agents running in a person's browser, can't be stopped. Only login hides a page.
 
@@ -169,6 +189,12 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-17 | Lenis added as a dependency (smooth scrolling the founder asked for; about 4 KB, lazy) | R35 rule 8 |
 | 2026-10-17 | Home sections end with their own centred CTA (button + small line) instead of a separate strip; final CTA is the dark `CtaPanel` with Book a Call + WhatsApp | R13 |
 | 2026-10-17 | Home services: the 9 agency services (Gate 0 default); no service pages yet, so cards don't link | Gate 0 Q2 |
+| 2026-10-21 | All content (banners, slides, results, creatives, testimonial approvals, "2B+", legal details, founder years) is added by the founder through the admin after the build; placeholders stay until then | Founder |
+| 2026-10-21 | Booking tool: option A, form only (Book a Call → `#enquiry`) | Founder |
+| 2026-10-21 | 2FA: Supabase TOTP (free, on by default, verified). Owner and developer must reach AAL2 before any admin page, action, upload signing or CSV export; editors may opt in. Lost phone → owner resets 2FA on Users | R22 |
+| 2026-10-21 | New staff get a random 20-character one-time password shown once to the owner (no email service needed); they change it on Security | R22, no paid services |
+| 2026-10-21 | Media delete: only files uploaded through the admin, only when nothing uses them (pages, home content, proof). No trash folder | Founder (delete from Cloudinary) |
+| 2026-10-21 | Confirmations in the admin are two-click buttons, never browser dialogs | R44 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -194,17 +220,15 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 0 Foundation | done 2026-10-17 |
 | 1 Global shell | done 2026-10-17 |
 | 2 Home page | done 2026-10-17 (redesigned, fixes 2026-10-21) |
-| 3 Landing system | **done 2026-10-21**, waiting for "go" |
-| 4 Admin (next) · 4 Admin · 5 AI · 6 Blog/growth · 7 Launch | not started |
+| 3 Landing system | done 2026-10-21 |
+| 4 Admin | **done 2026-10-21**, waiting for "go" |
+| 5 AI (needs `docs/design-guide.md`) · 6 Blog/growth · 7 Launch | not started |
 
 ## 9a. Launch blockers
 
 | Item | What's owed | Where |
 |---|---|---|
-| Privacy: registered company name and type | founder | `src/app/(site)/privacy/page.tsx` |
-| Privacy: name and email of the person handling privacy requests | founder | same |
-| Terms: registered company name and address | founder | `src/app/(site)/terms/page.tsx` |
-| Terms: city for court jurisdiction | founder | same |
+| Legal details: company name, type, registered address, privacy contact name + email, jurisdiction city | founder | Admin → Settings → Legal details |
 | "2B+" stat badge (disabled): exact number, unit (conversions / views / other), "as of" date, proof source. Conflict: live home says 2 Billion conversions, live About says 2B views, the brief says 2,000,000+ conversions (1,000x and metric differ) | founder | `badges` row `e474c465…` |
 | 5 live badges have no proof link (shown as a showcase by founder decision) | founder (optional) | `badges` |
 | Home placeholders (dev only, never in production): 2 hero slides, 3 result blocks, founder years of experience | founder | home |
@@ -220,14 +244,14 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Supabase Free pauses after 1 week of inactivity and has no backups. Plan: weekly keep-alive + nightly `pg_dump` via free GitHub Actions (allowed? unverified) | developer | before launch |
 | One Supabase project for dev and live risks test data in live. Recommend 2 free projects (dev + live) | founder | before launch |
 | First-load JS (gzipped): `/` 183 KB (without slides), `/contact` 184 KB, `/login` 250 KB (Supabase auth client). The framework alone is about 175 KB, almost all framework (Next 16 + React 19); our code is under 5 KB. The 120 KB budget isn't reachable with the App Router. Proposal: budget = framework + 30 KB of our code | founder | Phase 6 budget |
-| Cloudinary delete vs. version history: deleting an image breaks rollback to versions that used it. Proposal: unreferenced images go to a 30-day trash, then are deleted | founder | Phase 4 |
-| Is TOTP 2FA available on Supabase Free? The local config comment says MFA is Pro (unverified) | developer | Phase 4 |
+| Restoring an old page version whose image was since deleted from the Media library shows a missing image until a new one is chosen | founder | no |
 | Live-site claims without proof (`docs/content/wordpress-inventory.md`) | founder | publishing |
 | Set up the Google Sheet link (`docs/setup/google-sheets-leads.md`) | founder | no (leads are safe in Supabase) |
 | Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
 | Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
 | Owner profile name was set to "Rohan Trehan" for the existing admin login: confirm | founder | no |
-| Home inputs: 2 hero slides (desktop + mobile), which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience. Until the admin (Phase 4) can do it, the developer flips approvals in the database on request | founder | publishing |
+| Home inputs: 2 hero slides (desktop + mobile), which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience: all through the admin (Home page, Proof & badges) | founder | publishing |
+| Admin screens were checked by typecheck, lint, unit tests, RLS checks and a production build only; the founder runs the site, so nobody has clicked through them in a browser yet | founder | no |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
 
@@ -235,11 +259,10 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 - Booking widget in the visitor's time zone (R7): booking tool not chosen yet; Book a Call goes to the on-page form.
 - Country phone numbers per landing page: phones live in global settings (IN, US); per-country display on landing pages arrives with country-specific contact blocks in Phase 4.
-- Custom HTML section (R26) needs an HTML sanitizer dependency: Phase 4, with the admin.
-- AI-crawler block list in settings (R42 d) and instant cache refresh on publish: Phase 4 admin (the script publishes; a running site refreshes on its next build).
+- Custom HTML section (R26) and AI-crawler block list (R42 d): done in Phase 4. Publishing from the admin refreshes the page instantly (`updateTag`).
 
 ## 11. Next step
 
-**Paused 2026-10-17; founder back Wednesday.** Before Phase 3: founder reviews the redesign on a phone (not yet checked at 390 px) and replies "go"; still open: "2B+" = conversions or views?
+Phase 4 done 2026-10-21 (commits on `dev`). Waiting for the founder's "go". Phase 5 (AI page creation, R29-R32) needs `docs/design-guide.md`; if it's missing, stop and ask.
 
-Phase 4 (admin, R22-R27): page editor on the section registry (edit text/images, on/off, reorder, variants), Cloudinary uploads (with delete-on-remove), proof/badge/testimonial/creative managers with tagging, publish (developer-only, publish check, instant refresh), versions + rollback, preview links, audit log, redirects, ad-mapping table, lead list with CSV export and delete, AI-bot list in settings, custom HTML section.
+Founder to try in the admin (`npm run dev`, then /login): set up 2FA on Security, add an editor on Users, edit and preview a landing page, fill Settings → Legal details.

@@ -1,5 +1,5 @@
-// Crawler rules for page visibility (R42). Defaults live here; from Phase 3
-// the lists come from global settings in the database.
+// Crawler rules for page visibility (R42). Defaults live here; the AI list
+// itself is edited in admin settings (aiBots) and read by robots.ts and proxy.ts.
 //
 // verified 2026-10-17:
 //   OpenAI      https://developers.openai.com/api/docs/bots
@@ -60,7 +60,7 @@ export function robotsRules(aiBots: readonly string[] = DEFAULT_AI_BOTS): Robots
     // Search engines may fetch unlisted pages so they can read the noindex
     // (a robots.txt block would hide the noindex from them).
     { userAgent: "*", allow: "/", disallow: PRIVATE_PATHS },
-    { userAgent: [...aiBots], disallow: [UNLISTED_PREFIX, ...PRIVATE_PATHS] },
+    ...(aiBots.length ? [{ userAgent: [...aiBots], disallow: [UNLISTED_PREFIX, ...PRIVATE_PATHS] }] : []),
     { userAgent: [...AD_BOTS], allow: "/", disallow: PRIVATE_PATHS },
   ];
 }

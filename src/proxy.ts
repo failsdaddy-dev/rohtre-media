@@ -7,15 +7,29 @@
 // The matcher keeps it off every other page, so public pages stay cached.
 // verified: node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { isBlockedAiBot, UNLISTED_PREFIX } from "@/lib/crawlers";
+import { DEFAULT_AI_BOTS, isBlockedAiBot, UNLISTED_PREFIX } from "@/lib/crawlers";
 import { SUPABASE_CONFIGURED, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/env";
+
+// The AI block list from admin settings, re-read at most every 5 minutes per
+// server instance so landing pages don't wait on the database.
+let bots: { list: readonly string[]; at: number } = { list: DEFAULT_AI_BOTS, at: 0 };
+async function aiBots(): Promise<readonly string[]> {
+  if (!SUPABASE_CONFIGURED || Date.now() - bots.at < 300_000) return bots.list;
+  bots = { list: bots.list, at: Date.now() };
+  const sb = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+  const { data } = await sb.from("site_settings").select("data->aiBots").eq("id", true).maybeSingle();
+  const list = (data as { aiBots?: unknown } | null)?.aiBots;
+  if (Array.isArray(list) && list.every((t) => typeof t === "string")) bots = { list, at: Date.now() };
+  return bots.list;
+}
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (path.startsWith(UNLISTED_PREFIX)) {
-    if (isBlockedAiBot(request.headers.get("user-agent"))) {
+    if (isBlockedAiBot(request.headers.get("user-agent"), await aiBots())) {
       return new NextResponse("Forbidden", { status: 403, headers: { "X-Robots-Tag": "noindex, nofollow" } });
     }
     return NextResponse.next();

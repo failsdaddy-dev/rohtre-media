@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_AI_BOTS } from "./crawlers";
 
 // Global settings (R8, R9, R12, R38). Stored as one JSON row in
 // public.site_settings; anything missing or invalid falls back to these
@@ -91,6 +92,29 @@ export const settingsSchema = z.object({
       "AI automation",
       "Something else",
     ]),
+  /** Legal details for the Privacy Notice and Terms. Empty = shown as a placeholder. */
+  legal: z
+    .object({
+      companyName: z.string().max(160).nullable(),
+      companyType: z.string().max(80).nullable(),
+      registeredAddress: z.string().max(300).nullable(),
+      privacyContactName: z.string().max(120).nullable(),
+      privacyEmail: z.email().nullable(),
+      jurisdictionCity: z.string().max(80).nullable(),
+    })
+    .default({
+      companyName: null,
+      companyType: null,
+      registeredAddress: null,
+      privacyContactName: null,
+      privacyEmail: null,
+      jurisdictionCity: null,
+    }),
+  /** R42: AI crawlers kept away from unlisted pages (robots.txt and a 403). */
+  aiBots: z
+    .array(z.string().regex(/^[A-Za-z0-9._-]{2,60}$/, "Letters, digits, dot, dash or underscore only"))
+    .max(60)
+    .default([...DEFAULT_AI_BOTS]),
 });
 
 export type SiteSettings = z.infer<typeof settingsSchema>;

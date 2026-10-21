@@ -97,20 +97,39 @@ async function Overview({ searchParams }: { searchParams: Promise<Record<string,
             ) : (
               <LeadsTable leads={leads} />
             )}
-            <p className="mt-4 text-xs text-fg-2">
-              The full lead list with search, CSV export and delete-on-request arrives in Phase 4.
+            <p className="mt-4 text-sm">
+              <Link href="/admin/leads" className="underline underline-offset-2">
+                All leads, search and CSV export
+              </Link>
             </p>
           </Panel>
         ) : (
           <Panel title="Welcome">
             <p className="text-fg-2">
-              Page editing arrives in Phase 4. Leads and settings are visible to the owner and developer only.
+              Edit{" "}
+              <Link href="/admin/pages" className="underline underline-offset-2">
+                landing pages
+              </Link>
+              , the{" "}
+              <Link href="/admin/home" className="underline underline-offset-2">
+                home page
+              </Link>{" "}
+              and{" "}
+              <Link href="/admin/proof" className="underline underline-offset-2">
+                proof
+              </Link>
+              . The developer publishes your drafts. Leads and settings are for the owner and developer only.
             </p>
           </Panel>
         )}
         {manager && (
           <Panel title="Quick links">
             <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              <li>
+                <Link href="/admin/pages" className="underline underline-offset-2">
+                  Landing pages
+                </Link>
+              </li>
               <li>
                 <Link href="/admin/settings" className="underline underline-offset-2">
                   Edit contact details, WhatsApp and form choices

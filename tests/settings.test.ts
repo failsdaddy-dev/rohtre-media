@@ -70,4 +70,32 @@ describe("settings form", () => {
     const r = settingsFromForm(form({ founderCanPublish: "on" }), DEFAULT_SETTINGS, false);
     expect(r.ok && r.settings.founderCanPublish).toBe(false);
   });
+
+  it("reads legal details and reports a bad privacy email under its own key", () => {
+    const ok = settingsFromForm(
+      form({ legalCompanyName: "RohTre Media Pvt Ltd", legalJurisdiction: "Lucknow" }),
+      DEFAULT_SETTINGS,
+      true,
+    );
+    expect(ok.ok && ok.settings.legal).toMatchObject({
+      companyName: "RohTre Media Pvt Ltd",
+      jurisdictionCity: "Lucknow",
+      privacyEmail: null,
+    });
+    const bad = settingsFromForm(form({ legalPrivacyEmail: "nope" }), DEFAULT_SETTINGS, true);
+    expect(!bad.ok && bad.errors["legal.privacyEmail"]).toBeTruthy();
+  });
+
+  it("edits the AI crawler list, de-duplicated, and keeps it when the field is absent", () => {
+    const r = settingsFromForm(
+      form({ aiBots: ["GPTBot", "ClaudeBot", "GPTBot"].join(String.fromCharCode(10)) }),
+      DEFAULT_SETTINGS,
+      true,
+    );
+    expect(r.ok && r.settings.aiBots).toEqual(["GPTBot", "ClaudeBot"]);
+    const kept = settingsFromForm(form(), DEFAULT_SETTINGS, true);
+    expect(kept.ok && kept.settings.aiBots).toEqual(DEFAULT_SETTINGS.aiBots);
+    const bad = settingsFromForm(form({ aiBots: "bad bot!" }), DEFAULT_SETTINGS, true);
+    expect(!bad.ok && bad.errors.aiBots).toBeTruthy();
+  });
 });

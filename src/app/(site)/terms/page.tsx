@@ -19,7 +19,12 @@ export default async function TermsPage() {
     <LegalPage title="Terms of Service">
       <p>
         These terms apply to your use of this website, run by RohTre Media (
-        <Placeholder>registered company name and address</Placeholder>). By using the website you agree to them.
+        {s.legal.companyName && s.legal.registeredAddress ? (
+          `${s.legal.companyName}, ${s.legal.registeredAddress}`
+        ) : (
+          <Placeholder>registered company name and address</Placeholder>
+        )}
+        ). By using the website you agree to them.
       </p>
 
       <h2>Our services</h2>
@@ -71,8 +76,8 @@ export default async function TermsPage() {
 
       <h2>Governing law</h2>
       <p>
-        These terms are governed by the laws of India. Courts at <Placeholder>city for jurisdiction</Placeholder> have
-        jurisdiction.
+        These terms are governed by the laws of India. Courts at{" "}
+        {s.legal.jurisdictionCity ?? <Placeholder>city for jurisdiction</Placeholder>} have jurisdiction.
       </p>
 
       <h2>Contact</h2>

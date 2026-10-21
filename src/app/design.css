@@ -607,3 +607,47 @@ html[data-intro] .rm-intro {
     display: none;
   }
 }
+
+/* Custom HTML section (R26): sensible defaults for pasted markup. */
+.rm-custom-html :where(h2) {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.rm-custom-html :where(h3) {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+}
+.rm-custom-html :where(p, ul, ol) {
+  margin: 0 0 1rem;
+  line-height: 1.65;
+}
+.rm-custom-html :where(ul) {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.rm-custom-html :where(ol) {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.rm-custom-html :where(a) {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rm-custom-html :where(img, video, iframe) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+.rm-custom-html :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+.rm-custom-html :where(th, td) {
+  border-bottom: 1px solid var(--line);
+  padding: 0.5rem;
+  text-align: left;
+}
