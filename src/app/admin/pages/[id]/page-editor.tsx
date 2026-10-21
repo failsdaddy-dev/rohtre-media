@@ -113,7 +113,10 @@ export function PageEditor(props: {
   };
   const addSection = (type: SectionType) => {
     const base = structuredClone(props.defaults[type]);
-    const id = `${type}-${Math.random().toString(36).slice(2, 7)}`;
+    const taken = new Set(content.sections.map((x) => x.id));
+    let n = 2;
+    while (taken.has(`${type}-${n}`)) n++;
+    const id = `${type}-${n}`;
     const formAt = content.sections.findIndex((s) => s.type === "form");
     const list = [...content.sections];
     list.splice(formAt === -1 ? list.length : formAt, 0, { ...base, id, enabled: true } as Section);
