@@ -465,10 +465,15 @@ html[data-intro] {
   opacity: 0.9;
 }
 /* Service cards (home): white, square corners, 1 px grey border. Hover,
-   tap (:active) and keyboard focus: a red gradient border (light red to
-   brand red to a deep red edge), a red glow and a 4 px lift, 250 ms. Touch
+   tap (:active) and keyboard focus: a multi-colour gradient border and glow
+   (purple, blue, red, orange) and a 4 px lift, 250 ms. Each icon box takes
+   its card's tint. Touch
    screens (no hover) keep a faint red border at rest. */
 .rm-svc {
+  /* Multi-colour glow: purple top-left, blue top-right, red bottom-right, orange bottom-left. */
+  --svc-glow:
+    -10px -10px 28px rgba(124, 58, 237, 0.32), 10px -10px 28px rgba(37, 99, 235, 0.32),
+    10px 10px 28px rgba(229, 9, 20, 0.35), -10px 10px 28px rgba(245, 158, 11, 0.32);
   position: relative;
   padding: 40px;
   border: 1px solid #e5e7eb;
@@ -484,7 +489,7 @@ html[data-intro] {
   position: absolute;
   inset: -1px;
   padding: 1px;
-  background: linear-gradient(135deg, #ff4d5a, var(--brand) 55%, #5a0006);
+  background: conic-gradient(from 200deg, #7c3aed, #2563eb, #06b6d4, #e50914, #ff4d5a, #f59e0b, #7c3aed);
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -498,7 +503,7 @@ html[data-intro] {
 .rm-svc:focus-within {
   transform: translateY(-4px);
   border-color: transparent;
-  box-shadow: 0 0 28px color-mix(in srgb, var(--brand) 35%, transparent);
+  box-shadow: var(--svc-glow);
 }
 .rm-svc:active::after,
 .rm-svc:focus-within::after {
@@ -508,7 +513,7 @@ html[data-intro] {
   .rm-svc:hover {
     transform: translateY(-4px);
     border-color: transparent;
-    box-shadow: 0 0 28px color-mix(in srgb, var(--brand) 35%, transparent);
+    box-shadow: var(--svc-glow);
   }
   .rm-svc:hover::after {
     opacity: 1;
@@ -532,8 +537,8 @@ html[data-intro] {
   width: 64px;
   height: 64px;
   border-radius: 0;
-  background: color-mix(in srgb, var(--brand) 9%, #ffffff);
-  color: var(--brand);
+  background: color-mix(in srgb, var(--tint) 14%, #ffffff);
+  color: var(--tint);
 }
 .rm-svc-tag {
   padding: 6px 10px;

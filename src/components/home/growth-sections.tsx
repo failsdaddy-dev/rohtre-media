@@ -44,9 +44,9 @@ const DISC =
 type ServiceItem = HomeContent["whoWeServe"]["items"][number];
 
 /**
- * One service card: white, square corners, a square light-red icon box with
- * the red icon, title, one line, then up to 3 square tag chips. Hover, tap
- * (:active) and focus light a red gradient border and glow and lift it 4 px.
+ * One service card: white, square corners, a square icon box in the card's
+ * own tint, title, one line, then up to 3 square tag chips. Hover, tap
+ * (:active) and focus light a multi-colour border and glow and lift it 4 px.
  */
 function ServiceCard({ item }: { item: ServiceItem }) {
   const logos = item.logos.filter((l) => l.logo_public_id);
@@ -67,7 +67,7 @@ function ServiceCard({ item }: { item: ServiceItem }) {
             />
           ))
         ) : (
-          <span className="rm-svc-icon" aria-hidden="true">
+          <span className="rm-svc-icon" aria-hidden="true" style={tint(item.tint)}>
             {item.icon === "shopify" ? (
               // eslint-disable-next-line @next/next/no-img-element -- the official Shopify file, served as is
               <img src="/brand/platforms/shopify-bag.svg" alt="" width={44} height={50} loading="lazy" className="h-8 w-auto" />
