@@ -92,7 +92,7 @@ export function SectionHead({
   );
 }
 
-/** The call to action that closes every home section (R13). */
+/** The call to action that closes every home section (R13): the large Book a Call + its supporting line. */
 export function SectionCta({
   text,
   label,
@@ -106,10 +106,12 @@ export function SectionCta({
 }) {
   return (
     <div className={`mt-14 flex flex-col gap-4 ${center ? "items-center text-center" : "items-start"}`} {...reveal(0)}>
-      <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" variant={variant}>
-        {label} <ArrowRightIcon size={18} />
+      <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" variant={variant} size="lg">
+        {label} <ArrowRightIcon size={20} />
       </ButtonLink>
-      {text && <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-fg-2">{text}</p>}
+      {text && (
+        <p className="max-w-xl text-xs font-bold uppercase leading-relaxed tracking-[0.2em] text-fg-2">{text}</p>
+      )}
     </div>
   );
 }

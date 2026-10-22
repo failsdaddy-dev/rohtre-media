@@ -1,6 +1,8 @@
 "use client";
 
+import type { MediaSlotValue } from "@/content/media-slot";
 import { MediaField } from "./media-field";
+import { MediaSlotField } from "./media-slot-field";
 import { SELECT_CLASS } from "./ui";
 
 // A form drawn from a JSON Schema (made from the Zod schemas with
@@ -11,6 +13,7 @@ import { SELECT_CLASS } from "./ui";
 //   number / integer → number box
 //   boolean          → switch
 //   {publicId,…}     → image/video upload (MediaField)
+//   media slot       → image-or-video slot editor (MediaSlotField)
 //   *_public_id      → image/video upload storing the id string
 //   object           → group of fields
 //   array            → repeatable list (add, remove, move)
@@ -70,6 +73,9 @@ function nonNull(schema: JsonSchema): { schema: JsonSchema; nullable: boolean } 
 }
 
 const isMediaObject = (s: JsonSchema) => Boolean(s.properties?.publicId && s.properties?.width && s.properties?.height);
+/** An image-or-video slot (src/content/media-slot.ts). */
+const isMediaSlot = (s: JsonSchema) =>
+  Boolean(s.properties?.publicId && s.properties?.aspect && s.properties?.loop && s.properties?.type);
 
 /** A blank value for a schema (used when adding a list item). */
 export function blankFor(schema: JsonSchema): unknown {
@@ -113,6 +119,20 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
   const help = hint.help && <span className="text-xs text-fg-2">{hint.help}</span>;
   const error = err && <span className="text-xs font-medium text-danger">{err}</span>;
 
+  if (isMediaSlot(schema)) {
+    return (
+      <div className="flex flex-col gap-1">
+        <MediaSlotField
+          label={label}
+          value={value as MediaSlotValue}
+          onChange={onChange}
+          error={err}
+          altError={errors[`${path}.alt`]}
+        />
+        {help}
+      </div>
+    );
+  }
   if (isMediaObject(schema)) {
     return (
       <div className="flex flex-col gap-1">

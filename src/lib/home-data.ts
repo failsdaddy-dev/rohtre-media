@@ -35,6 +35,8 @@ export type Testimonial = {
   person_role: string | null;
   company: string | null;
   photo_public_id: string | null;
+  /** Company logo (added 2026-10-22; absent until the migration is applied). */
+  logo_public_id?: string | null;
   approved: boolean;
   is_placeholder: boolean;
   notes: string | null;
@@ -87,10 +89,8 @@ export async function getTestimonials(): Promise<Testimonial[]> {
   cacheLife("max");
   const sb = client();
   if (!sb) return [];
-  const { data } = await sb
-    .from("testimonials")
-    .select("id, quote, person_name, person_role, company, photo_public_id, approved, is_placeholder, notes")
-    .order("sort");
+  // "*" so the page keeps working before and after the logo column exists.
+  const { data } = await sb.from("testimonials").select("*").order("sort");
   const rows = (data ?? []) as Testimonial[];
   return SHOW_PLACEHOLDERS ? rows : rows.filter(isLiveProof);
 }

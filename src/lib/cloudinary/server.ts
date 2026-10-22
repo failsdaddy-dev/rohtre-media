@@ -26,7 +26,14 @@ export async function destroyAsset(
   return json.result === "ok" ? "ok" : json.result === "not found" ? "not found" : "error";
 }
 
-export type CloudinaryResource = { publicId: string; width?: number; height?: number; bytes: number; format?: string };
+export type CloudinaryResource = {
+  publicId: string;
+  width?: number;
+  height?: number;
+  bytes: number;
+  format?: string;
+  duration?: number;
+};
 
 /**
  * Cloudinary's own record of an uploaded file (Admin API), so sizes and
@@ -52,6 +59,14 @@ export async function fetchResource(
     height?: number;
     bytes: number;
     format?: string;
+    duration?: number;
   };
-  return { publicId: j.public_id, width: j.width, height: j.height, bytes: j.bytes, format: j.format };
+  return {
+    publicId: j.public_id,
+    width: j.width,
+    height: j.height,
+    bytes: j.bytes,
+    format: j.format,
+    duration: j.duration,
+  };
 }

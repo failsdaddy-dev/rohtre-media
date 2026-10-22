@@ -101,19 +101,23 @@ export function ButtonLink({
   variant = "brand",
   external,
   track,
+  size = "md",
 }: {
   href: string;
   children: ReactNode;
   variant?: "brand" | "dark" | "plain";
   external?: boolean;
   track?: "book_call_click" | "call_click";
+  /** lg: the in-page Book a Call (56 px tall, 18 px text). */
+  size?: "md" | "lg";
 }) {
   const look = {
     brand: "bg-brand text-brand-fg",
     dark: "bg-chip-on-bg text-chip-on-fg",
     plain: "bg-chip hover:bg-chip-hover",
   }[variant];
-  const cls = `rm-press inline-flex h-12 items-center gap-2 rounded-full px-6 font-semibold ${look}`;
+  const scale = size === "lg" ? "h-14 gap-2.5 px-8 text-lg" : "h-12 gap-2 px-6";
+  const cls = `rm-press inline-flex items-center rounded-full font-semibold ${scale} ${look}`;
   return external ? (
     <a href={href} target="_blank" rel="noopener" className={cls} data-track={track}>
       {children}
@@ -158,6 +162,7 @@ export function CtaPanel({
   text = "Tell us about your brand and goals. We’ll get back to you with a plan.",
   label = "Book a Call",
   whatsappHref,
+  size = "md",
 }: {
   eyebrow?: string;
   title?: string;
@@ -165,6 +170,7 @@ export function CtaPanel({
   text?: string;
   label?: string;
   whatsappHref?: string | null;
+  size?: "md" | "lg";
 }) {
   return (
     <section className="pb-20 pt-4 md:pb-28">
@@ -182,8 +188,8 @@ export function CtaPanel({
             {text && <p className="text-lg text-white/65">{text}</p>}
             <div className="flex flex-wrap justify-center gap-3 pt-3">
               <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
-                <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-                  {label} <ArrowRightIcon size={18} />
+                <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size={size}>
+                  {label} <ArrowRightIcon size={size === "lg" ? 20 : 18} />
                 </ButtonLink>
               </span>
               {whatsappHref && (
@@ -191,7 +197,7 @@ export function CtaPanel({
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener"
-                  className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 font-semibold text-white transition-colors hover:bg-white/10"
+                  className={`rm-press inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 font-semibold text-white transition-colors hover:bg-white/10 ${size === "lg" ? "h-14 px-7 text-lg" : "h-12 px-6"}`}
                 >
                   <ChatIcon size={18} /> WhatsApp us
                 </a>

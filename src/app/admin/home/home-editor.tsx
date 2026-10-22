@@ -5,42 +5,52 @@ import { useState, useTransition } from "react";
 import { SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
 import { Button } from "@/components/admin/ui";
 import type { HomeContent } from "@/content/home-schema";
+import { homeBlockers, SECTION_NAMES } from "@/lib/home-blockers";
 import { saveHome } from "./actions";
 
 // Home page editor (R23): one tab per section, the same generic form as the
 // landing pages. Saving goes live straight away.
 
-const LABELS: Record<string, string> = {
-  hero: "Hero & slides",
-  badges: "Badges",
-  services: "Services",
-  results: "Results",
-  process: "Process",
-  testimonials: "Testimonials",
-  founder: "Founder",
-  faq: "FAQ",
-  finalCta: "Final call to action",
-};
-
 const HINTS: Hints = {
   slides: {
     label: "Slides (exactly two)",
-    help: "Finished images with the text baked in. Each needs a desktop and a mobile crop and alt text (R14).",
+    help: "Each slide needs a desktop and a mobile version (image with the text baked in, or a video) and alt text (R14).",
   },
-  desktop: { label: "Desktop image (about 1920×800)" },
-  mobile: { label: "Mobile image (about 1080×1350)" },
-  alt: { label: "Alt text" },
+  desktop: { label: "Desktop (12:5, about 1920×800)" },
+  mobile: { label: "Mobile (4:5, about 1080×1350)" },
   href: { label: "Link when clicked (optional, starts with /)" },
   h1: { label: "Headline (H1), first line" },
   h1Accent: { label: "Headline, red second line" },
   accent: { label: "Red second line" },
+  intro: { label: "Sub-heading" },
   photo: { label: "Photo" },
   yearsExperience: { label: "Years as a digital consultant (leave empty until confirmed)" },
-  icon: { label: "Icon" },
-  tags: { label: "Tags" },
+  icon: { label: "Icon (shown when there is no logo)" },
+  logos: {
+    label: "Platform logos (optional)",
+    help: "Official, unmodified logo files only (e.g. Shopify; Meta and Google). They mean “platforms we work with”, not a partnership.",
+  },
+  logo_public_id: { label: "Logo" },
+  values: { label: "Values row" },
+  media: { label: "Image or video" },
+  phones: { label: "Phone videos (9:16)", help: "Shown inside phone frames." },
+  phonesItem: { label: "Phone screen" },
+  points: { label: "Points" },
+  strapline: { label: "Strapline" },
+  client: { label: "Client name" },
+  metrics: {
+    label: "Numbers (leave empty to hide)",
+    help: "Only real, approved numbers. ROAS, sales and orders show as “x”, impressions as “M+”, the rest as “%”.",
+  },
+  roas: { label: "ROAS (x)" },
+  sales: { label: "Sales (x)" },
+  orders: { label: "Orders (x)" },
+  impressions: { label: "Impressions (M+)" },
+  lowerCpa: { label: "Lower CPA (%)" },
+  conversionRate: { label: "Conversion rate (%)" },
   status: { label: "Status", help: "Only “ready” answers show on the live site." },
-  cta: { label: "Call to action" },
-  enabled: { label: "Show this section" },
+  cta: { label: "Call to action (Book a Call button + supporting line)" },
+  enabled: { label: "Show this" },
 };
 
 export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas: Record<string, JsonSchema> }) {
@@ -52,6 +62,7 @@ export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [pending, start] = useTransition();
   const keys = Object.keys(schemas) as (keyof HomeContent)[];
+  const blockers = homeBlockers(data);
 
   const tabErrors = (k: string) =>
     Object.fromEntries(
@@ -79,7 +90,7 @@ export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas
                     : "bg-chip hover:bg-chip-hover"
               }`}
             >
-              {LABELS[k] ?? k}
+              {SECTION_NAMES[k] ?? k}
             </button>
           );
         })}
@@ -96,6 +107,24 @@ export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas
           errors={tabErrors(tab)}
         />
       </div>
+      <details className="rounded-[18px] border border-line bg-bg-elev p-5 sm:p-6">
+        <summary className="cursor-pointer text-sm font-semibold">
+          Launch blockers: {blockers.length === 0 ? "none" : `${blockers.length} still to fill`}
+        </summary>
+        <p className="mt-2 text-xs text-fg-2">
+          Empty slots show a neutral frame on the live site. Fill these before launch (switched-off sections don’t
+          count).
+        </p>
+        <ul className="mt-3 divide-y divide-line text-sm">
+          {blockers.map((b, i) => (
+            <li key={i} className="flex flex-wrap gap-x-2 py-2">
+              <span className="font-semibold">{b.section}</span>
+              <span className="text-fg-2">{b.where}</span>
+              <span>· {b.message}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
       <div className="sticky bottom-4 z-10 flex items-center gap-3 rounded-full border border-line bg-bg-elev p-2 pl-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
         <p role="status" className={`flex-1 text-sm ${message?.tone === "error" ? "text-danger" : ""}`}>
           {pending

@@ -7,7 +7,7 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
-| `/` | home page (R13): dark hero + slider, badge bar, services (dark), results (stacking), process (dark timeline), testimonials (marquee), founder (dark, quote reveal), FAQ, CTA panel | public | built (Phase 2, redesigned) |
+| `/` | home page (R13), order since 2026-10-22: dark hero + slider (image or video slides), full-width partner strip, Who We Serve (dark, replaced the 9 service cards), Product Showcase, Scroll. Engage. Convert (dark, phone frames), Video Ads & Reels, Results (stacking, untouched), Client showcase, stripe band, Process, Brands we've worked with (dark logo marquee), Testimonials (marquee, + company logos), Founder, FAQ, CTA panel | public | built (Phase 2, redesigned 2026-10-22) |
 | `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
@@ -55,6 +55,8 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
   - `results` (brand_name, logo, metric_value, metric_label, summary, image_public_id, image_alt, approved, is_placeholder, sort, notes). DB checks: an approved result can't be a placeholder and needs an image + alt.
   - Seeded from the live site, all switched off / unapproved: 6 badges (4 with images in Cloudinary `rohtre-media/images/badges/*`), 5 testimonials, 3 placeholder results.
 - `20261017180000_badges_showcase`: drops the badge proof rule; switches on 5 badges.
+- `20261022120000_testimonial_logos` (**written, NOT applied yet**; founder runs it): `testimonials.logo_public_id` + fills it for NealGuides, KSI/Sidemen, Pedram/PedTalkSports, Charlotte Marsh/EA. Until it runs, saving a testimonial in the admin fails (the form has the new field); the public page reads `*` so it works either way.
+- Home content JSON (no migration): new sections `whoWeServe`, `products`, `engage`, `videoAds`, `showcase`, `brands`; `services` removed; hero slides are now `{desktop, mobile, href}` media slots (the old `alt` moved into each slot). `page_content` had no saved row, so nothing needed converting.
 - RLS check: `npm run check:rls` (37 checks against the live project; creates and removes a temporary editor, test lead, page and audit rows).
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
@@ -81,15 +83,22 @@ Home page sections (Phase 2, `src/components/home/`), content in `src/content/ho
 
 | Section | Fields | Variants |
 |---|---|---|
-| hero | eyebrow, h1, h1Accent, subline, ctaLabel, slides[2] {desktop, mobile media, alt, href} | – |
-| badges | enabled, eyebrow, cta (items from `badges` table) | – |
-| services | eyebrow, title, accent, intro, items[] {title, text, icon, tags[], href}, cta | – |
-| results | eyebrow, title, accent, intro, cta (items from `results`) | – |
+| hero | eyebrow, h1, h1Accent, subline, ctaLabel, slides[2] {desktop slot 12:5, mobile slot 4:5, href} | – |
+| badges (partner strip) | enabled, eyebrow, title, accent, cta (items from `badges`); full-bleed band, one row ≥768 px, 2 columns on phones | – |
+| whoWeServe | eyebrow, title, accent, intro, items[1-8] {title, text, icon, logos[0-3] {logo_public_id, alt}}, values[], cta | – |
+| products | eyebrow, title, accent, intro, items[1-8] {label, action, media slot 4:5}, cta | – |
+| engage | eyebrow, title, accent, subline, body, points[], phones[1-4] (slots in `PhoneFrame`, 9:16), cta | – |
+| videoAds | eyebrow, title, accent, intro, strapline, body, items[1-8] {title, media slot 9:16}, cta | – |
+| results | eyebrow, title, accent, intro, cta (items from `results`); image-only slots, untouched (pending migration to media slots, needs founder OK) | – |
+| showcase | eyebrow, title, accent, intro, items[0-6] {client, logo_public_id, media slot 4:5, metrics {roas, sales, orders, impressions, lowerCpa, conversionRate}}, cta. A metric shows only with a value; a card with nothing in it is hidden on the live site (so the section is hidden until filled) | – |
+| brands | eyebrow, title, accent, items[] {name, logo_public_id, alt, enabled} (order = list order), cta | marquee |
 | process | eyebrow, title, accent, intro, steps[1-5], cta | – |
 | testimonials | eyebrow, title, accent, variant, cta (items from `testimonials`) | grid, slider (marquee) |
 | founder | eyebrow, quote (live-site CEO quote), name, role, bio, yearsExperience (null until confirmed), photo, ctaLabel | – |
 | faq | eyebrow, title, accent, items[] {q, a, status draft/ready}, cta | – |
 | finalCta | eyebrow, title, accent, text, label | – |
+
+**Media slot** (`src/content/media-slot.ts`, `src/components/media/media-slot.tsx`, admin `src/components/admin/media-slot-field.tsx`): `{type image|video, publicId, format, alt, aspect 16:9|12:5|4:5|1:1|3:4|9:16, loop, poster, bytes, duration}`; alt required for filled images. Fixed aspect ratio (no layout shift). Image = Cloudinary srcset (f_auto, q_auto, widths 320-2400). Video = a still (poster, or first frame `so_0`) under the clip; loop clips are muted, get their file only when in view (`MediaPlayback`, IntersectionObserver, starts after page load, max 3 playing, pause off screen, nothing for reduced motion or save-data); other videos get controls + `preload="none"`. GIF = image upload delivered as a looping MP4 (`.mp4` extension) with a `pg_1` still. Empty = neutral dotted frame, labelled "Placeholder · 9:16 · image or video · up to N MB" only outside production. `PhoneFrame` = CSS phone outline (no brand marks) around a 9:16 slot. Limits in `src/lib/media-limits.ts`: images 10 MB, video 100 MB (Cloudinary Free, verified on cloudinary.com/pricing/compare-plans), loop clip warning above 10 MB or 15 s, 3 playing at once. Admin form: any slot-shaped field gets the slot editor automatically. Launch blockers: `src/lib/home-blockers.ts`, shown on Admin → Home page.
 
 Landing-page section registry (Phase 3, R28) - `src/sections/schemas.ts` (data), `src/sections/render.tsx` (components), `src/sections/master-template.ts` (default page), `src/sections/tone.ts` (header tone):
 
@@ -198,6 +207,11 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-21 | New staff get a random 20-character one-time password shown once to the owner (no email service needed); they change it on the Password tab | R22, no paid services |
 | 2026-10-21 | Media delete: only files uploaded through the admin, only when nothing uses them (pages, home content, proof). No trash folder | Founder (delete from Cloudinary) |
 | 2026-10-21 | Confirmations in the admin are two-click buttons, never browser dialogs | R44 |
+| 2026-10-22 | Home redesign after the live e-commerce page (structure + wording only, our UI): 9 service cards removed (component, `services` content key and `.rm-tag` CSS; `ServiceIcon` kept, landing pages use it); new sections listed in section 3; partner strip full-width; in-page Book a Call = `ButtonLink size="lg"` (56 px, 18 px text); header button 44 → 48 px (bar still 72 px, nav unchanged) | Founder brief |
+| 2026-10-22 | Work stayed on `dev`, not a new branch: the brief asked for one, the standing two-branch rule wins | Founder rule |
+| 2026-10-22 | Client showcase built (not a duplicate of Results: Results has one headline metric per client in stacking cards; the showcase has up to six metrics per card). Empty cards hidden on the live site | Brief 5.7 |
+| 2026-10-22 | Client logos: 17 files downloaded once from the live page into `scripts/seed-assets/brands/`, uploaded by `npm run seed:logos` to `rohtre-media/images/brands/{slug}` (code defaults reference these ids, like the badges). 16 identified, 1 unidentified (stored switched off). Logos are shown unmodified (testimonials and client cards put them on a dark chip) | Brief Part 7 |
+| 2026-10-22 | Platform logos (Shopify, Meta, Google, YouTube) not added: no official files supplied; Who We Serve cards show our icons until the founder uploads official files | Brief 7.1 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -236,6 +250,10 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | "2B+" stat badge (disabled): exact number, unit (conversions / views / other), "as of" date, proof source. Conflict: live home says 2 Billion conversions, live About says 2B views, the brief says 2,000,000+ conversions (1,000x and metric differ) | founder | `badges` row `e474c465…` |
 | 5 live badges have no proof link (shown as a showcase by founder decision) | founder (optional) | `badges` |
 | Home placeholders (dev only, never in production): 2 hero slides, 3 result blocks, founder years of experience | founder | home |
+| Home media slots, all empty (neutral frames on the live site): hero 2 slides × desktop + mobile, 5 product slots, 2 phone videos, 4 video-ad cards, 2 client-showcase cards (+ client names, logos, numbers). Live list: Admin → Home page → Launch blockers | founder | Admin → Home page |
+| Platform logos for Who We Serve (official Shopify, Meta, Google files), optional | founder | Admin → Home page → Who we serve |
+| Unidentified client logo (`scripts/seed-assets/brands/unidentified-1.png`: brown round "b" mark) and the Harmiche.com testimonial logo | founder | Admin → Home page → Brands; Proof → Testimonials |
+| Run `npm run seed:logos` (uploads the client logos) and apply migration `20261022120000_testimonial_logos` | founder | terminal |
 | 5 testimonials need written permission; 6 FAQ answers need approval | founder | `testimonials`, home FAQ |
 
 Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` renders "[TO CONFIRM: …]" (legal pages); home uses `PlaceholderBox` / `NotLiveTag` (`src/components/home/parts.tsx`) behind `SHOW_PLACEHOLDERS` (dev only).
@@ -258,6 +276,11 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Admin screens were checked by typecheck, lint, unit tests, RLS checks and a production build only; the founder runs the site, so nobody has clicked through them in a browser yet | founder | no |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
+| "2B+" badge is switched ON in the database (seen 2026-10-22) although its number/unit is unconfirmed; it shows on the live strip | founder | that badge |
+| Client-logo use: big-brand logos (EA, DayZ, BetterHelp, italki, Sidemen, SPORTbible…) imply they were clients; confirm each, with permission where needed | founder | before launch |
+| Optional home sections from the live page not built: Paid media & PPC swipe carousel, One Growth System, News & Recognition | founder | no |
+| Results section slots are image-only (pending migration to media slots, needs approval) | founder | no |
+| Home redesign not checked in a browser (founder runs the site): mobile LCP/CLS before/after not measured; first-load JS `/` 184.1 → 185.1 KB gzip | founder | no |
 
 ## 10a. Phase 3 not done (needs founder input or later phases)
 
@@ -267,8 +290,7 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-**On hold (2026-10-21), founder back when their Claude limit resets.**
-1. Founder will send small home page changes (not a full redesign). Make them on the home page, then update the admin Home page editor (`src/content/home-schema.ts` → admin forms are generated from it) so every new field is editable.
-2. Then Phase 5 (AI page creation, R29-R32), which needs `docs/design-guide.md`; if it's missing, stop and ask.
+**Home redesign done on `dev` (2026-10-22), waiting for the founder's "go".** Founder: run `npm run seed:logos`, apply migration `20261022120000_testimonial_logos` (`npx supabase db push`), then check the home page with `npm run dev` and fill slots in Admin → Home page.
+Then Phase 5 (AI page creation, R29-R32), which needs `docs/design-guide.md`; if it's missing, stop and ask.
 
 Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.

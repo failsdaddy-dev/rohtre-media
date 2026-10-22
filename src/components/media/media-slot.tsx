@@ -1,0 +1,134 @@
+import type { CSSProperties } from "react";
+import { ASPECTS, isGif, playsAsVideo, slotLabel, type MediaSlotValue } from "@/content/media-slot";
+import { clipUrl, cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
+import { MEDIA_IMAGE_MAX_MB, MEDIA_VIDEO_MAX_MB } from "@/lib/media-limits";
+
+// One media slot (image OR video) at a fixed aspect ratio, so nothing jumps
+// while it loads. Server-rendered; the only browser code is MediaPlayback,
+// which starts and stops the looping clips.
+//   empty  → a neutral frame; while building it carries a small label
+//   image  → responsive Cloudinary image (f_auto, q_auto, widths below)
+//   video  → a still (poster or first frame) under the clip. Loop clips are
+//            muted, have no src until MediaPlayback starts them in view, and
+//            stay on the still for reduced motion or data saver. Other
+//            videos get a normal player with controls and preload="none".
+//   GIF    → served as a looping MP4 (much lighter than the GIF itself)
+
+const SHOW_LABELS = process.env.NODE_ENV !== "production";
+const WIDTHS = [320, 480, 640, 828, 1080, 1280, 1600, 1920, 2400];
+
+export type SlotProps = {
+  slot: MediaSlotValue;
+  /** The image `sizes` attribute (how wide the slot is on screen). */
+  sizes: string;
+  /** The LCP element: load the still eagerly with high priority. */
+  priority?: boolean;
+  className?: string;
+  /** Widest file needed (keeps small slots from offering huge files). */
+  maxWidth?: number;
+};
+
+/** The still image's URL at a given width (image, video poster or GIF frame). */
+export function stillFor(slot: MediaSlotValue, width: number): string | null {
+  if (!slot.publicId) return null;
+  if (slot.type === "video") {
+    return slot.poster ? cloudinaryUrl(slot.poster, { width }) : stillUrl(slot.publicId, { width });
+  }
+  return isGif(slot) ? stillUrl(slot.publicId, { width, gif: true }) : cloudinaryUrl(slot.publicId, { width });
+}
+
+export function stillSrcSet(slot: MediaSlotValue, maxWidth = 2400): string | undefined {
+  if (!slot.publicId) return undefined;
+  return WIDTHS.filter((w) => w <= maxWidth)
+    .map((w) => `${stillFor(slot, w)} ${w}w`)
+    .join(", ");
+}
+
+export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 2400 }: SlotProps) {
+  const frame: CSSProperties = { aspectRatio: String(ASPECTS[slot.aspect]) };
+  const box = `relative w-full overflow-hidden ${className}`;
+
+  if (!slot.publicId) {
+    return (
+      <div
+        style={frame}
+        data-empty-slot=""
+        className={`${box} grid place-items-center border border-line bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] [background-image:radial-gradient(color-mix(in_srgb,var(--fg)_9%,transparent)_1px,transparent_1px)] [background-size:14px_14px]`}
+      >
+        {SHOW_LABELS && (
+          <span className="mx-3 rounded-full bg-bg/85 px-2.5 py-1 text-center text-[10px] font-semibold uppercase tracking-wider text-fg-2">
+            {slotLabel(slot, MEDIA_IMAGE_MAX_MB, MEDIA_VIDEO_MAX_MB)}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  const srcSet = stillSrcSet(slot, maxWidth);
+  const still = (
+    // eslint-disable-next-line @next/next/no-img-element -- Cloudinary does the resizing (same URLs as the next/image loader)
+    <img
+      src={stillFor(slot, Math.min(1080, maxWidth)) ?? undefined}
+      srcSet={srcSet}
+      sizes={sizes}
+      alt={playsAsVideo(slot) ? "" : slot.alt}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
+      className="absolute inset-0 size-full object-cover"
+    />
+  );
+  if (!playsAsVideo(slot)) {
+    return (
+      <div style={frame} className={box}>
+        {still}
+      </div>
+    );
+  }
+
+  const clip = clipUrl(slot.publicId, { width: Math.min(1080, maxWidth), gif: isGif(slot) });
+  const loop = slot.loop || isGif(slot);
+  return (
+    <div style={frame} className={box}>
+      {still}
+      {loop ? (
+        <video
+          data-rm-loop=""
+          data-src={clip}
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-label={slot.alt || undefined}
+          aria-hidden={slot.alt ? undefined : true}
+          className="rm-loop-clip absolute inset-0 size-full object-cover"
+        />
+      ) : (
+        <video
+          src={clip}
+          poster={stillFor(slot, 1080) ?? undefined}
+          controls
+          playsInline
+          preload="none"
+          aria-label={slot.alt || "Video"}
+          className="absolute inset-0 size-full bg-black object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
+/** A generic, CSS-drawn phone (no brand marks) holding a 9:16 slot. */
+export function PhoneFrame({ slot, sizes, className = "" }: Omit<SlotProps, "priority">) {
+  return (
+    <div
+      className={`relative rounded-[2.4rem] border border-white/15 bg-[#0b0b0b] p-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] ${className}`}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute left-1/2 top-3.5 z-10 h-[18px] w-[30%] -translate-x-1/2 rounded-full bg-[#0b0b0b]"
+      />
+      <MediaSlot slot={{ ...slot, aspect: "9:16" }} sizes={sizes} maxWidth={828} className="rounded-[1.9rem]" />
+    </div>
+  );
+}

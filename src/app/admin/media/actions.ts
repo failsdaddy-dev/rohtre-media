@@ -7,7 +7,17 @@ import { destroyAsset, fetchResource } from "@/lib/cloudinary/server";
 import { deleteMediaIfUnused, type DeleteOutcome } from "@/lib/media.server";
 import { supabaseServer } from "@/lib/supabase/server";
 
-export type Uploaded = { publicId: string; width: number; height: number; resourceType: "image" | "video" };
+export type Uploaded = {
+  publicId: string;
+  width: number;
+  height: number;
+  resourceType: "image" | "video";
+  bytes: number;
+  /** e.g. "jpg", "gif", "mp4" (a GIF is served as a looping video). */
+  format: string | null;
+  /** Seconds, for videos (when Cloudinary reports it). */
+  duration: number | null;
+};
 
 /**
  * Record a file the browser just uploaded straight to Cloudinary. Size and
@@ -41,7 +51,18 @@ export async function registerUpload(
   });
   if (error) return { ok: false, error: "Couldn’t save the upload." };
   await audit(staff, "media.upload", "media", publicId, { bytes: info.bytes });
-  return { ok: true, media: { publicId, width: info.width ?? 1, height: info.height ?? 1, resourceType } };
+  return {
+    ok: true,
+    media: {
+      publicId,
+      width: info.width ?? 1,
+      height: info.height ?? 1,
+      resourceType,
+      bytes: info.bytes,
+      format: info.format ?? null,
+      duration: info.duration ?? null,
+    },
+  };
 }
 
 /** Delete files from the library and Cloudinary (owner/developer), unless the site still uses them. */

@@ -216,15 +216,15 @@ html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-
   background: currentColor;
 }
 /* Square tag chips on cards. */
-.rm-tag {
-  display: inline-block;
-  padding: 4px 10px;
-  border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 85%, transparent);
+/* ------------------------------------------------------------ loop clips
+   A looping clip (MediaSlot) sits over its still image and fades in once it
+   is actually playing, so a slow or blocked video never shows a black box. */
+.rm-loop-clip {
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-soft);
+}
+.rm-loop-clip[data-playing] {
+  opacity: 1;
 }
 
 /* ---------------------------------------------------------- reveal on view

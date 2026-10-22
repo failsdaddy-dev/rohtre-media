@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { emptySlot, mediaSlotSchema } from "./media-slot";
 
 // Home page content (R13, R14). Stored as JSON in public.page_content
 // (key "home"), checked here. Any section that is missing or invalid falls
-// back to its default on its own, so the page always renders. Phase 4's
-// admin edits exactly these fields. Headings are two-tone: `title` plus an
+// back to its default on its own, so the page always renders. The admin
+// edits exactly these fields (its forms are generated from this schema).
+// Every image/video slot is a media slot (./media-slot.ts). Headings are two-tone: `title` plus an
 // optional `accent` line shown in the red gradient.
 
 export const mediaSchema = z.object({
@@ -17,13 +19,44 @@ export type Media = z.infer<typeof mediaSchema>;
 const cta = z.object({ text: z.string().max(140), label: z.string().min(1).max(40) });
 
 const slide = z.object({
-  /** Finished image with the text baked in. Desktop about 1920×800, mobile about 1080×1350. */
-  desktop: mediaSchema.nullable(),
-  mobile: mediaSchema.nullable(),
-  alt: z.string().max(250),
+  /** Image (text baked in) or video. Desktop 12:5 (about 1920×800), mobile 4:5 (about 1080×1350). */
+  desktop: mediaSlotSchema,
+  mobile: mediaSlotSchema,
   /** Optional link when the slide is clicked. */
   href: z.string().startsWith("/").nullable(),
 });
+const emptySlide = () => ({ desktop: emptySlot("12:5"), mobile: emptySlot("4:5"), href: null });
+
+/** Optional brand logo (Cloudinary id) with its alt text. */
+const pid = z.string().regex(/^rohtre-media\/[A-Za-z0-9_./-]+$/);
+const logo = z.object({ logo_public_id: pid.nullable(), alt: z.string().max(120) });
+/** A client-showcase number; empty = not shown. */
+const metric = z.number().nonnegative().max(1_000_000).nullable();
+
+/**
+ * Logos from the "Brands we've worked with" row of the live site, uploaded by
+ * `npm run seed:logos` to rohtre-media/images/brands/{slug}. An unidentified
+ * file is stored switched off until someone names it.
+ */
+export const BRAND_LOGOS = [
+  ["pedtalks-sports", "PedTalks Sports"],
+  ["nealguides", "NealGuides"],
+  ["ea", "EA"],
+  ["433", "433"],
+  ["oh-my-goal", "Oh My Goal"],
+  ["sportbible", "SPORTbible"],
+  ["ak-interactive", "AK Interactive"],
+  ["dayz", "DayZ"],
+  ["italki", "italki"],
+  ["teddy-blake", "Teddy Blake New York"],
+  ["sidemen", "Sidemen"],
+  ["betterhelp", "BetterHelp"],
+  ["ricekraft", "RiceKraft"],
+  ["law-care-legal", "Law Care Legal"],
+  ["tfv-gaming", "TFV Gaming"],
+  ["bubbles-in-korea", "Bubbles in Korea"],
+  ["unidentified-1", "Unidentified logo 1"],
+] as const;
 
 export const SERVICE_ICONS = [
   "megaphone",
@@ -53,10 +86,7 @@ export const homeSchema = z.object({
       h1Accent: "unstoppable.",
       subline: "Meta ads, Google Ads, scroll-stopping creatives and websites for brands that want to grow.",
       ctaLabel: "Book a Call",
-      slides: [
-        { desktop: null, mobile: null, alt: "", href: null },
-        { desktop: null, mobile: null, alt: "", href: null },
-      ],
+      slides: [emptySlide(), emptySlide()],
     }),
 
   badges: z
@@ -75,7 +105,73 @@ export const homeSchema = z.object({
       cta: { text: "Want this team on your brand?", label: "Book a Call" },
     }),
 
-  services: z
+  whoWeServe: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      intro: z.string().max(300),
+      items: z
+        .array(
+          z.object({
+            title: z.string().min(1).max(60),
+            text: z.string().max(240),
+            /** Shown when no platform logo is set. */
+            icon: z.enum(SERVICE_ICONS),
+            /** Optional official platform logos (e.g. Shopify; Meta + Google), unmodified files only. */
+            logos: z.array(logo).max(3),
+          }),
+        )
+        .min(1)
+        .max(8),
+      values: z.array(z.string().min(1).max(40)).max(6),
+      cta,
+    })
+    .default({
+      enabled: true,
+      // Wording from the live e-commerce page (rohtremedia.com/e-commerce-marketing), typos fixed.
+      eyebrow: "Who We Serve",
+      title: "Everything Your",
+      accent: "Ecommerce Brand Needs.",
+      intro: "One Partner, Every Stage of Growth.",
+      items: [
+        {
+          title: "Shopify Development",
+          text: "Custom stores built for speed, UX and scale.",
+          icon: "cart",
+          logos: [],
+        },
+        {
+          title: "Ecommerce Strategy",
+          text: "Winning products, positioning and store strategy that convert.",
+          icon: "bag",
+          logos: [],
+        },
+        {
+          title: "Performance Marketing",
+          text: "Data-driven ads that drive traffic, sales and profitable growth.",
+          icon: "megaphone",
+          logos: [],
+        },
+        {
+          title: "Creative Production",
+          text: "Scroll-stopping creatives and videos that turn attention into sales.",
+          icon: "play",
+          logos: [],
+        },
+        {
+          title: "Automation & Retention",
+          text: "Email, SMS and automation systems that maximise LTV and repeat sales.",
+          icon: "sparkles",
+          logos: [],
+        },
+      ],
+      values: ["One Team", "End-to-End Solutions", "Proven Process", "Real Growth"],
+      cta: { text: "Book a free strategic call and let’s grow your brand.", label: "Book a Call" },
+    }),
+
+  products: z
     .object({
       enabled: z.boolean(),
       eyebrow: z.string().max(60),
@@ -85,88 +181,90 @@ export const homeSchema = z.object({
       items: z
         .array(
           z.object({
-            title: z.string().min(1).max(60),
-            text: z.string().max(240),
-            icon: z.enum(SERVICE_ICONS),
-            tags: z.array(z.string().min(1).max(24)).max(4),
-            href: z.string().startsWith("/").nullable(),
+            label: z.string().max(40),
+            action: z.string().min(1).max(40),
+            media: mediaSlotSchema,
           }),
         )
-        .max(12),
+        .min(1)
+        .max(8),
       cta,
     })
     .default({
       enabled: true,
-      eyebrow: "Services",
-      title: "See what we’ll do",
-      accent: "to build your brand.",
-      intro: "Everything you need to get more customers, from the first ad to the page it lands on.",
-      items: [
-        {
-          title: "Meta ads",
-          text: "Facebook and Instagram campaigns built around scroll-stopping creative, sharp targeting and constant optimisation.",
-          icon: "megaphone",
-          tags: ["Facebook", "Instagram", "Reels"],
-          href: null,
-        },
-        {
-          title: "Google Ads",
-          text: "Search, Shopping, Performance Max and YouTube campaigns that reach people when they’re ready to buy.",
-          icon: "search",
-          tags: ["Search", "Shopping", "YouTube"],
-          href: null,
-        },
-        {
-          title: "D2C & e-commerce growth",
-          text: "Full-funnel growth for direct-to-consumer brands: ads, creatives, landing pages and retention working together.",
-          icon: "bag",
-          tags: ["Ads", "Creatives", "Retention"],
-          href: null,
-        },
-        {
-          title: "Social media",
-          text: "Content calendars, posts and community management that keep your brand active and on-message.",
-          icon: "users",
-          tags: ["Strategy", "Content", "Community"],
-          href: null,
-        },
-        {
-          title: "YouTube & video",
-          text: "Video ads, reels and YouTube content made by our own video production team.",
-          icon: "play",
-          tags: ["Video ads", "Reels", "YouTube"],
-          href: null,
-        },
-        {
-          title: "Websites",
-          text: "Fast, conversion-focused websites and landing pages that turn visitors into leads.",
-          icon: "monitor",
-          tags: ["Design", "Landing pages", "Speed"],
-          href: null,
-        },
-        {
-          title: "Content",
-          text: "Copy, graphics and motion design that make your brand look and sound the same everywhere.",
-          icon: "pen",
-          tags: ["Copy", "Graphics", "Motion"],
-          href: null,
-        },
-        {
-          title: "Shopify development",
-          text: "Shopify store setup, themes and improvements that make buying easy.",
-          icon: "cart",
-          tags: ["Setup", "Themes", "Conversion"],
-          href: null,
-        },
-        {
-          title: "AI automation",
-          text: "AI tools and automations for content, lead follow-up and reporting, so your team saves time.",
-          icon: "sparkles",
-          tags: ["Content", "Leads", "Reporting"],
-          href: null,
-        },
-      ],
-      cta: { text: "Not sure which service fits?", label: "Ask us on a call" },
+      eyebrow: "Product Showcase",
+      title: "Have an Ecommerce Product?",
+      accent: "Let’s Scale It.",
+      intro:
+        "From first launch to seven-figure scale, we help ecommerce brands turn products into profitable growth through Shopify, creative and performance marketing.",
+      items: ["Grow", "Boost", "Launch", "Scale", "Market"].map((verb) => ({
+        label: "Your Product",
+        action: `${verb} This Product`,
+        media: emptySlot("4:5"),
+      })),
+      cta: { text: "Have a product to grow? Let’s talk about it.", label: "Book a Call" },
+    }),
+
+  engage: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      subline: z.string().max(80),
+      body: z.string().max(400),
+      points: z.array(z.string().min(1).max(60)).max(6),
+      /** Shown inside phone frames (always 9:16). */
+      phones: z.array(mediaSlotSchema).min(1).max(4),
+      cta,
+    })
+    .default({
+      enabled: true,
+      eyebrow: "Scroll. Engage. Convert",
+      title: "Your Product. Our Creative.",
+      accent: "More Customers.",
+      subline: "More Scrolls. More Sales.",
+      body: "We combine high-converting product selections with scroll-stopping creatives to drive clicks, add-to-cart moments, and real revenue.",
+      points: ["Curated Winning Products", "Scroll-Stopping Video Ads", "High ROAS Campaigns", "More Sales Every Day"],
+      // The live section shows two phone videos.
+      phones: [emptySlot("9:16", "video"), emptySlot("9:16", "video")],
+      cta: {
+        text: "Ready to grow your product? Let’s make it your next success story.",
+        label: "Book a Call",
+      },
+    }),
+
+  videoAds: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      intro: z.string().max(300),
+      strapline: z.string().max(80),
+      body: z.string().max(300),
+      items: z
+        .array(z.object({ title: z.string().min(1).max(60), media: mediaSlotSchema }))
+        .min(1)
+        .max(8),
+      cta,
+    })
+    .default({
+      enabled: true,
+      eyebrow: "Video Ads & Reels",
+      title: "Video Ads People Watch.",
+      accent: "Brands People Remember.",
+      intro: "High-performing video content that stops the scroll, builds trust, and drives real D2C growth.",
+      strapline: "Creative that scrolls. Ads that sell.",
+      body: "From thumb-stopping reels to cinematic product films, we craft video content that engages, converts, and builds brands.",
+      items: ["Reels & UGC Ads", "Product Films", "Paid Social Creatives", "Performance Storytelling"].map((title) => ({
+        title,
+        media: emptySlot("9:16", "video"),
+      })),
+      cta: {
+        text: "Ready to create ads that drive growth? Let’s make your next campaign your best one yet.",
+        label: "Book a Call",
+      },
     }),
 
   results: z
@@ -185,6 +283,82 @@ export const homeSchema = z.object({
       accent: "build brands.",
       intro: "Real numbers from real campaigns, with the dashboards to prove them.",
       cta: { text: "Let’s plan your numbers.", label: "Book a Call" },
+    }),
+
+  showcase: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      intro: z.string().max(300),
+      items: z
+        .array(
+          z.object({
+            client: z.string().max(80),
+            logo_public_id: pid.nullable(),
+            media: mediaSlotSchema,
+            /** Each metric shows only when it has a value. */
+            metrics: z.object({
+              roas: metric,
+              sales: metric,
+              orders: metric,
+              impressions: metric,
+              lowerCpa: metric,
+              conversionRate: metric,
+            }),
+          }),
+        )
+        .max(6),
+      cta,
+    })
+    .default({
+      enabled: true,
+      eyebrow: "RohTre Media",
+      title: "We build growth",
+      accent: "that shows.",
+      intro: "Strategy. Creative. Technology. All working together for real results.",
+      // Two empty cards: no client names or numbers until real, approved ones exist.
+      items: [0, 1].map(() => ({
+        client: "",
+        logo_public_id: null,
+        media: emptySlot("4:5"),
+        metrics: { roas: null, sales: null, orders: null, impressions: null, lowerCpa: null, conversionRate: null },
+      })),
+      cta: { text: "Want results like this for your brand? Let’s make it happen.", label: "Book a Call" },
+    }),
+
+  brands: z
+    .object({
+      enabled: z.boolean(),
+      eyebrow: z.string().max(60),
+      title: z.string().max(100),
+      accent: z.string().max(60),
+      /** In display order; switched-off logos are kept but not shown. */
+      items: z
+        .array(
+          z.object({
+            name: z.string().min(1).max(80),
+            logo_public_id: pid.nullable(),
+            alt: z.string().max(120),
+            enabled: z.boolean(),
+          }),
+        )
+        .max(60),
+      cta,
+    })
+    .default({
+      enabled: true,
+      eyebrow: "Clients",
+      title: "Brands We’ve",
+      accent: "Worked With.",
+      items: BRAND_LOGOS.map(([slug, name]) => ({
+        name,
+        logo_public_id: `rohtre-media/images/brands/${slug}`,
+        alt: name,
+        enabled: !slug.startsWith("unidentified"),
+      })),
+      cta: { text: "Want your brand on this list?", label: "Book a Call" },
     }),
 
   process: z

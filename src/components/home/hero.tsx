@@ -1,8 +1,9 @@
-import { getImageProps } from "next/image";
 import type { CSSProperties } from "react";
 import type { HomeContent } from "@/content/home-schema";
+import { isFilled, playsAsVideo } from "@/content/media-slot";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import { ArrowRightIcon, ChatIcon } from "../icons";
+import { MediaSlot, stillFor, stillSrcSet } from "../media/media-slot";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 import { HeroSlider } from "./hero-slider";
@@ -10,54 +11,66 @@ import { PlaceholderBox, reveal } from "./parts";
 
 // Hero (R14): a full-screen dark band with drifting light beams, a pill label,
 // the real visible H1 (two-tone), two calls to action; then the two finished
-// slides (text baked into the images, separate desktop and mobile crops) in
-// a framed slider. Slide 1 loads eagerly with high priority; slide 2 lazily.
+// slides (each crop an image or a video, separate desktop and mobile crops)
+// in a framed slider. Slide 1 loads eagerly with high priority; slide 2 lazily.
 // verified: node_modules/next/dist/docs/01-app/03-api-reference/02-components/image.md
-//   (getImageProps art direction; loading="eager" + fetchPriority="high"
+//   (art direction with <picture>; loading="eager" + fetchPriority="high"
 //   rather than `preload` when the image differs by viewport)
 // The H1 is visible rather than screen-reader-only: Google has no official
 // guidance on hidden H1s (unverified), so the safe choice is visible text.
 
 const DESKTOP_MIN = "(min-width: 768px)";
+const SIZES = "(min-width: 1240px) 1200px, 100vw";
 const enter = (i: number) => ({ className: "rm-hero-in", style: { "--i": i } as CSSProperties });
 
-function Slide({ slide, index }: { slide: HomeContent["hero"]["slides"][number]; index: number }) {
+type SlideData = HomeContent["hero"]["slides"][number];
+const slideFilled = (s: SlideData) => isFilled(s.desktop) && isFilled(s.mobile);
+
+/**
+ * One slide. The still layer is always a <picture> (desktop crop from 768 px
+ * up, mobile crop below), so only one file loads, and for the first slide it
+ * is the LCP image (eager, high priority). A slot that is a video (or GIF)
+ * adds its clip on top, shown only at its own breakpoint; MediaPlayback
+ * starts it after the page has loaded, and never for reduced motion.
+ */
+function Slide({ slide, index }: { slide: SlideData; index: number }) {
   const first = index === 0;
-  if (!slide.desktop || !slide.mobile) {
+  if (!slideFilled(slide)) {
     return (
       <PlaceholderBox
         title={`Hero slide ${index + 1}`}
         className="aspect-[4/5] w-full rounded-none border-0 bg-[#0d0d0d] md:aspect-[12/5]"
       >
-        Upload a finished desktop image (about 1920×800) and a mobile image (about 1080×1350), with alt text.
+        Upload a desktop (12:5, about 1920×800) and a mobile (4:5, about 1080×1350) image or video, with alt text.
       </PlaceholderBox>
     );
   }
-  const common = { alt: slide.alt, sizes: "(min-width: 1240px) 1200px, 100vw" };
-  const {
-    props: { srcSet: desktopSet },
-  } = getImageProps({
-    ...common,
-    src: slide.desktop.publicId,
-    width: slide.desktop.width,
-    height: slide.desktop.height,
-  });
-  const {
-    props: { srcSet: mobileSet, ...img },
-  } = getImageProps({
-    ...common,
-    src: slide.mobile.publicId,
-    width: slide.mobile.width,
-    height: slide.mobile.height,
-    loading: first ? "eager" : "lazy",
-    fetchPriority: first ? "high" : "auto",
-  });
+  const { desktop, mobile } = slide;
+  const alt = desktop.alt || mobile.alt;
+  const clip = (slot: typeof desktop, at: string) =>
+    playsAsVideo(slot) && (
+      <div className={`absolute inset-0 ${at}`}>
+        <MediaSlot slot={{ ...slot, alt: "" }} sizes={SIZES} className="h-full" />
+      </div>
+    );
   const picture = (
-    <picture>
-      <source media={DESKTOP_MIN} srcSet={desktopSet} />
-      {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes from getImageProps */}
-      <img {...img} srcSet={mobileSet} className="aspect-[4/5] w-full object-cover md:aspect-[12/5]" />
-    </picture>
+    <div className="relative">
+      <picture>
+        <source media={DESKTOP_MIN} srcSet={stillSrcSet(desktop)} sizes={SIZES} />
+        <img
+          src={stillFor(mobile, 1080) ?? undefined}
+          srcSet={stillSrcSet(mobile)}
+          sizes={SIZES}
+          alt={alt}
+          loading={first ? "eager" : "lazy"}
+          fetchPriority={first ? "high" : "auto"}
+          decoding="async"
+          className="aspect-[4/5] w-full object-cover md:aspect-[12/5]"
+        />
+      </picture>
+      {clip(mobile, "md:hidden")}
+      {clip(desktop, "hidden md:block")}
+    </div>
   );
   return slide.href ? (
     <a href={slide.href} className="block">
@@ -69,7 +82,7 @@ function Slide({ slide, index }: { slide: HomeContent["hero"]["slides"][number];
 }
 
 export function Hero({ hero, whatsappHref }: { hero: HomeContent["hero"]; whatsappHref: string | null }) {
-  const slides = hero.slides.filter((s) => SHOW_PLACEHOLDERS || (s.desktop && s.mobile));
+  const slides = hero.slides.filter((s) => SHOW_PLACEHOLDERS || slideFilled(s));
   return (
     <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-beams overflow-hidden">
       <div className="flex min-h-[100svh] items-center">
@@ -104,8 +117,8 @@ export function Hero({ hero, whatsappHref }: { hero: HomeContent["hero"]; whatsa
             style={{ "--i": 3 } as CSSProperties}
           >
             <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
-              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-                {hero.ctaLabel} <ArrowRightIcon size={18} />
+              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
+                {hero.ctaLabel} <ArrowRightIcon size={20} />
               </ButtonLink>
             </span>
             {whatsappHref && (
@@ -113,7 +126,7 @@ export function Hero({ hero, whatsappHref }: { hero: HomeContent["hero"]; whatsa
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener"
-                className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-6 font-semibold text-white transition-colors hover:bg-white/10"
+                className="rm-press inline-flex h-14 items-center gap-2 rounded-full border border-white/20 px-7 text-lg font-semibold text-white transition-colors hover:bg-white/10"
               >
                 <ChatIcon size={18} /> WhatsApp us
               </a>
@@ -128,7 +141,7 @@ export function Hero({ hero, whatsappHref }: { hero: HomeContent["hero"]; whatsa
             className="overflow-hidden rounded-[28px] border border-white/10 shadow-[0_40px_120px_-40px_rgba(229,9,20,0.45)]"
             {...reveal(0, "up-lg")}
           >
-            <HeroSlider labels={slides.map((s, i) => s.alt || `Slide ${i + 1}`)}>
+            <HeroSlider labels={slides.map((s, i) => s.desktop.alt || s.mobile.alt || `Slide ${i + 1}`)}>
               {slides.map((s, i) => (
                 <Slide key={i} slide={s} index={i} />
               ))}

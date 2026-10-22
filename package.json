@@ -13,6 +13,7 @@
     "test": "vitest run",
     "check:rls": "node --env-file=.env.local scripts/rls-check.mjs",
     "lp": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/landing.ts",
+    "seed:logos": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-logos.ts",
     "sb": "supabase"
   },
   "engines": {

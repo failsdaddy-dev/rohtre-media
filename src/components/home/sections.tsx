@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import type { HomeContent } from "@/content/home-schema";
 import { isLiveProof, SHOW_PLACEHOLDERS, type Badge, type Result, type Testimonial } from "@/lib/home-data";
 import { publicBadges } from "@/lib/proof";
-import { ArrowRightIcon, AwardIcon, ServiceIcon, StepIcon } from "../icons";
+import { ArrowRightIcon, AwardIcon, StepIcon } from "../icons";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 import { NotLiveTag, PlaceholderBox, reveal, SectionCta, SectionHead } from "./parts";
@@ -19,11 +19,10 @@ const PAD = "py-20 md:py-28";
 
 // ------------------------------------------------------------------- badges
 /**
- * Partner badges in one bordered bar on the red offset block (R11). Only live
- * (switched-on) badges render, in every environment; the data query applies
- * the same rule. The grid has one column per badge from 768 px up; on phones
- * it is two columns and an odd last badge spans the full row, so there is
- * never an empty slot or a stray divider.
+ * Partner badges (R11) as a full-width band: one row with large logos,
+ * labels and dividers on desktop; two columns on phones (an odd last badge
+ * spans the row), never a sideways scroll. Only live (switched-on) badges
+ * render, in every environment; the data query applies the same rule.
  */
 export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges: Badge[] }) {
   const badges = publicBadges(all);
@@ -32,91 +31,52 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
     <section aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        <div className="rm-offset mx-auto max-w-6xl [--offset-surface:#ffffff]" {...reveal(2, "up-lg")}>
-          <ul
-            className="relative grid grid-cols-2 overflow-hidden rounded-[16px] md:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)] max-md:[&>li:last-child:nth-child(odd)]:col-span-2"
-            style={{ "--cols": badges.length } as CSSProperties}
-          >
-            {badges.map((b) => (
-              <li
-                key={b.id}
-                className="flex min-h-44 min-w-0 flex-col items-center justify-center gap-3 px-5 py-8 text-center md:px-3 lg:px-5"
-              >
-                <span className="grid h-12 place-items-center">
-                  {b.image_public_id ? (
-                    <Image
-                      src={b.image_public_id}
-                      alt=""
-                      width={200}
-                      height={80}
-                      sizes="160px"
-                      loading="lazy"
-                      className="rm-white-art h-11 w-auto max-w-[150px] object-contain"
-                    />
-                  ) : /^\d/.test(b.label) ? (
-                    <span className="text-[2.6rem] font-bold leading-none tracking-[-0.05em]">{b.label}</span>
-                  ) : (
-                    <AwardIcon size={40} className="text-brand" strokeWidth={1.8} />
-                  )}
-                </span>
-                <span>
-                  {!/^\d/.test(b.label) && (
-                    <span className="block text-balance text-[12px] font-bold uppercase leading-snug tracking-[0.14em] md:text-[11px] lg:text-[12px] lg:tracking-[0.16em]">
-                      {b.label}
-                    </span>
-                  )}
-                  {b.sublabel && (
-                    <span className="mt-1 block text-balance text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-2">
-                      {b.sublabel}
-                    </span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <SectionCta {...s.cta} variant="dark" />
       </Container>
-    </section>
-  );
-}
-
-// ----------------------------------------------------------------- services
-/** Square black cards; hovering lights a red/white gradient border with a soft bloom. */
-export function Services({ s }: { s: HomeContent["services"] }) {
-  return (
-    <section id="services" className={`rm-dark ${PAD}`}>
-      <Container>
-        <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-          {s.items.map((item, i) => (
-            <li key={item.title} {...reveal(i % 3)}>
-              <div className="rm-glow-card p-7 md:p-9">
-                <span className="rm-glow-face" aria-hidden="true" />
-                <span className="mb-5 grid size-[52px] place-items-center bg-white/[0.06] text-brand">
-                  <ServiceIcon name={item.icon} size={22} />
-                </span>
-                <h3 className="mb-2.5 text-xl font-bold tracking-[-0.02em] text-white">{item.title}</h3>
-                <p className="mb-6 flex-1 text-[15px] leading-relaxed text-white/45">{item.text}</p>
-                {item.tags.length > 0 && (
-                  <ul className="flex flex-wrap gap-2" aria-label="Includes">
-                    {item.tags.map((t) => (
-                      <li key={t} className="rm-tag">
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
+      <div className="border-y border-line bg-bg-elev" {...reveal(2, "fade")}>
+        <ul
+          className="mx-auto grid max-w-[1440px] grid-cols-2 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)] md:[&>li]:shadow-[1px_0_0_var(--line)] md:[&>li:last-child]:shadow-none max-md:[&>li:last-child:nth-child(odd)]:col-span-2"
+          style={{ "--cols": badges.length } as CSSProperties}
+        >
+          {badges.map((b) => (
+            <li
+              key={b.id}
+              className="flex min-h-48 min-w-0 flex-col items-center justify-center gap-4 px-5 py-10 text-center md:min-h-56 md:px-4 lg:px-6"
+            >
+              <span className="grid h-16 place-items-center">
+                {b.image_public_id ? (
+                  <Image
+                    src={b.image_public_id}
+                    alt=""
+                    width={240}
+                    height={96}
+                    sizes="200px"
+                    loading="lazy"
+                    className="rm-white-art h-14 w-auto max-w-[180px] object-contain md:h-16"
+                  />
+                ) : /^\d/.test(b.label) ? (
+                  <span className="text-[3.2rem] font-bold leading-none tracking-[-0.05em]">{b.label}</span>
+                ) : (
+                  <AwardIcon size={48} className="text-brand" strokeWidth={1.8} />
                 )}
-                {item.href && (
-                  <a href={item.href} className="mt-5 inline-flex items-center gap-1.5 font-semibold text-brand">
-                    Learn more <ArrowRightIcon size={16} />
-                  </a>
+              </span>
+              <span>
+                {!/^\d/.test(b.label) && (
+                  <span className="block text-balance text-[13px] font-bold uppercase leading-snug tracking-[0.14em] lg:text-sm">
+                    {b.label}
+                  </span>
                 )}
-              </div>
+                {b.sublabel && (
+                  <span className="mt-1.5 block text-balance text-[13px] font-semibold uppercase tracking-[0.1em] text-fg-2">
+                    {b.sublabel}
+                  </span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
-        <SectionCta {...s.cta} />
+      </div>
+      <Container>
+        <SectionCta {...s.cta} variant="dark" />
       </Container>
     </section>
   );
@@ -258,7 +218,7 @@ function Quote({ t }: { t: Testimonial }) {
             {t.person_name.charAt(0)}
           </span>
         )}
-        <span>
+        <span className="min-w-0 flex-1">
           <span className="block font-bold">{t.person_name}</span>
           {(t.person_role || t.company) && (
             <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-2">
@@ -266,6 +226,19 @@ function Quote({ t }: { t: Testimonial }) {
             </span>
           )}
         </span>
+        {t.logo_public_id && (
+          <span className="grid h-11 shrink-0 place-items-center rounded-xl bg-[#0d0d0d] px-2.5">
+            <Image
+              src={t.logo_public_id}
+              alt={t.company ?? ""}
+              width={160}
+              height={64}
+              sizes="80px"
+              loading="lazy"
+              className="h-7 w-auto max-w-[80px] object-contain"
+            />
+          </span>
+        )}
       </figcaption>
     </figure>
   );
@@ -403,8 +376,8 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
             ) : (
               SHOW_PLACEHOLDERS && <NotLiveTag>Years of experience: to confirm (brief says about 20)</NotLiveTag>
             )}
-            <ButtonLink href={BOOK_CALL_HREF} track="book_call_click">
-              {s.ctaLabel} <ArrowRightIcon size={18} />
+            <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
+              {s.ctaLabel} <ArrowRightIcon size={20} />
             </ButtonLink>
           </div>
         </div>

@@ -20,7 +20,7 @@ const HINTS: Hints = {
   approved: { label: "Approved for the live site", help: "Testimonials: only with the client’s written OK." },
   enabled: { label: "Switched on (shown on the site)" },
   image_public_id: { label: "Image / screenshot" },
-  logo_public_id: { label: "Brand logo" },
+  logo_public_id: { label: "Brand / company logo", help: "Testimonials: shown next to the name on a dark chip." },
   photo_public_id: { label: "Photo" },
   poster_public_id: { label: "Poster image (shown before a reel plays)" },
   proof_url: { label: "Proof link (optional)", help: "https:// link to a directory listing, certificate or article." },

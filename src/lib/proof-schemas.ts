@@ -37,6 +37,8 @@ export const PROOF_TABLES = {
       person_role: opt(120),
       company: opt(120),
       photo_public_id: pid,
+      /** Needs migration 20261022120000_testimonial_logos. */
+      logo_public_id: pid,
       approved: z.boolean(),
       is_placeholder: z.boolean(),
       sort: z.number().int(),
