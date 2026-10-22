@@ -7,6 +7,7 @@ import {
   VideoAds,
   WhoWeServe,
 } from "@/components/home/growth-sections";
+import { CtaDecor } from "@/components/home/cta-decor";
 import { Hero } from "@/components/home/hero";
 import { BadgeBar, Faq, Founder, Process, Results, StripeBand, Testimonials } from "@/components/home/sections";
 import { MediaPlayback } from "@/components/media/media-playback";
@@ -61,7 +62,13 @@ export default async function HomePage() {
       )}
       {home.founder.enabled && <Founder s={home.founder} />}
       {home.faq.enabled && faqVisible && <Faq s={home.faq} />}
-      <CtaPanel {...home.finalCta} whatsappHref={whatsappHref} size="lg" />
+      <CtaPanel
+        {...home.finalCta}
+        whatsappHref={whatsappHref}
+        size="lg"
+        id="lets-talk"
+        decor={home.finalCta.animated ? <CtaDecor /> : undefined}
+      />
       <MediaPlayback />
     </>
   );

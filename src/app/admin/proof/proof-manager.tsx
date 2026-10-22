@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { blankFor, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
+import { SaveBar } from "@/components/admin/save-bar";
+import { blankFor, COMMON_HINTS, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
 import { Button, Panel } from "@/components/admin/ui";
 import type { ProofTable } from "@/lib/proof-schemas";
 import { deleteProof, saveProof } from "./actions";
+import { BadgePreview, LOGO_STYLE_LABELS } from "./badge-preview";
 
 // Proof & badges (R11, R18-R20, R45): list each table, edit a record with
 // the generic form, approve it, and tag it with service / niche / country so
@@ -16,6 +18,14 @@ type Row = Record<string, unknown> & { id: string };
 type Dim = { id: string; type: string; label: string };
 
 const HINTS: Hints = {
+  ...COMMON_HINTS,
+  label: { label: "Label" },
+  sublabel: { label: "Second line (optional)" },
+  logo_style: {
+    label: "Logo style",
+    optionLabels: LOGO_STYLE_LABELS,
+    help: "How the logo is drawn on the red strip. White suits one-colour logos with a transparent background; use the plate for detailed or multi-colour badges.",
+  },
   is_placeholder: { label: "Is placeholder (never shown live)" },
   approved: { label: "Approved for the live site", help: "Testimonials: only with the client’s written OK." },
   enabled: { label: "Switched on (shown on the site)" },
@@ -49,12 +59,17 @@ export function ProofManager(props: {
   tags: { item_type: string; item_id: string; value_id: string }[];
   dimensions: Dim[];
   canDelete: boolean;
+  /** Format of each admin-uploaded file, by Cloudinary id (for the badge JPG warning). */
+  formats: Record<string, string>;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<ProofTable>("results");
   const [editing, setEditing] = useState<{ id: string | null; values: Record<string, unknown>; tags: string[] } | null>(
     null,
   );
+  const [opened, setOpened] = useState<string>("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const dirty = Boolean(editing) && JSON.stringify({ v: editing?.values, t: editing?.tags }) !== opened;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -64,9 +79,17 @@ export function ProofManager(props: {
   const open = (r: Row | null) => {
     setErrors({});
     setMessage(null);
-    if (!r) return setEditing({ id: null, values: blankFor(schema) as Record<string, unknown>, tags: [] });
-    const values = Object.fromEntries(Object.keys(schema.properties ?? {}).map((k) => [k, r[k] ?? null]));
+    if (!r) {
+      const values = blankFor(schema) as Record<string, unknown>;
+      setOpened(JSON.stringify({ v: values, t: [] }));
+      return setEditing({ id: null, values, tags: [] });
+    }
+    // A column the database doesn't have yet (e.g. logo_style before its migration) takes the form's default.
+    const values = Object.fromEntries(
+      Object.entries(schema.properties ?? {}).map(([k, sub]) => [k, r[k] ?? sub.default ?? null]),
+    );
     const tags = props.tags.filter((t) => t.item_type === def.tagType && t.item_id === r.id).map((t) => t.value_id);
+    setOpened(JSON.stringify({ v: values, t: tags }));
     setEditing({ id: r.id, values, tags });
   };
 
@@ -80,7 +103,7 @@ export function ProofManager(props: {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
+      <div className="flex flex-wrap gap-2">
         {props.tables.map((t) => (
           <button
             key={t.key}
@@ -138,6 +161,16 @@ export function ProofManager(props: {
               hints={hints}
               errors={errors}
             />
+            {tab === "badges" && (
+              <BadgePreview
+                values={editing.values}
+                format={
+                  typeof editing.values.image_public_id === "string"
+                    ? (props.formats[editing.values.image_public_id] ?? null)
+                    : null
+                }
+              />
+            )}
             {def.tagType && (
               <fieldset className="mt-5 rounded-2xl border border-line p-4">
                 <legend className="px-1 text-sm font-semibold">Show on pages for…</legend>
@@ -173,8 +206,13 @@ export function ProofManager(props: {
                 ))}
               </fieldset>
             )}
-            {message && <p className="mt-4 text-sm font-medium text-danger">{message}</p>}
-            <div className="mt-5 flex flex-wrap gap-2">
+            <SaveBar
+              dirty={dirty}
+              pending={pending}
+              message={message ? { tone: "error", text: message } : null}
+              idle="No changes yet"
+              onDiscard={() => setEditing(null)}
+            >
               <Button
                 variant="primary"
                 disabled={pending}
@@ -193,26 +231,32 @@ export function ProofManager(props: {
               >
                 {pending ? "Saving…" : "Save"}
               </Button>
-              <Button variant="ghost" onClick={() => setEditing(null)}>
-                Cancel
-              </Button>
+              {!dirty && (
+                <Button variant="ghost" onClick={() => setEditing(null)}>
+                  Close
+                </Button>
+              )}
               {editing.id && props.canDelete && (
                 <Button
                   variant="danger"
                   disabled={pending}
+                  onBlur={() => setConfirmDelete(false)}
                   onClick={() =>
-                    start(async () => {
-                      const res = await deleteProof(tab, editing.id!);
-                      if (!res.ok) return setMessage(res.error ?? "Couldn’t delete.");
-                      setEditing(null);
-                      router.refresh();
-                    })
+                    confirmDelete
+                      ? start(async () => {
+                          const res = await deleteProof(tab, editing.id!);
+                          setConfirmDelete(false);
+                          if (!res.ok) return setMessage(res.error ?? "Couldn’t delete.");
+                          setEditing(null);
+                          router.refresh();
+                        })
+                      : setConfirmDelete(true)
                   }
                 >
-                  Delete
+                  {confirmDelete ? "Delete? Click again" : "Delete"}
                 </Button>
               )}
-            </div>
+            </SaveBar>
           </Panel>
         )}
       </div>

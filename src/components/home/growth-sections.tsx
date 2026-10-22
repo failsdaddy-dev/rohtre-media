@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { METRIC_TINT, type HomeContent, type Tint } from "@/content/home-schema";
-import { isFilled } from "@/content/media-slot";
+import { PHONE_FRAME, phoneHeight, VIDEO_AD_FRAME, videoAdHeight } from "@/content/layout-presets";
+import { ASPECTS, isFilled } from "@/content/media-slot";
 import { metricText } from "@/lib/count-up";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import { CheckIcon, ArrowRightIcon, ServiceIcon } from "../icons";
@@ -117,7 +118,7 @@ export function WhoWeServe({ s }: { s: HomeContent["whoWeServe"] }) {
  */
 export function ProductShowcase({ s }: { s: HomeContent["products"] }) {
   return (
-    <section className={`overflow-hidden ${PAD}`}>
+    <section id="products" className={`overflow-hidden ${PAD}`}>
       <Wide max={1600}>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
         <ScrollRow label="Products" className="-mx-4 scroll-px-4 gap-5 px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6">
@@ -153,10 +154,24 @@ export function ProductShowcase({ s }: { s: HomeContent["products"] }) {
 }
 
 // ------------------------------------------------- scroll. engage. convert
-/** Copy and four points on the left; phone-framed clips (about 370×640 at 1920 px) on the right. */
+/** The section's frame height as CSS variables (vh for old browsers, svh where supported). */
+const heightVars = (prefix: string, h: { vh: string; svh: string }) =>
+  ({ [`--${prefix}-h-vh`]: h.vh, [`--${prefix}-h-svh`]: h.svh }) as CSSProperties;
+
+/**
+ * Copy and four points on the left; real-proportion phones on the right.
+ * Phone height = clamp(460px, 76svh, 820px) × the admin's size, never taller
+ * than 92svh (layout-presets.ts). 1 phone centred; 2-3 side by side,
+ * bottom-aligned, the middle one lower; 4 or more become a sideways row with
+ * arrows. Each phone is also limited to its share of the column, so the
+ * phones never push into the text.
+ */
 export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
+  const n = s.phones.length;
+  const row = n >= PHONE_FRAME.rowFrom;
+  const sizes = "(min-width: 1280px) 380px, (min-width: 1024px) 24vw, 46vw";
   return (
-    <section className={`rm-dark rm-grid-bg overflow-hidden ${PAD}`}>
+    <section id="engage" className={`rm-dark rm-grid-bg overflow-hidden ${PAD}`}>
       <Wide
         max={1440}
         className="grid items-center gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)] xl:gap-16"
@@ -189,15 +204,36 @@ export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
           </ul>
           <SectionCta {...s.cta} center={false} />
         </div>
-        <div className="flex min-w-0 items-start justify-center gap-4 sm:gap-6" {...reveal(1, "up-lg")}>
-          {s.phones.map((slot, i) => (
-            <PhoneFrame
-              key={i}
-              slot={slot}
-              sizes="(min-width: 1280px) 360px, (min-width: 1024px) 23vw, 46vw"
-              className={`w-[min(48%,370px)] ${i % 2 === 1 ? "mt-[12%]" : ""}`}
-            />
-          ))}
+        <div className="min-w-0" {...reveal(1, "up-lg")}>
+          <div
+            className="rm-phones"
+            data-count={n}
+            style={
+              {
+                ...heightVars("phone", phoneHeight(s.size)),
+                "--n": n,
+                "--stagger": PHONE_FRAME.stagger,
+                "--bz": `${PHONE_FRAME.bezel * 100}cqw`,
+                "--rad": `${PHONE_FRAME.radius * 100}cqw`,
+              } as CSSProperties
+            }
+          >
+            {row ? (
+              <ScrollRow label="Phone videos" className="rm-phone-row gap-6 px-1 pb-2">
+                {s.phones.map((slot, i) => (
+                  <li key={i} className="shrink-0 snap-start">
+                    <PhoneFrame slot={slot} sizes={sizes} />
+                  </li>
+                ))}
+              </ScrollRow>
+            ) : (
+              <div className="rm-phone-group">
+                {s.phones.map((slot, i) => (
+                  <PhoneFrame key={i} slot={slot} sizes={sizes} className={n > 1 && i % 2 === 0 ? "rm-phone-up" : ""} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </Wide>
     </section>
@@ -205,10 +241,16 @@ export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
 }
 
 // ------------------------------------------------------ video ads & reels
-/** Four 9:16 frames (about 375 px wide at 1920 px): 4 across from 1280 px, 2 from 768 px, a swipe row on phones. */
+/**
+ * Phone-sized cards. Frame height = clamp(380px, 68svh, 720px) × the admin's
+ * size, capped so the whole card (frame + title) fits on screen. Cards line
+ * up at the top and each is as tall as its own frame (no stretched white
+ * space when shapes differ). 4 across from 1280 px, 2 from 768 px, a swipe
+ * row with about 1.3 cards below that (frames at most 70svh).
+ */
 export function VideoAds({ s }: { s: HomeContent["videoAds"] }) {
   return (
-    <section className={`overflow-hidden border-y border-line ${PAD}`}>
+    <section id="video-ads" className={`overflow-hidden border-y border-line ${PAD}`}>
       <Wide max={1680}>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
         {(s.strapline || s.body) && (
@@ -220,14 +262,24 @@ export function VideoAds({ s }: { s: HomeContent["videoAds"] }) {
         <ul
           aria-label="Video ads"
           tabIndex={0}
-          className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 xl:grid-cols-4"
+          style={
+            { ...heightVars("ad", videoAdHeight(s.size)), "--ad-cap": VIDEO_AD_FRAME.mobileCapVh } as CSSProperties
+          }
+          className="rm-ads no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 items-start gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:justify-items-center md:gap-6 md:overflow-visible md:px-0 xl:grid-cols-4"
         >
           {s.items.map((item, i) => (
-            <li key={item.title} className="w-[72vw] shrink-0 snap-start md:w-auto" {...reveal(i % 4)}>
-              <figure className="rm-card flex h-full flex-col gap-3 p-1.5">
+            <li
+              key={item.title}
+              className="flex w-[calc((100vw-2rem)/1.3)] shrink-0 snap-start justify-center md:w-full"
+              {...reveal(i % 4)}
+            >
+              <figure
+                className="rm-card rm-ad flex flex-col gap-3 p-1.5"
+                style={{ "--ar": ASPECTS[item.media.aspect] } as CSSProperties}
+              >
                 <MediaSlot
                   slot={item.media}
-                  sizes="(min-width: 1280px) 380px, (min-width: 768px) 46vw, 72vw"
+                  sizes="(min-width: 1280px) 340px, (min-width: 768px) 46vw, 72vw"
                   maxWidth={1080}
                   className="rounded-[14px]"
                 />
@@ -332,7 +384,7 @@ export function ClientShowcase({ s }: { s: HomeContent["showcase"] }) {
   const slides = s.slides.filter((sl) => SHOW_PLACEHOLDERS || !isEmptySlide(sl));
   if (slides.length === 0) return null;
   return (
-    <section className={`overflow-hidden ${PAD}`}>
+    <section id="client-results" className={`overflow-hidden ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
         <div {...reveal(0, "up-lg")}>
@@ -375,7 +427,7 @@ export function Brands({ s }: { s: HomeContent["brands"] }) {
   const row: BrandItem[] = [];
   while (row.length < 10) row.push(...items);
   return (
-    <section className={`rm-dark overflow-hidden ${PAD}`}>
+    <section id="brands" className={`rm-dark overflow-hidden ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
-import { ASPECTS, isGif, playsAsVideo, slotLabel, type MediaSlotValue } from "@/content/media-slot";
+import { phoneFrameRatio } from "@/content/layout-presets";
+import { ASPECTS, isGif, playsAsVideo, slotLabel, type MediaSlotValue, type SlotFit } from "@/content/media-slot";
 import { clipUrl, cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
 import { MEDIA_IMAGE_MAX_MB, MEDIA_VIDEO_MAX_MB } from "@/lib/media-limits";
 
@@ -18,7 +19,8 @@ const SHOW_LABELS = process.env.NODE_ENV !== "production";
 const WIDTHS = [320, 480, 640, 828, 1080, 1280, 1600, 1920, 2400];
 
 export type SlotProps = {
-  slot: MediaSlotValue;
+  /** Phone-shaped slots also carry `fit`: "fit" shows the whole file on black instead of cropping. */
+  slot: MediaSlotValue & { fit?: SlotFit };
   /** The image `sizes` attribute (how wide the slot is on screen). */
   sizes: string;
   /** The LCP element: load the still eagerly with high priority. */
@@ -48,8 +50,9 @@ export function stillSrcSet(slot: MediaSlotValue, maxWidth = 2400): string | und
 
 export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 2400, fit = "cover" }: SlotProps) {
   const frame: CSSProperties = { aspectRatio: String(ASPECTS[slot.aspect]) };
-  const box = `relative w-full overflow-hidden ${className}`;
-  const objectFit = fit === "contain" ? "object-contain" : "object-cover";
+  const box = `relative w-full overflow-hidden ${slot.fit === "fit" && slot.publicId ? "bg-black" : ""} ${className}`;
+  const whole = fit === "contain" || slot.fit === "fit";
+  const objectFit = whole ? "object-contain" : "object-cover";
 
   if (!slot.publicId) {
     return (
@@ -121,17 +124,30 @@ export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 24
   );
 }
 
-/** A generic, CSS-drawn phone (no brand marks) holding a 9:16 slot. */
-export function PhoneFrame({ slot, sizes, className = "" }: Omit<SlotProps, "priority">) {
+/**
+ * A generic, CSS-drawn phone (no brand marks) around a phone-shaped slot:
+ * the screen keeps the slot's own shape (9:19.5, 9:16 or 9:18), with a
+ * uniform bezel of 2.5% of the frame width, corners at 13% and a small
+ * pill. The width comes from the section's frame height (--phone-h, set by
+ * the section) and is also limited by `--share` (room per phone).
+ */
+export function PhoneFrame({
+  slot,
+  sizes,
+  className = "",
+  style,
+}: Omit<SlotProps, "priority"> & { style?: CSSProperties }) {
+  const ratio = ASPECTS[slot.aspect];
   return (
     <div
-      className={`relative rounded-[2.4rem] border border-white/15 bg-[#0b0b0b] p-2 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] ${className}`}
+      className={`rm-phone ${className}`}
+      data-aspect={slot.aspect}
+      style={{ "--fr": phoneFrameRatio(ratio), ...style } as CSSProperties}
     >
-      <span
-        aria-hidden="true"
-        className="absolute left-1/2 top-3.5 z-10 h-[18px] w-[30%] -translate-x-1/2 rounded-full bg-[#0b0b0b]"
-      />
-      <MediaSlot slot={{ ...slot, aspect: "9:16" }} sizes={sizes} maxWidth={828} className="rounded-[1.9rem]" />
+      <div className="rm-phone-body">
+        <span aria-hidden="true" className="rm-phone-pill" />
+        <MediaSlot slot={slot} sizes={sizes} maxWidth={828} className="rm-phone-screen" />
+      </div>
     </div>
   );
 }

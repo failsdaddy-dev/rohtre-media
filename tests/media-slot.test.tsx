@@ -30,7 +30,7 @@ describe("MediaSlot states", () => {
     const out = html(emptySlot("9:16", "video"));
     expect(out).toContain("data-empty-slot");
     expect(out).toContain(`aspect-ratio:${9 / 16}`);
-    expect(out).toContain(`Placeholder · 9:16 · image or video · up to ${MEDIA_VIDEO_MAX_MB} MB`);
+    expect(out).toContain(`Placeholder · 9:16 (1080×1920) · image or video · up to ${MEDIA_VIDEO_MAX_MB} MB`);
     expect(out).not.toContain("<img");
     expect(out).not.toContain("<video");
   });
@@ -124,14 +124,14 @@ describe("partner strip render rule (unchanged: switched on = shown)", () => {
     notes: null,
   });
 
-  it("renders only switched-on badges, one column each", () => {
+  it("renders only switched-on badges, laid out by their count", () => {
     const out = renderToStaticMarkup(
       <BadgeBar s={DEFAULT_HOME.badges} badges={[badge("a", true), badge("b", false), badge("c", true)]} />,
     );
     expect(out).toContain("Badge a");
     expect(out).toContain("Badge c");
     expect(out).not.toContain("Badge b");
-    expect(out).toContain("--cols:2");
+    expect(out).toContain('data-count="2"');
   });
 
   it("renders nothing when no badge is switched on", () => {

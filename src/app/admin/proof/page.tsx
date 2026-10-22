@@ -14,10 +14,11 @@ async function ProofScreen() {
   const staff = await requireStaff();
   const sb = await supabaseServer();
   const tables = Object.keys(PROOF_TABLES) as ProofTable[];
-  const [rows, { data: tags }, all] = await Promise.all([
+  const [rows, { data: tags }, all, { data: media }] = await Promise.all([
     Promise.all(tables.map(async (t) => [t, (await sb.from(t).select("*").order("sort")).data ?? []] as const)),
     sb.from("proof_tags").select("item_type, item_id, value_id"),
     dimensionMap(sb),
+    sb.from("media").select("public_id, format"),
   ]);
   return (
     <AdminFrame staff={staff} current="/admin/proof" title="Proof & badges">
@@ -32,6 +33,9 @@ async function ProofScreen() {
           label: v.parent_id ? `${v.label} (sub)` : v.label,
         }))}
         canDelete={canManage(staff.role)}
+        formats={Object.fromEntries(
+          ((media ?? []) as { public_id: string; format: string | null }[]).map((m) => [m.public_id, m.format ?? ""]),
+        )}
       />
     </AdminFrame>
   );

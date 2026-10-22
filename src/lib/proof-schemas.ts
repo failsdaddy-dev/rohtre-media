@@ -8,6 +8,10 @@ const pid = z
   .string()
   .regex(/^rohtre-media\/[A-Za-z0-9_./-]+$/)
   .nullable();
+/** How a badge logo is drawn on the red partner strip. */
+export const BADGE_LOGO_STYLES = ["white", "plate", "original"] as const;
+export type BadgeLogoStyle = (typeof BADGE_LOGO_STYLES)[number];
+
 const opt = (max: number) => z.string().max(max).nullable();
 
 export const PROOF_TABLES = {
@@ -81,6 +85,8 @@ export const PROOF_TABLES = {
       label: z.string().min(1).max(80),
       sublabel: opt(80),
       image_public_id: pid,
+      /** Needs migration 20261022150000_badge_logo_style. How the logo is drawn on the red strip. */
+      logo_style: z.enum(BADGE_LOGO_STYLES).default("white"),
       proof_url: z.url().startsWith("https://").nullable(),
       last_verified_at: z.iso.date().nullable(),
       enabled: z.boolean(),

@@ -755,3 +755,191 @@ html[data-intro] .rm-intro {
     display: none;
   }
 }
+
+/* ------------------------------------------------ phone frames (engage)
+   Sizes come from src/content/layout-presets.ts through custom properties
+   set by the section: --phone-h-vh/--phone-h-svh (frame height, capped),
+   --fr (frame width ÷ height for the screen shape), --bz/--rad (bezel and
+   corner, in cqw of the frame), --n (phones), --stagger. */
+.rm-phones {
+  --phone-h: var(--phone-h-vh);
+  --gap: 16px;
+}
+@supports (height: 1svh) {
+  .rm-phones {
+    --phone-h: var(--phone-h-svh);
+  }
+}
+@media (min-width: 640px) {
+  .rm-phones {
+    --gap: 24px;
+  }
+}
+.rm-phone-group {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--gap);
+}
+.rm-phone {
+  container-type: inline-size;
+  flex: none;
+  /* As tall as --phone-h allows, but never more than this phone's share of the column. */
+  width: min(calc(var(--phone-h) * var(--fr)), calc((100% - (var(--n) - 1) * var(--gap)) / var(--n)));
+}
+.rm-phone-row .rm-phone {
+  width: min(calc(var(--phone-h) * var(--fr)), 78vw);
+}
+.rm-phone-up {
+  margin-bottom: calc(var(--phone-h) * var(--stagger));
+}
+.rm-phone-body {
+  position: relative;
+  padding: var(--bz);
+  border-radius: var(--rad);
+  background: #0b0b0b;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.15),
+    0 30px 80px -30px rgb(0 0 0 / 0.8);
+}
+.rm-phone-screen {
+  border-radius: calc(var(--rad) - var(--bz));
+}
+.rm-phone-pill {
+  position: absolute;
+  top: calc(var(--bz) + 2.4cqw);
+  left: 50%;
+  z-index: 1;
+  width: 26%;
+  height: 5.6cqw;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #0b0b0b;
+}
+/* The placeholder label (dev only) scales with the phone / card. */
+.rm-phone-screen > span,
+.rm-ad > [data-empty-slot] > span {
+  font-size: max(8px, min(10px, 3.6cqw));
+}
+
+/* --------------------------------------------- video ads & reels cards
+   --ad-h-vh/--ad-h-svh: frame height (capped so the card fits on screen);
+   --ad-cap: phone cap in svh; --ar: the card's screen shape. */
+.rm-ads {
+  --ad-base: var(--ad-h-vh);
+  --ad-max: calc(var(--ad-cap) * 1vh);
+}
+@supports (height: 1svh) {
+  .rm-ads {
+    --ad-base: var(--ad-h-svh);
+    --ad-max: calc(var(--ad-cap) * 1svh);
+  }
+}
+.rm-ads {
+  --ad-h: var(--ad-base);
+}
+@media (max-width: 767.98px) {
+  .rm-ads {
+    --ad-h: min(var(--ad-base), var(--ad-max));
+  }
+}
+.rm-ad {
+  container-type: inline-size;
+  /* The frame's width follows its height and shape; 12px = the card's padding. */
+  width: min(calc(var(--ad-h) * var(--ar) + 12px), 100%);
+}
+
+/* ------------------------------------------------------- partner strip
+   A red band; cells re-flow by the number of shown badges (data-group,
+   from badgeLayout() in layout-presets.ts); --logo-h-sm/--logo-h-lg and
+   --cell-max come from the same file. */
+.rm-badges {
+  --logo-h: var(--logo-h-sm);
+  --div: color-mix(in srgb, var(--brand-fg) 26%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  /* Hides the first row's top line under the band edge (the inline margins stay auto: centred). */
+  margin-top: -1px;
+}
+.rm-badges > li {
+  flex: 0 0 50%;
+  min-width: 0;
+  box-shadow:
+    inset 1px 0 0 var(--div),
+    inset 0 1px 0 var(--div);
+}
+.rm-badges > li:last-child {
+  box-shadow:
+    inset 1px 0 0 var(--div),
+    inset -1px 0 0 var(--div),
+    inset 0 1px 0 var(--div);
+}
+@media (min-width: 768px) {
+  .rm-badges {
+    --logo-h: var(--logo-h-lg);
+  }
+  .rm-badges[data-group="few"] > li {
+    flex: 1 1 0;
+    max-width: var(--cell-max);
+  }
+  .rm-badges[data-group="four"] > li,
+  .rm-badges[data-group="many"] > li {
+    flex-basis: 25%;
+  }
+  .rm-badges[data-group="mid"] > li {
+    flex-basis: 33.333%;
+  }
+}
+@media (min-width: 1280px) {
+  .rm-badges[data-group="mid"] > li {
+    flex: 1 1 0;
+  }
+}
+.rm-badge-logo {
+  height: var(--logo-h);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+.rm-logo-white {
+  filter: brightness(0) invert(1);
+}
+.rm-logo-plate {
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px 14px;
+}
+.rm-logo-plate .rm-badge-logo {
+  height: calc(var(--logo-h) - 16px);
+}
+
+/* ------------------------------------------------- CTA card objects
+   Pointer drift: --px/--py (-1..1, set by CtaParallax on [data-cta-card]
+   while a mouse is over it) × each object's --travel px (its depth layer).
+   `translate` composes with the float's `transform`. 0 everywhere else. */
+.rm-px {
+  translate: calc(var(--px, 0) * var(--travel, 0) * 1px) calc(var(--py, 0) * var(--travel, 0) * 1px);
+}
+.rm-idle {
+  animation: rm-idle var(--fd, 8s) ease-in-out infinite alternate;
+}
+@keyframes rm-idle {
+  to {
+    transform: translate(var(--ix, 0), var(--iy, -6px)) rotate(var(--ir, 0deg));
+  }
+}
+[data-cta-card][data-offscreen] .rm-idle {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-idle {
+    animation: none;
+  }
+  .rm-px {
+    translate: none;
+  }
+}

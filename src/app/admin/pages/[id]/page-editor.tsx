@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
+import { SaveBar } from "@/components/admin/save-bar";
+import { COMMON_HINTS, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
 import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS, SELECT_SM_CLASS } from "@/components/admin/ui";
 import type { PublishIssue } from "@/lib/publish-check";
 import type { PageContent, Section, SectionType } from "@/sections/schemas";
@@ -52,6 +53,7 @@ const VARIANTS: Record<SectionType, string[]> = {
 };
 
 const HINTS: Hints = {
+  ...COMMON_HINTS,
   h1: { label: "Headline (H1)", help: "Filled from service + niche + country. Edit freely." },
   offerBanner: {
     label: "Offer banner",
@@ -69,7 +71,7 @@ const HINTS: Hints = {
   mode: { label: "Mode" },
   status: { label: "Status", help: "Only “ready” answers can be published." },
   defaultInterest: { label: "Pre-selected “Interested in”" },
-  cta: { label: "Call to action" },
+  cta: { label: "Button at the end of the section", help: "Button text and the small line under it." },
 };
 
 type Version = { id: string; number: number; note: string | null; created_at: string };
@@ -89,6 +91,7 @@ export function PageEditor(props: {
 }) {
   const router = useRouter();
   const [content, setContent] = useState<PageContent>(props.initial);
+  const [saved, setSaved] = useState<PageContent>(props.initial);
   const [open, setOpen] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [dirty, setDirty] = useState(false);
@@ -144,6 +147,7 @@ export function PageEditor(props: {
       }
       setErrors({});
       setDirty(false);
+      setSaved(content);
       setNote("");
       setMessage({ tone: "ok", text: `Saved as version ${res.number}.` });
       setIssues(await checkPage(props.page.id));
@@ -289,17 +293,29 @@ export function PageEditor(props: {
           </div>
         </section>
 
-        <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-full border border-line bg-bg-elev p-2 pl-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
-          <input
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-            placeholder={dirty ? "Optional note for this version…" : "No unsaved changes"}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+        <SaveBar
+          dirty={dirty}
+          pending={pending}
+          idle="Saved"
+          onDiscard={() => {
+            setContent(saved);
+            setErrors({});
+            setDirty(false);
+          }}
+        >
+          {dirty && (
+            <input
+              aria-label="Note for this version (optional)"
+              className="rm-field h-10 min-w-0 flex-1 basis-48 px-3 text-sm outline-none"
+              placeholder="Optional note for this version…"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          )}
           <Button variant="primary" disabled={pending || !dirty} onClick={save}>
             {pending ? "Saving…" : "Save draft"}
           </Button>
-        </div>
+        </SaveBar>
         {message && (
           <p
             role="status"

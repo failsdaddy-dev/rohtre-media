@@ -129,17 +129,27 @@ export function ButtonLink({
   );
 }
 
+/** Pointer-drift depth of a basic accent (only used when the home CTA card's drift is on; else 0). */
+const drift = (travel: number) => ({ "--travel": travel }) as CSSProperties;
+
 /** Decorative accents for the dark CTA panel: dots, squiggles and quarter circles. */
 function PanelAccents() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden text-[#e50914] sm:block">
-      <div className="rm-dots absolute left-[38%] top-0 h-20 w-40 [mask-image:linear-gradient(to_bottom,black,transparent)]" />
-      <svg viewBox="0 0 24 140" className="rm-float absolute bottom-10 left-10 h-28 w-5">
+      <div
+        className="rm-dots rm-px absolute left-[38%] top-0 h-20 w-40 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+        style={drift(8)}
+      />
+      <svg viewBox="0 0 24 140" className="rm-float rm-px absolute bottom-10 left-10 h-28 w-5" style={drift(14)}>
         <circle cx="12" cy="6" r="4" className="rm-squiggle" />
         <path className="rm-squiggle text-white/50" d="M12 12l-6 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-12 8 12 8-6 6" />
         <circle cx="12" cy="134" r="4" className="rm-squiggle" />
       </svg>
-      <svg viewBox="0 0 150 30" className="rm-float absolute right-14 top-10 w-36 [animation-delay:-3s]">
+      <svg
+        viewBox="0 0 150 30"
+        className="rm-float rm-px absolute right-14 top-10 w-36 [animation-delay:-3s]"
+        style={drift(14)}
+      >
         <circle cx="6" cy="18" r="4" className="rm-squiggle" />
         <path
           className="rm-squiggle text-white/50"
@@ -147,9 +157,9 @@ function PanelAccents() {
         />
         <circle cx="144" cy="10" r="4" className="rm-squiggle" />
       </svg>
-      <span className="absolute bottom-24 right-24 size-24 rounded-bl-full bg-white/25" />
+      <span className="rm-px absolute bottom-24 right-24 size-24 rounded-bl-full bg-white/25" style={drift(8)} />
       <span className="absolute -bottom-px -right-px size-32 rounded-tl-full bg-[#e50914]/70" />
-      <span className="absolute bottom-16 left-24 size-10 rounded-tl-full bg-white/20" />
+      <span className="rm-px absolute bottom-16 left-24 size-10 rounded-tl-full bg-white/20" style={drift(24)} />
     </div>
   );
 }
@@ -163,6 +173,8 @@ export function CtaPanel({
   label = "Book a Call",
   whatsappHref,
   size = "md",
+  decor,
+  id,
 }: {
   eyebrow?: string;
   title?: string;
@@ -171,15 +183,21 @@ export function CtaPanel({
   label?: string;
   whatsappHref?: string | null;
   size?: "md" | "lg";
+  /** Extra decorative layer (the home card's animated objects); drawn under the text. */
+  decor?: ReactNode;
+  /** Anchor for links to this card (the home page's). */
+  id?: string;
 }) {
   return (
-    <section className="pb-20 pt-4 md:pb-28">
+    <section id={id} className="pb-20 pt-4 md:pb-28">
       <Container>
         <div
           data-reveal="up-lg"
+          data-cta-card=""
           className="rm-dark relative overflow-hidden rounded-[2rem] bg-[#0d0d0d] px-6 py-16 text-center shadow-[0_40px_90px_-40px_rgba(0,0,0,0.6)] sm:px-12 md:py-20"
         >
           <PanelAccents />
+          {decor}
           <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-5">
             <p className="rm-label">{eyebrow}</p>
             <h2 className="text-[clamp(2.2rem,5vw,3.75rem)] font-bold leading-[1.04] tracking-[-0.045em]">

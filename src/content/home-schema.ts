@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { emptySlot, mediaSlotSchema, slotSchema } from "./media-slot";
+import { FRAME_SIZES } from "./layout-presets";
+import { emptyPhone, emptySlot, isPhoneAspect, mediaSlotSchema, phoneSlotSchema, slotSchema } from "./media-slot";
 
 // Home page content (R13, R14). Stored as JSON in public.page_content
 // (key "home"), checked here. Any section that is missing or invalid falls
@@ -309,8 +310,10 @@ export const homeSchema = z.object({
       subline: z.string().max(80),
       body: z.string().max(400),
       points: z.array(z.string().min(1).max(60)).max(6),
-      /** Shown inside phone frames (always 9:16). */
-      phones: z.array(mediaSlotSchema).min(1).max(4),
+      /** Shown inside phone frames (phone shapes only, Fill or Fit). 4 or more become a sideways row. */
+      phones: z.array(phoneSlotSchema()).min(1).max(6),
+      /** Phone size on the site (scale in layout-presets.ts), always capped by the screen height. */
+      size: z.enum(FRAME_SIZES).default("medium"),
       cta,
     })
     .default({
@@ -322,7 +325,8 @@ export const homeSchema = z.object({
       body: "We combine high-converting product selections with scroll-stopping creatives to drive clicks, add-to-cart moments, and real revenue.",
       points: ["Curated Winning Products", "Scroll-Stopping Video Ads", "High ROAS Campaigns", "More Sales Every Day"],
       // The live section shows two phone videos.
-      phones: [emptySlot("9:16", "video"), emptySlot("9:16", "video")],
+      phones: [emptyPhone(), emptyPhone()],
+      size: "medium",
       cta: {
         text: "Ready to grow your product? Let’s make it your next success story.",
         label: "Book a Call",
@@ -339,9 +343,11 @@ export const homeSchema = z.object({
       strapline: z.string().max(80),
       body: z.string().max(300),
       items: z
-        .array(z.object({ title: z.string().min(1).max(60), media: mediaSlotSchema }))
+        .array(z.object({ title: z.string().min(1).max(60), media: phoneSlotSchema() }))
         .min(1)
         .max(8),
+      /** Card frame size on the site (scale in layout-presets.ts), always capped by the screen height. */
+      size: z.enum(FRAME_SIZES).default("medium"),
       cta,
     })
     .default({
@@ -354,8 +360,9 @@ export const homeSchema = z.object({
       body: "From thumb-stopping reels to cinematic product films, we craft video content that engages, converts, and builds brands.",
       items: ["Reels & UGC Ads", "Product Films", "Paid Social Creatives", "Performance Storytelling"].map((title) => ({
         title,
-        media: emptySlot("9:16", "video"),
+        media: emptyPhone(),
       })),
+      size: "medium",
       cta: {
         text: "Ready to create ads that drive growth? Let’s make your next campaign your best one yet.",
         label: "Book a Call",
@@ -598,8 +605,11 @@ export const homeSchema = z.object({
       accent: z.string().max(40),
       text: z.string().max(240),
       label: z.string().min(1).max(40),
+      /** The extra decorative objects and their pointer drift (the card's basic accents always show). */
+      animated: z.boolean().default(true),
     })
     .default({
+      animated: true,
       eyebrow: "Ready to unlock growth?",
       title: "Let’s talk",
       accent: "about your brand.",
@@ -611,16 +621,50 @@ export const homeSchema = z.object({
 export type HomeContent = z.infer<typeof homeSchema>;
 export const DEFAULT_HOME: HomeContent = homeSchema.parse({});
 
-/** Older saved content: FAQ answers had `status: "draft" | "ready"` instead of `approved`. */
-function upgrade(input: Record<string, unknown>): Record<string, unknown> {
-  const faq = input.faq as { items?: unknown } | undefined;
-  if (!faq || !Array.isArray(faq.items)) return input;
-  const items = faq.items.map((f) =>
-    f && typeof f === "object" && "status" in f && !("approved" in f)
-      ? { ...f, approved: (f as { status?: unknown }).status === "ready" }
-      : f,
-  );
-  return { ...input, faq: { ...faq, items } };
+type Obj = Record<string, unknown>;
+const isObj = (v: unknown): v is Obj => Boolean(v && typeof v === "object" && !Array.isArray(v));
+
+/**
+ * One phone screen saved before phone shapes existed (2026-10-22): a
+ * non-phone shape (e.g. 16:9 from "+ Add") becomes 9:19.5; an EMPTY 9:16
+ * slot (the old default nobody chose) also becomes 9:19.5. Filled 9:16
+ * slots keep their shape. `legacy` = the section has no `size` yet, i.e.
+ * it was saved before this change; once saved again nothing is touched, so
+ * a 9:16 picked later in the admin stays 9:16.
+ */
+export function upgradePhoneSlot(slot: unknown, legacy: boolean): unknown {
+  if (!isObj(slot)) return slot;
+  const empty = !slot.publicId;
+  const aspect = !isPhoneAspect(slot.aspect) || (legacy && empty && slot.aspect === "9:16") ? "9:19.5" : slot.aspect;
+  return { ...slot, aspect };
+}
+
+/** Older saved content, brought up to date when read (saving in the admin stores the new form). */
+function upgrade(input: Obj): Obj {
+  const out = { ...input };
+  // FAQ answers had `status: "draft" | "ready"` instead of `approved`.
+  const faq = input.faq;
+  if (isObj(faq) && Array.isArray(faq.items)) {
+    const items = faq.items.map((f) =>
+      isObj(f) && "status" in f && !("approved" in f) ? { ...f, approved: f.status === "ready" } : f,
+    );
+    out.faq = { ...faq, items };
+  }
+  // Phone screens: phone shapes only.
+  const engage = input.engage;
+  if (isObj(engage) && Array.isArray(engage.phones)) {
+    const legacy = !("size" in engage);
+    out.engage = { ...engage, phones: engage.phones.map((p) => upgradePhoneSlot(p, legacy)) };
+  }
+  const ads = input.videoAds;
+  if (isObj(ads) && Array.isArray(ads.items)) {
+    const legacy = !("size" in ads);
+    out.videoAds = {
+      ...ads,
+      items: ads.items.map((it) => (isObj(it) ? { ...it, media: upgradePhoneSlot(it.media, legacy) } : it)),
+    };
+  }
+  return out;
 }
 
 /** Parse stored JSON section by section, so one bad section never wipes the others. */

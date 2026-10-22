@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { DEFAULT_HOME, parseHome, type HomeContent } from "@/content/home-schema";
 import { isLiveProof, publicBadges } from "./proof";
+import type { BadgeLogoStyle } from "./proof-schemas";
 import { supabaseAdmin } from "./supabase/admin";
 import { supabasePublic } from "./supabase/public";
 
@@ -24,6 +25,8 @@ export type Badge = {
   label: string;
   sublabel: string | null;
   image_public_id: string | null;
+  /** Added 2026-10-22 (migration 20261022150000); absent until it runs = "white". */
+  logo_style?: BadgeLogoStyle;
   proof_url: string | null;
   enabled: boolean;
   notes: string | null;
@@ -76,7 +79,8 @@ export async function getBadges(): Promise<Badge[]> {
   if (!sb) return [];
   const { data } = await sb
     .from("badges")
-    .select("id, label, sublabel, image_public_id, proof_url, enabled, notes")
+    // "*" so the page keeps working before and after the logo_style column exists.
+    .select("*")
     .order("sort");
   // Badges are filtered in every environment, dev included: the home page is
   // public, so a switched-off badge (like the unconfirmed "2B+") never shows.

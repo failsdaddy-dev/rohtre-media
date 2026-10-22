@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
+import { SaveBar } from "@/components/admin/save-bar";
 import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import { callbacksToText, phonesToText } from "@/lib/settings-form";
 import type { SiteSettings } from "@/lib/settings-schema";
@@ -12,16 +13,27 @@ const CHECK = "size-4 accent-[var(--brand)]";
 const networkLabel = (n: string) => (n === "x" ? "X (Twitter)" : n[0].toUpperCase() + n.slice(1));
 
 export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; isOwner: boolean }) {
-  const [state, action, pending] = useActionState<SaveState, FormData>(saveSettings, { status: "idle", errors: {} });
+  const form = useRef<HTMLFormElement>(null);
+  const [dirty, setDirty] = useState(false);
+  // Same save action as before; a successful save clears "Unsaved changes".
+  const [state, action, pending] = useActionState<SaveState, FormData>(
+    async (prev, data) => {
+      const next = await saveSettings(prev, data);
+      if (next.status === "saved") setDirty(false);
+      return next;
+    },
+    { status: "idle", errors: {} },
+  );
   const e = state.errors;
-  const status = pending
-    ? "Saving…"
-    : state.status === "saved"
-      ? "Saved. The website is updated."
-      : (state.message ?? "Changes go live on the website when you save.");
+  const message =
+    state.status === "saved"
+      ? { tone: "ok" as const, text: "Saved. The website is updated." }
+      : state.message
+        ? { tone: "error" as const, text: state.message }
+        : null;
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form ref={form} action={action} onChange={() => setDirty(true)} className="flex flex-col gap-6">
       <Panel title="Contact details">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Email" error={e.email}>
@@ -206,14 +218,20 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
         </Field>
       </Panel>
 
-      <div className="sticky bottom-4 flex flex-wrap items-center gap-3 rounded-full border border-line bg-bg-elev p-2 pl-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
-        <p role="status" className="flex-1 text-sm">
-          {status}
-        </p>
+      <SaveBar
+        dirty={dirty}
+        pending={pending}
+        message={message}
+        idle="Saved. Changes go live on the website when you save."
+        onDiscard={() => {
+          form.current?.reset();
+          setDirty(false);
+        }}
+      >
         <Button type="submit" variant="primary" disabled={pending}>
           Save settings
         </Button>
-      </div>
+      </SaveBar>
     </form>
   );
 }

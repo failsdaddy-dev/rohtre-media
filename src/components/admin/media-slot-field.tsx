@@ -1,7 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ASPECTS, isGif, type Aspect, type MediaSlotValue } from "@/content/media-slot";
+import {
+  ASPECT_LABELS,
+  ASPECT_UPLOAD,
+  ASPECTS,
+  isGif,
+  type Aspect,
+  type MediaSlotValue,
+  type SlotFit,
+} from "@/content/media-slot";
 import { cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
 import {
   checkUpload,
@@ -20,7 +28,9 @@ import { uploadToCloudinary } from "./upload";
 // Editor for one image-or-video slot (see src/content/media-slot.ts): switch
 // between image and video, upload with progress, replace, remove, alt text
 // (required for images), aspect ratio, loop-clip toggle, optional poster,
-// and the size/length warnings. Removed files are deleted from Cloudinary on
+// and the size/length warnings. Phone screens (phone frames, Video Ads
+// cards) call the shape "Screen shape" (phone shapes only) and add
+// Fill/Fit with a note on cropping. Removed files are deleted from Cloudinary on
 // save when nothing else uses them.
 
 const INPUT = "rm-field w-full px-3.5 py-2.5 text-[15px] outline-none";
@@ -32,21 +42,24 @@ export function MediaSlotField({
   error,
   altError,
   aspects = Object.keys(ASPECTS) as Aspect[],
+  phone = false,
 }: {
   label: string;
-  value: MediaSlotValue;
-  onChange: (v: MediaSlotValue) => void;
+  value: MediaSlotValue & { fit?: SlotFit };
+  onChange: (v: MediaSlotValue & { fit?: SlotFit }) => void;
   error?: string;
   altError?: string;
   /** The shapes this slot allows (from its schema). */
   aspects?: Aspect[];
+  /** A phone screen: "Screen shape" + Fill/Fit. */
+  phone?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
   const v = value;
-  const set = (patch: Partial<MediaSlotValue>) => onChange({ ...v, ...patch });
+  const set = (patch: Partial<MediaSlotValue & { fit: SlotFit }>) => onChange({ ...v, ...patch });
   const gif = isGif(v);
   const isLoop = v.type === "video" ? v.loop : gif;
   const warnings = isLoop ? loopClipWarnings(v.bytes, v.duration) : [];
@@ -110,7 +123,7 @@ export function MediaSlotField({
           ))}
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <span className="font-semibold">Shape</span>
+          <span className="font-semibold">{phone ? "Screen shape" : "Shape"}</span>
           <select
             className={SELECT_SM_CLASS}
             value={v.aspect}
@@ -118,12 +131,40 @@ export function MediaSlotField({
           >
             {aspects.map((a) => (
               <option key={a} value={a}>
-                {a}
+                {ASPECT_LABELS[a] ?? a}
               </option>
             ))}
           </select>
         </label>
+        {phone && v.fit && (
+          <div role="radiogroup" aria-label="Fit" className="inline-flex rounded-full bg-chip p-1">
+            {(
+              [
+                ["fill", "Fill (crop to the screen)"],
+                ["fit", "Fit (show the whole video)"],
+              ] as const
+            ).map(([f, text]) => (
+              <button
+                key={f}
+                type="button"
+                role="radio"
+                aria-checked={v.fit === f}
+                onClick={() => set({ fit: f })}
+                className={`min-h-8 rounded-full px-3.5 text-sm font-semibold ${v.fit === f ? "bg-brand text-brand-fg" : ""}`}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+      {ASPECT_UPLOAD[v.aspect] && (
+        <p className="text-xs text-fg-2">
+          Best upload size: {ASPECT_UPLOAD[v.aspect]} px ({v.aspect}).
+          {phone &&
+            " A 9:16 video in a 9:19.5 screen loses about 18% of its width when filled, so export at 9:19.5 (for example 1080×2340), or choose Fit."}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-line p-3">
         {preview ? (

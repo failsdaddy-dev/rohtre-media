@@ -1,6 +1,8 @@
 "use client";
 
-import type { Aspect, MediaSlotValue } from "@/content/media-slot";
+import { useState } from "react";
+import { isGif, type Aspect, type MediaSlotValue } from "@/content/media-slot";
+import { cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
 import { MediaField } from "./media-field";
 import { MediaSlotField } from "./media-slot-field";
 import { SELECT_CLASS } from "./ui";
@@ -16,7 +18,11 @@ import { SELECT_CLASS } from "./ui";
 //   media slot       → image-or-video slot editor (MediaSlotField)
 //   *_public_id      → image/video upload storing the id string
 //   object           → group of fields
-//   array            → repeatable list (add, duplicate, remove, move)
+//   array            → compact list: one row per item (thumbnail, title,
+//                      shown/hidden switch when the item has `enabled`,
+//                      up/down, duplicate, delete with a confirm click);
+//                      a row opens to edit, one at a time; "+ Add" on top
+//                      with the count. Lists of plain text stay inline.
 // The server validates everything again with Zod when saving.
 
 export type JsonSchema = {
@@ -46,9 +52,30 @@ export type FieldHint = {
   options?: { value: string; label: string }[];
   hidden?: boolean;
   multiline?: boolean;
+  /** Names for a dropdown's stored values (the value itself never changes). */
+  optionLabels?: Record<string, string>;
+  /** Lists: what one item is called, singular and plural ("phone", "phones"). */
+  noun?: [string, string];
+  /** Media slots: the admin calls the shape "Screen shape" and explains Fill/Fit. */
+  phone?: boolean;
 };
 export type Hints = Record<string, FieldHint>;
 
+/**
+ * Plain-language labels for keys used across many forms (each page's own
+ * hints win). Field keys never change, only what the editor reads.
+ */
+export const COMMON_HINTS: Hints = {
+  enabled: { label: "Show this", help: "Untick to hide it on the live site (nothing is deleted)." },
+  eyebrow: { label: "Small label above the heading", help: "A few words, shown in red capitals." },
+  title: { label: "Heading", help: "The section’s main line." },
+  accent: { label: "Second line (shown in red)", help: "Continues the heading in the red gradient." },
+  subline: { label: "Short line under the heading" },
+  intro: { label: "Short intro under the heading", help: "One or two sentences." },
+  body: { label: "Paragraph" },
+  cta: { label: "Button at the end of the section", help: "The Book a Call button and the small line under it." },
+  notes: { label: "Internal notes (never shown)" },
+};
 const INPUT = "rm-field w-full px-3.5 py-2.5 text-[15px] outline-none";
 
 export const humanize = (key: string) =>
@@ -129,6 +156,7 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
           error={err}
           altError={errors[`${path}.alt`]}
           aspects={schema.properties?.aspect?.enum as Aspect[] | undefined}
+          phone={hint.phone || Boolean(schema.properties?.fit)}
         />
         {help}
       </div>
@@ -186,65 +214,19 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
     );
   }
   if (schema.type === "array" && schema.items) {
-    const list = (value as unknown[]) ?? [];
-    const max = schema.maxItems ?? Infinity;
-    const move = (i: number, d: number) => {
-      const next = [...list];
-      [next[i], next[i + d]] = [next[i + d], next[i]];
-      onChange(next);
-    };
     return (
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-semibold">{label}</legend>
-        {list.map((item, i) => (
-          <div key={i} className="rounded-2xl border border-line bg-bg p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-fg-2">
-                {humanize(name).replace(/s$/, "")} {i + 1}
-              </span>
-              <span className="flex gap-1">
-                <SmallButton disabled={i === 0} onClick={() => move(i, -1)} label="Move up">
-                  ↑
-                </SmallButton>
-                <SmallButton disabled={i === list.length - 1} onClick={() => move(i, 1)} label="Move down">
-                  ↓
-                </SmallButton>
-                {list.length < max && (
-                  <SmallButton
-                    onClick={() => onChange([...list.slice(0, i + 1), structuredClone(item), ...list.slice(i + 1)])}
-                    label="Duplicate"
-                  >
-                    ⧉
-                  </SmallButton>
-                )}
-                <SmallButton onClick={() => onChange(list.filter((_, j) => j !== i))} label="Remove">
-                  ✕
-                </SmallButton>
-              </span>
-            </div>
-            <Field
-              name={`${name}Item`}
-              schema={schema.items!}
-              value={item}
-              onChange={(v) => onChange(list.map((x, j) => (j === i ? v : x)))}
-              hints={hints}
-              errors={errors}
-              path={`${path}.${i}`}
-            />
-          </div>
-        ))}
-        {list.length < max && (
-          <button
-            type="button"
-            onClick={() => onChange([...list, blankFor(schema.items!)])}
-            className="self-start rounded-full bg-chip px-4 py-2 text-sm font-semibold hover:bg-chip-hover"
-          >
-            + Add
-          </button>
-        )}
-        {help}
-        {error}
-      </fieldset>
+      <ListField
+        name={name}
+        label={label}
+        schema={schema}
+        list={(value as unknown[]) ?? []}
+        onChange={onChange}
+        hints={hints}
+        errors={errors}
+        path={path}
+        help={help}
+        error={error}
+      />
     );
   }
   if (schema.type === "object" && schema.properties) {
@@ -308,7 +290,7 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
         <select className={SELECT_CLASS} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
           {schema.enum.map((o) => (
             <option key={String(o)} value={String(o)}>
-              {humanize(String(o))}
+              {hint.optionLabels?.[String(o)] ?? humanize(String(o))}
             </option>
           ))}
         </select>
@@ -364,6 +346,256 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
   );
 }
 
+type Obj = Record<string, unknown>;
+const isObj = (v: unknown): v is Obj => Boolean(v && typeof v === "object" && !Array.isArray(v));
+const isSlotValue = (v: unknown): v is MediaSlotValue => isObj(v) && "aspect" in v && "publicId" in v && "loop" in v;
+
+/** A small preview for a list row: the item's first image, video still or logo. */
+function thumbFor(item: unknown): string | null {
+  const slot = isSlotValue(item)
+    ? item
+    : isObj(item)
+      ? (Object.values(item).find((v) => isSlotValue(v) && v.publicId) as MediaSlotValue | undefined)
+      : undefined;
+  if (slot?.publicId) {
+    if (slot.type === "video")
+      return slot.poster ? cloudinaryUrl(slot.poster, { width: 96 }) : stillUrl(slot.publicId, { width: 96 });
+    return isGif(slot)
+      ? stillUrl(slot.publicId, { width: 96, gif: true })
+      : cloudinaryUrl(slot.publicId, { width: 96 });
+  }
+  if (!isObj(item)) return null;
+  const id = Object.entries(item).find(([k, v]) => k.endsWith("_public_id") && typeof v === "string" && v)?.[1];
+  if (typeof id === "string") return cloudinaryUrl(id, { width: 96 });
+  const photo = item.photo;
+  return isObj(photo) && typeof photo.publicId === "string" ? cloudinaryUrl(photo.publicId, { width: 96 }) : null;
+}
+
+const TITLE_KEYS = ["title", "brand", "label", "name", "q", "action", "person_name"];
+const SHAPE_NAMES: Record<string, string> = { "9:19.5": "modern phone", "9:16": "classic 9:16", "9:18": "tall 9:18" };
+
+/** A short title for a list row. */
+export function itemTitle(item: unknown, noun: string, i: number): string {
+  const n = `${noun.charAt(0).toUpperCase()}${noun.slice(1)} ${i + 1}`;
+  if (isSlotValue(item))
+    return `${n} · ${item.type === "video" ? "video" : "image"} · ${SHAPE_NAMES[item.aspect] ?? item.aspect}${item.publicId ? "" : " · empty"}`;
+  if (isObj(item)) {
+    const key = TITLE_KEYS.find((k) => typeof item[k] === "string" && (item[k] as string).trim());
+    if (key) return `${n} · ${(item[key] as string).trim()}`;
+  }
+  return n;
+}
+
+const singular = (word: string) => (word.endsWith("ies") ? `${word.slice(0, -3)}y` : word.replace(/s$/, ""));
+
+/** The compact list editor (see the top of this file). */
+function ListField({
+  name,
+  label,
+  schema,
+  list,
+  onChange,
+  hints,
+  errors,
+  path,
+  help,
+  error,
+}: {
+  name: string;
+  label: string;
+  schema: JsonSchema;
+  list: unknown[];
+  onChange: (v: unknown) => void;
+  hints: Hints;
+  errors: Record<string, string>;
+  path: string;
+  help: React.ReactNode;
+  error: React.ReactNode;
+}) {
+  const [open, setOpen] = useState<number | null>(null);
+  const [confirm, setConfirm] = useState<number | null>(null);
+  const hint = hints[name] ?? {};
+  const words = humanize(name).toLowerCase();
+  const [one, many] = hint.noun ?? [singular(words), words];
+  const max = schema.maxItems ?? Infinity;
+  const item = nonNull(schema.items!).schema;
+  const simple = item.type !== "object";
+  const toggle = Boolean(item.properties?.enabled && nonNull(item.properties.enabled).schema.type === "boolean");
+  const bad = (i: number) => Object.keys(errors).some((p) => p === `${path}.${i}` || p.startsWith(`${path}.${i}.`));
+
+  const set = (next: unknown[]) => {
+    setConfirm(null);
+    onChange(next);
+  };
+  const move = (i: number, d: number) => {
+    const next = [...list];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    set(next);
+    if (open === i) setOpen(i + d);
+    else if (open === i + d) setOpen(i);
+  };
+  const add = () => {
+    set([...list, blankFor(schema.items!)]);
+    setOpen(list.length);
+  };
+  const remove = (i: number) => {
+    if (confirm !== i) return setConfirm(i);
+    set(list.filter((_, j) => j !== i));
+    setOpen(open === i ? null : open !== null && open > i ? open - 1 : open);
+  };
+  const controls = (i: number, x: unknown) => (
+    <span className="flex shrink-0 items-center gap-1">
+      {toggle && isObj(x) && (
+        <label className="mr-1 flex min-h-9 items-center gap-1.5 text-xs font-semibold">
+          <input
+            type="checkbox"
+            className="size-4 accent-[var(--brand)]"
+            checked={Boolean(x.enabled)}
+            onChange={(e) => set(list.map((y, j) => (j === i ? { ...x, enabled: e.target.checked } : y)))}
+          />
+          <span className="max-sm:sr-only">{x.enabled ? "Shown" : "Hidden"}</span>
+        </label>
+      )}
+      <SmallButton disabled={i === 0} onClick={() => move(i, -1)} label={`Move ${one} ${i + 1} up`}>
+        ↑
+      </SmallButton>
+      <SmallButton disabled={i === list.length - 1} onClick={() => move(i, 1)} label={`Move ${one} ${i + 1} down`}>
+        ↓
+      </SmallButton>
+      {list.length < max && (
+        <SmallButton
+          onClick={() => {
+            set([...list.slice(0, i + 1), structuredClone(x), ...list.slice(i + 1)]);
+            setOpen(i + 1);
+          }}
+          label={`Duplicate ${one} ${i + 1}`}
+        >
+          ⧉
+        </SmallButton>
+      )}
+      {confirm === i ? (
+        <button
+          type="button"
+          autoFocus
+          onClick={() => remove(i)}
+          onBlur={() => setConfirm(null)}
+          className="h-9 rounded-full bg-brand px-3 text-xs font-bold text-brand-fg"
+        >
+          Delete?
+        </button>
+      ) : (
+        <SmallButton onClick={() => remove(i)} label={`Delete ${one} ${i + 1}`}>
+          ✕
+        </SmallButton>
+      )}
+    </span>
+  );
+
+  return (
+    <fieldset className="flex min-w-0 flex-col gap-2">
+      <legend className="mb-1 flex w-full flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+        <span>
+          {label}{" "}
+          <span className="font-normal text-fg-2">
+            ({list.length} {list.length === 1 ? one : many})
+          </span>
+        </span>
+        {list.length < max && (
+          <button
+            type="button"
+            onClick={add}
+            className="min-h-9 rounded-full bg-chip px-4 py-1.5 text-sm font-semibold hover:bg-chip-hover"
+          >
+            + Add {one}
+          </button>
+        )}
+      </legend>
+      {help}
+      {list.length === 0 && <p className="text-sm text-fg-2">Nothing here yet.</p>}
+      {simple ? (
+        <ul className="flex flex-col gap-2">
+          {list.map((x, i) => (
+            <li key={i} className="flex items-end gap-2">
+              <div className="min-w-0 flex-1">
+                <Field
+                  name={`${name}Item`}
+                  schema={schema.items!}
+                  value={x}
+                  onChange={(v) => set(list.map((y, j) => (j === i ? v : y)))}
+                  hints={{ ...hints, [`${name}Item`]: { label: `${one} ${i + 1}`, ...hints[`${name}Item`] } }}
+                  errors={errors}
+                  path={`${path}.${i}`}
+                />
+              </div>
+              <span className="pb-1">{controls(i, x)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {list.map((x, i) => {
+            const thumb = thumbFor(x);
+            const expanded = open === i;
+            return (
+              <li
+                key={i}
+                className={`min-w-0 rounded-2xl border bg-bg ${bad(i) ? "border-danger" : expanded ? "border-fg-2" : "border-line"}`}
+              >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 p-2 pl-2.5">
+                  <button
+                    type="button"
+                    aria-expanded={expanded}
+                    onClick={() => setOpen(expanded ? null : i)}
+                    className="flex min-h-12 min-w-0 flex-1 basis-56 items-center gap-3 rounded-xl text-left"
+                  >
+                    {thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- admin thumbnail straight from Cloudinary
+                      <img
+                        src={thumb}
+                        alt=""
+                        className="size-11 shrink-0 rounded-lg border border-line bg-chip object-cover"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="grid size-11 shrink-0 place-items-center rounded-lg bg-chip text-sm font-semibold text-fg-2"
+                      >
+                        {i + 1}
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">{itemTitle(x, one, i)}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`text-fg-2 transition-transform ${expanded ? "rotate-180" : ""}`}
+                    >
+                      ▾
+                    </span>
+                  </button>
+                  {controls(i, x)}
+                </div>
+                {expanded && (
+                  <div className="border-t border-line p-4">
+                    <Field
+                      name={`${name}Item`}
+                      schema={schema.items!}
+                      value={x}
+                      onChange={(v) => set(list.map((y, j) => (j === i ? v : y)))}
+                      hints={toggle ? { ...hints, enabled: { hidden: true } } : hints}
+                      errors={errors}
+                      path={`${path}.${i}`}
+                    />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {error}
+    </fieldset>
+  );
+}
+
 function SmallButton({
   children,
   onClick,
@@ -382,7 +614,7 @@ function SmallButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-7 place-items-center rounded-full bg-chip text-xs hover:bg-chip-hover disabled:opacity-40"
+      className="grid size-9 place-items-center rounded-full bg-chip text-sm hover:bg-chip-hover disabled:opacity-40"
     >
       {children}
     </button>

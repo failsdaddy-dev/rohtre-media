@@ -1,47 +1,31 @@
-import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 // Small, consistent building blocks for the admin panel (R44), in the
 // RohTre Vault style: chip tabs, pill buttons, rounded fields.
 
-export const ADMIN_TABS: { href: string; label: string; manage?: boolean; owner?: boolean }[] = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/pages", label: "Landing pages" },
-  { href: "/admin/home", label: "Home page" },
-  { href: "/admin/proof", label: "Proof & badges" },
-  { href: "/admin/media", label: "Media" },
-  { href: "/admin/leads", label: "Leads", manage: true },
-  { href: "/admin/routing", label: "Redirects & ads" },
-  { href: "/admin/settings", label: "Settings", manage: true },
-  { href: "/admin/users", label: "Users", owner: true },
-  { href: "/admin/audit", label: "Audit log", manage: true },
-  { href: "/admin/security", label: "Password" },
-];
+export type AdminTab = {
+  href: string;
+  label: string;
+  /** primary = in the top row; more = the "More" menu; account = the account menu. */
+  group: "primary" | "more" | "account";
+  manage?: boolean;
+  owner?: boolean;
+};
 
-export function AdminTabs({ current, canManage, isOwner }: { current: string; canManage: boolean; isOwner: boolean }) {
-  return (
-    <nav
-      aria-label="Admin"
-      className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
-    >
-      {ADMIN_TABS.filter((t) => (!t.manage || canManage) && (!t.owner || isOwner)).map((t) => {
-        const on = t.href === "/admin" ? current === "/admin" : current.startsWith(t.href);
-        return (
-          <Link
-            key={t.href}
-            href={t.href}
-            aria-current={on ? "page" : undefined}
-            className={`rm-press flex h-9 shrink-0 items-center rounded-lg px-3.5 text-sm font-medium ${
-              on ? "bg-chip-on-bg text-chip-on-fg" : "bg-chip hover:bg-chip-hover"
-            }`}
-          >
-            {t.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
+/** Every admin page, in menu order. Routes and role rules are unchanged. */
+export const ADMIN_TABS: AdminTab[] = [
+  { href: "/admin", label: "Overview", group: "primary" },
+  { href: "/admin/home", label: "Home page", group: "primary" },
+  { href: "/admin/pages", label: "Landing pages", group: "primary" },
+  { href: "/admin/proof", label: "Proof & badges", group: "primary" },
+  { href: "/admin/media", label: "Media", group: "primary" },
+  { href: "/admin/leads", label: "Leads", group: "primary", manage: true },
+  { href: "/admin/routing", label: "Redirects & ads", group: "more" },
+  { href: "/admin/settings", label: "Settings", group: "more", manage: true },
+  { href: "/admin/users", label: "Users", group: "more", owner: true },
+  { href: "/admin/audit", label: "Audit log", group: "more", manage: true },
+  { href: "/admin/security", label: "Password", group: "account" },
+];
 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "plain" | "danger" | "ghost" };
 

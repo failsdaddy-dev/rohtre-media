@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import type { HomeContent } from "@/content/home-schema";
+import { BADGE_LAYOUT, badgeLayout } from "@/content/layout-presets";
 import { isLiveProof, SHOW_PLACEHOLDERS, type Badge, type Result, type Testimonial } from "@/lib/home-data";
 import { publicBadges } from "@/lib/proof";
 import { ArrowRightIcon, AwardIcon, StepIcon } from "../icons";
@@ -18,55 +19,77 @@ import { NotLiveTag, PlaceholderBox, reveal, SectionCta, SectionHead } from "./p
 const PAD = "py-20 md:py-28";
 
 // ------------------------------------------------------------------- badges
+/** One badge's logo as the strip draws it: white silhouette, on a white plate, or as uploaded. */
+export function BadgeLogo({ badge }: { badge: Pick<Badge, "label" | "image_public_id" | "logo_style"> }) {
+  if (!badge.image_public_id) {
+    return /^\d/.test(badge.label) ? (
+      <span className="whitespace-nowrap text-[min(calc(var(--logo-h)*0.78),15cqw)] font-bold leading-none tracking-[-0.05em]">
+        {badge.label.trim()}
+      </span>
+    ) : (
+      <AwardIcon size={48} className="size-[var(--logo-h)]" strokeWidth={1.6} />
+    );
+  }
+  const style = badge.logo_style ?? "white";
+  const img = (
+    <Image
+      src={badge.image_public_id}
+      alt=""
+      width={320}
+      height={128}
+      sizes="240px"
+      loading="lazy"
+      className={`rm-badge-logo ${style === "white" ? "rm-logo-white" : ""}`}
+    />
+  );
+  return style === "plate" ? <span className="rm-logo-plate">{img}</span> : img;
+}
+
 /**
- * Partner badges (R11) as a full-width band: one row with large logos,
- * labels and dividers on desktop; two columns on phones (an odd last badge
- * spans the row), never a sideways scroll. Only live (switched-on) badges
- * render, in every environment; the data query applies the same rule.
+ * Partner badges (R11) as a full-bleed red band (the --brand token, white
+ * text, thin lighter-red dividers). Logos grow when there are fewer badges
+ * and the cells re-flow by count with no code change (badgeLayout() in
+ * layout-presets.ts). Only live (switched-on) badges render, in every
+ * environment; the data query applies the same rule.
  */
 export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges: Badge[] }) {
   const badges = publicBadges(all);
   if (badges.length === 0) return null;
+  const layout = badgeLayout(badges.length);
   return (
-    <section aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
+    <section id="partners" aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>
-      <div className="border-y border-line bg-bg-elev" {...reveal(2, "fade")}>
+      <div className="overflow-hidden bg-brand text-brand-fg" {...reveal(2, "fade")}>
         <ul
-          className="mx-auto grid max-w-[1440px] grid-cols-2 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))] [&>li]:shadow-[1px_0_0_var(--line),0_1px_0_var(--line)] md:[&>li]:shadow-[1px_0_0_var(--line)] md:[&>li:last-child]:shadow-none max-md:[&>li:last-child:nth-child(odd)]:col-span-2"
-          style={{ "--cols": badges.length } as CSSProperties}
+          className="rm-badges mx-auto max-w-[1600px]"
+          data-group={layout.group}
+          data-count={badges.length}
+          style={
+            {
+              "--logo-h-lg": `${layout.logoPx}px`,
+              "--logo-h-sm": `${layout.mobileLogoPx}px`,
+              "--cell-max": `${BADGE_LAYOUT.few.cellMaxPx}px`,
+            } as CSSProperties
+          }
         >
           {badges.map((b) => (
             <li
               key={b.id}
-              className="flex min-h-48 min-w-0 flex-col items-center justify-center gap-4 px-5 py-10 text-center md:min-h-56 md:px-4 lg:px-6"
+              className="flex min-h-44 flex-col [container-type:inline-size] items-center justify-center gap-4 px-4 py-9 text-center md:min-h-56 md:px-6 md:py-11"
             >
-              <span className="grid h-16 place-items-center">
-                {b.image_public_id ? (
-                  <Image
-                    src={b.image_public_id}
-                    alt=""
-                    width={240}
-                    height={96}
-                    sizes="200px"
-                    loading="lazy"
-                    className="rm-white-art h-14 w-auto max-w-[180px] object-contain md:h-16"
-                  />
-                ) : /^\d/.test(b.label) ? (
-                  <span className="text-[3.2rem] font-bold leading-none tracking-[-0.05em]">{b.label}</span>
-                ) : (
-                  <AwardIcon size={48} className="text-brand" strokeWidth={1.8} />
-                )}
+              <span className="grid h-[var(--logo-h)] max-w-full place-items-center">
+                <BadgeLogo badge={b} />
               </span>
               <span>
                 {!/^\d/.test(b.label) && (
-                  <span className="block text-balance text-[13px] font-bold uppercase leading-snug tracking-[0.14em] lg:text-sm">
+                  <span className="block text-balance text-sm font-bold uppercase leading-snug tracking-[0.14em]">
                     {b.label}
                   </span>
                 )}
                 {b.sublabel && (
-                  <span className="mt-1.5 block text-balance text-[13px] font-semibold uppercase tracking-[0.1em] text-fg-2">
+                  <span className="mt-1.5 block text-balance text-sm font-semibold tracking-[0.02em]">
                     {b.sublabel}
                   </span>
                 )}
@@ -92,7 +115,7 @@ const TONES = [
 
 export function Results({ s, results }: { s: HomeContent["results"]; results: Result[] }) {
   return (
-    <section className={`rm-dark rm-grid-bg ${PAD}`}>
+    <section id="results" className={`rm-dark rm-grid-bg ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
         <ol className="rm-stack flex flex-col gap-8 md:gap-24">
@@ -323,7 +346,7 @@ function toLines(text: string, perLine = 5): string[] {
 /** Big quote lines that fill with white as you scroll, then the founder card. */
 export function Founder({ s }: { s: HomeContent["founder"] }) {
   return (
-    <section className={`rm-dark rm-grid-bg ${PAD}`}>
+    <section id="founder" className={`rm-dark rm-grid-bg ${PAD}`}>
       <Container className="flex flex-col items-center text-center">
         <p className="rm-label mb-6" {...reveal(0)}>
           {s.eyebrow}

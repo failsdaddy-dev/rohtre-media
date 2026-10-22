@@ -18,6 +18,8 @@ function friendly(message: string): string {
   if (message.includes("approved_needs_image")) return "An approved result needs a screenshot and its alt text.";
   if (message.includes("approved_needs_media")) return "Approved items need their image or video and alt text.";
   if (message.includes("reel_needs_poster")) return "An approved reel needs a poster image.";
+  if (message.includes("logo_style"))
+    return "The database update for “Logo style” hasn’t run yet. Run `npx supabase db push`, then save again.";
   return "Couldn’t save. Please check the fields.";
 }
 
