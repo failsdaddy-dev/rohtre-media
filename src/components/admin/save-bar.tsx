@@ -9,6 +9,10 @@ import { Button } from "./ui";
 // reloading the tab asks first (the browser's own prompt), and clicking a
 // link inside the admin asks in this bar ("Leave without saving?"), never a
 // pop-up. Saving itself stays with each page (same calls as before).
+// When nothing is unsaved the bar shrinks to a small "Saved" pill at the
+// right, so it never covers the form; the full bar can also be hidden by
+// hand (▾) and brought back (▴). It always opens again for an error or the
+// leave question.
 
 /** Asks before the page is closed or a link is followed while `dirty`. */
 export function useLeaveGuard(dirty: boolean) {
@@ -65,6 +69,9 @@ export function SaveBar({
   idle?: string;
 }) {
   const guard = useLeaveGuard(dirty && !pending);
+  const [hidden, setHidden] = useState(false);
+  const error = message?.tone === "error" && !pending;
+  const compact = !guard.leaving && !error && !pending && (hidden || !dirty);
   const text = pending
     ? "Saving…"
     : message?.tone === "error"
@@ -72,6 +79,27 @@ export function SaveBar({
       : dirty
         ? "Unsaved changes"
         : (message?.text ?? idle);
+
+  if (compact) {
+    return (
+      <div className="sticky bottom-4 z-20 ml-auto flex w-fit items-center gap-1 self-end rounded-full border border-line bg-bg-elev py-1 pl-4 pr-1 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
+        <p role="status" className="flex items-center gap-2 text-sm">
+          <span
+            aria-hidden="true"
+            className={`size-2.5 shrink-0 rounded-full ${dirty ? "bg-[#f5a524]" : "bg-[#1f7a3a]"}`}
+          />
+          {dirty ? "Unsaved changes" : "Saved"}
+        </p>
+        {dirty ? (
+          <Button variant="ghost" className="h-9 px-3" onClick={() => setHidden(false)} aria-label="Show the save bar">
+            Show ▴
+          </Button>
+        ) : (
+          <span className="w-3" />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="sticky bottom-4 z-20 flex flex-wrap items-center gap-2 rounded-[28px] border border-line bg-bg-elev p-2 pl-5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]">
@@ -103,6 +131,11 @@ export function SaveBar({
             </Button>
           )}
           {children}
+          {!error && !pending && (
+            <Button variant="ghost" className="w-10 px-0" onClick={() => setHidden(true)} aria-label="Hide the save bar">
+              ▾
+            </Button>
+          )}
         </>
       )}
     </div>
