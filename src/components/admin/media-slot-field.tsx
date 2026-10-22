@@ -31,12 +31,15 @@ export function MediaSlotField({
   onChange,
   error,
   altError,
+  aspects = Object.keys(ASPECTS) as Aspect[],
 }: {
   label: string;
   value: MediaSlotValue;
   onChange: (v: MediaSlotValue) => void;
   error?: string;
   altError?: string;
+  /** The shapes this slot allows (from its schema). */
+  aspects?: Aspect[];
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
@@ -113,7 +116,7 @@ export function MediaSlotField({
             value={v.aspect}
             onChange={(e) => set({ aspect: e.target.value as Aspect })}
           >
-            {(Object.keys(ASPECTS) as Aspect[]).map((a) => (
+            {aspects.map((a) => (
               <option key={a} value={a}>
                 {a}
               </option>

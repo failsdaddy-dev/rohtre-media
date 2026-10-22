@@ -34,7 +34,7 @@ describe("home content (R13, R14)", () => {
   });
 
   it("FAQ drafts start unapproved", () => {
-    expect(DEFAULT_HOME.faq.items.every((f) => f.status === "draft")).toBe(true);
+    expect(DEFAULT_HOME.faq.items.every((f) => f.approved === false)).toBe(true);
   });
 
   it("has no price, package or industries fields anywhere (rule 6)", () => {
@@ -63,20 +63,41 @@ describe("home content (R13, R14)", () => {
     expect("services" in DEFAULT_HOME).toBe(false);
   });
 
-  it("ships every media slot empty and invents no client facts", () => {
+  it("ships every media slot empty except the seeded product mockups, and invents no client facts", () => {
     const slots = [
       ...DEFAULT_HOME.hero.slides.flatMap((s) => [s.desktop, s.mobile]),
-      ...DEFAULT_HOME.products.items.map((p) => p.media),
+      DEFAULT_HOME.hero.video,
+      DEFAULT_HOME.hero.visualMedia,
       ...DEFAULT_HOME.engage.phones,
       ...DEFAULT_HOME.videoAds.items.map((v) => v.media),
-      ...DEFAULT_HOME.showcase.items.map((c) => c.media),
+      ...DEFAULT_HOME.showcase.slides.map((c) => c.poster),
     ];
     expect(slots.every((s) => s.publicId === null)).toBe(true);
-    for (const c of DEFAULT_HOME.showcase.items) {
-      expect(c.client).toBe("");
-      expect(Object.values(c.metrics).every((v) => v === null)).toBe(true);
-    }
-    expect(JSON.stringify(DEFAULT_HOME.products)).not.toMatch(/4\.[0-9]/); // no copied star ratings
+    const products = DEFAULT_HOME.products.items.map((p) => p.media);
+    expect(products.map((m) => m.publicId)).toEqual(
+      ["grow", "boost", "launch", "scale", "market"].map((n) => `rohtre-media/images/products/${n}`),
+    );
+    expect(products.every((m) => m.aspect === "9:16" && m.alt === "Product placeholder image")).toBe(true);
+    // Client slides carry only the live page's own names and numbers; period and source stay empty.
+    expect(DEFAULT_HOME.showcase.slides.map((s) => s.brand)).toEqual(["Rama Chikan", "Harmiche"]);
+    expect(DEFAULT_HOME.showcase.slides.every((s) => !s.period && !s.source)).toBe(true);
+    expect(JSON.stringify(DEFAULT_HOME.products)).not.toMatch(/4\.[0-9]/); // no copied star ratings
+  });
+
+  it("who we serve: one colour per card, the official Shopify bag on the first", () => {
+    expect(DEFAULT_HOME.whoWeServe.items.map((i) => [i.icon, i.tint])).toEqual([
+      ["shopify", "green"],
+      ["cart", "coral"],
+      ["megaphone", "purple"],
+      ["play", "orange"],
+      ["network", "blue"],
+    ]);
+  });
+
+  it("older saved content still parses (new hero fields get their defaults)", () => {
+    const { mode, tagline, video, videoCaption, ctaNote, visual, visualMedia, ...oldHero } = DEFAULT_HOME.hero;
+    void [mode, tagline, video, videoCaption, ctaNote, visual, visualMedia];
+    expect(parseHome({ hero: oldHero }).hero).toEqual(DEFAULT_HOME.hero);
   });
 
   it("brand logos: identified ones on, the unidentified one stored off", () => {

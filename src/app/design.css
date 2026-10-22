@@ -227,6 +227,26 @@ html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-
   opacity: 1;
 }
 
+/* ------------------------------------------------------- hero illustration
+   Each floating piece of the magnet illustration (HeroMagnet) drifts on its
+   own slow loop; only transform moves. Still for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .rm-magnet .rm-float {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: rm-float var(--fd, 8s) ease-in-out var(--fdl, 0s) infinite;
+  }
+}
+@keyframes rm-float {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(var(--fx, -6px), var(--fy, -12px)) rotate(var(--fr, 2deg));
+  }
+}
+
 /* ---------------------------------------------------------- reveal on view
    [data-reveal] starts hidden (only when motion is allowed); Motion
    (src/components/motion.tsx) fades and raises it in with the Web Animations

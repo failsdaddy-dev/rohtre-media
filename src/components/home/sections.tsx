@@ -83,7 +83,7 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
 }
 
 // ------------------------------------------------------------------ results
-/** Proof blocks (R19) as big cards that stack while scrolling: white, red, black. */
+/** Proof blocks (R19) as big cards that stack while scrolling: white, red, black. Media area 1:1 (was 4:3, +33% tall). */
 const TONES = [
   "bg-white text-[#0a0a0a] [--fg-2:#5c5c5c]",
   "bg-brand text-white [--fg-2:rgba(255,255,255,0.85)]",
@@ -104,7 +104,7 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
               >
                 {r.is_placeholder ? (
                   <div className="p-5 md:p-10">
-                    <PlaceholderBox title={`Result ${i + 1}`} className="min-h-72 border-current">
+                    <PlaceholderBox title={`Result ${i + 1}`} className="min-h-96 border-current">
                       Brand name and logo, one real metric, a short summary and a dashboard screenshot on the right.
                     </PlaceholderBox>
                   </div>
@@ -124,10 +124,10 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
                         src={r.image_public_id}
                         alt={r.image_alt ?? ""}
                         width={720}
-                        height={560}
+                        height={720}
                         sizes="(max-width: 1024px) 100vw, 460px"
                         loading="lazy"
-                        className="aspect-[4/3] w-full max-w-[460px] rounded-[1.25rem] object-cover md:rounded-[1.75rem]"
+                        className="aspect-square w-full max-w-[460px] rounded-[1.25rem] object-cover md:rounded-[1.75rem]"
                       />
                     )}
                   </div>
@@ -387,40 +387,37 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
 }
 
 // ---------------------------------------------------------------------- FAQ
+/**
+ * One two-column grid: every closed card has the same width and height
+ * (fixed summary height, question clamped to two lines) and rows line up.
+ * Cards align to the top of their row, so opening one grows only that card.
+ * Approval is an admin-only state: unapproved answers show while building
+ * (unmarked) and never on the live site.
+ */
 export function Faq({ s }: { s: HomeContent["faq"] }) {
-  const items = s.items.filter((f) => SHOW_PLACEHOLDERS || f.status === "ready");
-  const columns = [items.filter((_, i) => i % 2 === 0), items.filter((_, i) => i % 2 === 1)];
+  const items = s.items.filter((f) => SHOW_PLACEHOLDERS || f.approved);
   return (
     <section id="faq" className={PAD}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        <div className="grid gap-5 md:grid-cols-2 md:items-start">
-          {columns.map((col, c) => (
-            <div key={c} className="flex flex-col gap-5">
-              {col.map((f, i) => (
-                <details
-                  key={f.q}
-                  className="rm-faq rounded-[1.75rem] border border-line bg-white px-6 py-5 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.3)] md:px-7 md:py-6"
-                  {...reveal(i)}
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-bold">
-                    <span className="flex flex-wrap items-center gap-2">
-                      {f.q}
-                      {f.status === "draft" && <NotLiveTag>Draft · needs approval</NotLiveTag>}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="rm-faq-plus grid size-8 shrink-0 place-items-center rounded-full bg-chip text-lg"
-                    >
-                      +
-                    </span>
-                  </summary>
-                  <p className="pt-3 leading-relaxed text-fg-2">{f.a}</p>
-                </details>
-              ))}
-            </div>
+        <ul className="grid gap-5 md:grid-cols-2 md:items-start">
+          {items.map((f, i) => (
+            <li key={f.q} {...reveal(i % 2)}>
+              <details className="rm-faq rounded-[1.75rem] border border-line bg-white px-6 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.3)] md:px-7">
+                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-bold">
+                  <span className="line-clamp-2">{f.q}</span>
+                  <span
+                    aria-hidden="true"
+                    className="rm-faq-plus grid size-8 shrink-0 place-items-center rounded-full bg-chip text-lg"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="pb-6 leading-relaxed text-fg-2">{f.a}</p>
+              </details>
+            </li>
           ))}
-        </div>
+        </ul>
         <SectionCta {...s.cta} variant="dark" />
       </Container>
     </section>

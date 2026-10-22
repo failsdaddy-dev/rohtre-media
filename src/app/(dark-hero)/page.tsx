@@ -41,7 +41,7 @@ export default async function HomePage() {
   const whatsappHref = settings.whatsapp.enabled
     ? whatsappLink(settings.whatsapp.number, "Hi RohTre Media, I'd like to grow my brand.")
     : null;
-  const faqVisible = home.faq.items.some((f) => SHOW_PLACEHOLDERS || f.status === "ready");
+  const faqVisible = home.faq.items.some((f) => SHOW_PLACEHOLDERS || f.approved);
 
   return (
     <>

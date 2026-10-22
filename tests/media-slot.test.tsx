@@ -143,22 +143,30 @@ describe("launch blockers (unfilled slots)", () => {
   it("lists every empty slot of the shipped home page", () => {
     const list = homeBlockers(DEFAULT_HOME);
     const slots = list.filter((b) => b.message.startsWith("Empty"));
-    // 2 hero slides × 2 crops + 5 products + 2 phones + 4 video ads + 2 showcase cards
-    expect(slots).toHaveLength(4 + 5 + 2 + 4 + 2);
-    expect(slots.some((b) => b.section === "Product showcase" && b.where === "item 3 › media")).toBe(true);
+    // hero video + 2 phones + 4 video ads + 2 showcase posters (products ship with the seeded mockups)
+    expect(slots).toHaveLength(1 + 2 + 4 + 2);
+    expect(slots.some((b) => b.section === "Client showcase" && b.where === "slide 2 › poster")).toBe(true);
     expect(list.some((b) => b.section === "Brands we've worked with" && /not identified/.test(b.message))).toBe(true);
-    expect(list.filter((b) => b.message === "No client name yet.")).toHaveLength(2);
+    const showcase = list.filter((b) => b.section === "Client showcase" && !b.message.startsWith("Empty"));
+    expect(showcase.map((b) => `${b.where}: ${b.message.split(" (")[0]}`)).toEqual([
+      "slide 1 (Rama Chikan): Numbers have no period",
+      "slide 1 (Rama Chikan): Numbers have no source",
+      "slide 2 (Harmiche): Numbers have no period",
+      "slide 2 (Harmiche): Numbers have no source",
+    ]);
   });
 
   it("drops a slot once it is filled, flags missing alt text, and skips switched-off sections", () => {
     const home = parseHome({});
-    home.products.items[0].media = filled({});
-    home.products.items[1].media = { ...filled({}), alt: "" };
+    home.products.items[0].media = filled({ aspect: "9:16" });
+    home.products.items[1].media = { ...filled({ aspect: "9:16" }), alt: "" };
+    home.products.items[2].media = emptySlot("9:16");
     home.videoAds.enabled = false;
     const list = homeBlockers(home).filter((b) => b.section !== "Client showcase");
     const products = list.filter((b) => b.section === "Product showcase");
     expect(products.some((b) => b.where === "item 1 › media")).toBe(false);
     expect(products.some((b) => b.where === "item 2 › media" && b.message === "Image has no alt text.")).toBe(true);
+    expect(products.some((b) => b.where === "item 3 › media" && b.message.startsWith("Empty 9:16"))).toBe(true);
     expect(list.some((b) => b.section === "Video ads & reels")).toBe(false);
   });
 });

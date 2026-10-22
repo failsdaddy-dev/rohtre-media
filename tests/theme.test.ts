@@ -71,6 +71,27 @@ describe("theme contrast", () => {
     }
   }
 
+  // Icon tints: the icon in the tint on a 16% disc of the same tint, over the
+  // card it sits on (black glow cards in dark sections, white cards in light ones).
+  const mix = (a: string, b: string, share: number) =>
+    "#" +
+    [1, 3, 5]
+      .map((i) =>
+        Math.round(parseInt(a.slice(i, i + 2), 16) * share + parseInt(b.slice(i, i + 2), 16) * (1 - share))
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("");
+  for (const mode of ["light", "dark"] as const) {
+    for (const t of ["green", "coral", "purple", "orange", "blue"]) {
+      it(`${mode}: --tint-${t} icon on its disc >= 3:1`, () => {
+        const card = token(mode, "bg-elev");
+        const disc = mix(token(mode, `tint-${t}`), card, 0.16);
+        expect(contrast(token(mode, `tint-${t}`), disc)).toBeGreaterThanOrEqual(3);
+      });
+    }
+  }
+
   it("dark sections really redefine the core tokens", () => {
     for (const name of ["bg", "bg-elev", "fg", "fg-2", "line"]) {
       expect(PALETTES.dark).toMatch(new RegExp(`--${name}:`));

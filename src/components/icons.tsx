@@ -156,6 +156,33 @@ export const ServiceIcon = ({ name, ...p }: P & { name: string }) => (
     {name === "sparkles" && (
       <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Zm7 11 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" />
     )}
+    {name === "network" && (
+      <>
+        <rect x="9" y="3" width="6" height="5" rx="1" />
+        <rect x="3" y="16" width="6" height="5" rx="1" />
+        <rect x="15" y="16" width="6" height="5" rx="1" />
+        <path d="M12 8v4M6 16v-4h12v4" />
+      </>
+    )}
+    {name === "trend" && (
+      <>
+        <path d="M3 3v18h18" />
+        <path d="m7 15 4-4 3 3 6-6M15 8h5v5" />
+      </>
+    )}
+    {name === "box" && (
+      <>
+        <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+        <path d="m4 7.5 8 4.5 8-4.5M12 12v9M8 5.3l8 4.5" />
+      </>
+    )}
+    {name === "eye" && (
+      <>
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    )}
+    {name === "cursor" && <path d="M5 3l14 7-6 2-2 6L5 3Zm8 9 6 6" />}
   </Svg>
 );
 

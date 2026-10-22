@@ -12,10 +12,6 @@ import { saveHome } from "./actions";
 // landing pages. Saving goes live straight away.
 
 const HINTS: Hints = {
-  slides: {
-    label: "Slides (exactly two)",
-    help: "Each slide needs a desktop and a mobile version (image with the text baked in, or a video) and alt text (R14).",
-  },
   desktop: { label: "Desktop (12:5, about 1920×800)" },
   mobile: { label: "Mobile (4:5, about 1080×1350)" },
   href: { label: "Link when clicked (optional, starts with /)" },
@@ -25,7 +21,8 @@ const HINTS: Hints = {
   intro: { label: "Sub-heading" },
   photo: { label: "Photo" },
   yearsExperience: { label: "Years as a digital consultant (leave empty until confirmed)" },
-  icon: { label: "Icon (shown when there is no logo)" },
+  icon: { label: "Icon" },
+  tint: { label: "Icon colour" },
   logos: {
     label: "Platform logos (optional)",
     help: "Official, unmodified logo files only (e.g. Shopify; Meta and Google). They mean “platforms we work with”, not a partnership.",
@@ -37,20 +34,59 @@ const HINTS: Hints = {
   phonesItem: { label: "Phone screen" },
   points: { label: "Points" },
   strapline: { label: "Strapline" },
-  client: { label: "Client name" },
-  metrics: {
-    label: "Numbers (leave empty to hide)",
-    help: "Only real, approved numbers. ROAS, sales and orders show as “x”, impressions as “M+”, the rest as “%”.",
+  approved: {
+    label: "Approved",
+    help: "Only approved answers show on the live site. Keep questions short (two lines at most).",
   },
-  roas: { label: "ROAS (x)" },
-  sales: { label: "Sales (x)" },
-  orders: { label: "Orders (x)" },
-  impressions: { label: "Impressions (M+)" },
-  lowerCpa: { label: "Lower CPA (%)" },
-  conversionRate: { label: "Conversion rate (%)" },
-  status: { label: "Status", help: "Only “ready” answers show on the live site." },
   cta: { label: "Call to action (Book a Call button + supporting line)" },
   enabled: { label: "Show this" },
+};
+
+/** Hints for fields whose name means something different in another section. */
+const TAB_HINTS: Partial<Record<keyof HomeContent, Hints>> = {
+  hero: {
+    mode: {
+      label: "Layout",
+      help: "composition = headline, video and visual side by side; slider = the two baked-text slides.",
+    },
+    tagline: { label: "Line under the headline (shown with dots between)" },
+    video: {
+      label: "Video (16:9)",
+      help: "Loop clip on: muted 10-15 s loop. Off: poster with a play button and sound.",
+    },
+    videoCaption: { label: "Caption under the video" },
+    ctaNote: { label: "Small line under the button" },
+    visual: {
+      label: "Right-hand visual",
+      help: "illustration = the built-in magnet drawing; media = your own transparent PNG/WebP/AVIF or a video below.",
+    },
+    visualMedia: { label: "Your visual (shown whole, no frame)" },
+    subline: { label: "Subline (slider layout only)" },
+    slides: {
+      label: "Slides (slider layout, exactly two)",
+      help: "Each slide needs a desktop and a mobile version (image with the text baked in, or a video) and alt text (R14).",
+    },
+  },
+  showcase: {
+    slides: {
+      label: "Client slides",
+      help: "One slide per client. Use ⧉ to duplicate a slide for a new brand; the arrows reorder.",
+    },
+    slidesItem: { label: "Slide" },
+    brand: { label: "Brand name" },
+    poster: { label: "Poster (1:1, 4:5 or 16:10)" },
+    period: { label: "Period (optional, e.g. Last 90 days)" },
+    source: { label: "Source (optional, e.g. Meta Ads)" },
+    currency: { label: "Currency symbol (shown in the Lower CPA icon)" },
+    metrics: {
+      label: "Numbers (up to six)",
+      help: "Only real numbers. Shown as prefix + value + suffix, e.g. 1.5 with suffix X = 1.5X. Switch one off or leave it empty to hide it.",
+    },
+    metricsItem: { label: "Number" },
+    label: { label: "Label (e.g. ROAS)" },
+    decimals: { label: "Decimal places" },
+    icon: { label: "Icon" },
+  },
 };
 
 export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas: Record<string, JsonSchema> }) {
@@ -103,7 +139,7 @@ export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas
             setData({ ...data, [tab]: v } as HomeContent);
             setDirty(true);
           }}
-          hints={HINTS}
+          hints={{ ...HINTS, ...TAB_HINTS[tab] }}
           errors={tabErrors(tab)}
         />
       </div>

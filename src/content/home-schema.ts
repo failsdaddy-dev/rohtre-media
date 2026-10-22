@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { emptySlot, mediaSlotSchema } from "./media-slot";
+import { emptySlot, mediaSlotSchema, slotSchema } from "./media-slot";
 
 // Home page content (R13, R14). Stored as JSON in public.page_content
 // (key "home"), checked here. Any section that is missing or invalid falls
@@ -30,8 +30,6 @@ const emptySlide = () => ({ desktop: emptySlot("12:5"), mobile: emptySlot("4:5")
 /** Optional brand logo (Cloudinary id) with its alt text. */
 const pid = z.string().regex(/^rohtre-media\/[A-Za-z0-9_./-]+$/);
 const logo = z.object({ logo_public_id: pid.nullable(), alt: z.string().max(120) });
-/** A client-showcase number; empty = not shown. */
-const metric = z.number().nonnegative().max(1_000_000).nullable();
 
 /**
  * Logos from the "Brands we've worked with" row of the live site, uploaded by
@@ -68,19 +66,103 @@ export const SERVICE_ICONS = [
   "pen",
   "cart",
   "sparkles",
+  "network",
+  /** The official Shopify bag (public/brand/platforms/shopify-bag.svg), unmodified. */
+  "shopify",
 ] as const;
+
+/** Icon tints: the --tint-* tokens in src/app/globals.css. */
+export const TINTS = ["green", "coral", "purple", "orange", "blue"] as const;
+export type Tint = (typeof TINTS)[number];
+
+/** Client-showcase metric icons; each has its own tint (the live page's colours). */
+export const METRIC_ICONS = ["trend", "cart", "box", "eye", "currency", "cursor"] as const;
+export type MetricIcon = (typeof METRIC_ICONS)[number];
+export const METRIC_TINT: Record<MetricIcon, Tint> = {
+  trend: "coral",
+  cart: "coral",
+  box: "coral",
+  eye: "purple",
+  currency: "orange",
+  cursor: "blue",
+};
+
+/**
+ * One client-showcase number. The text shown is prefix + value (with
+ * `decimals` places) + suffix, e.g. 1.5 + "X" = "1.5X"; it counts up from 0.
+ * Hidden when switched off or empty.
+ */
+const showcaseMetric = z.object({
+  label: z.string().min(1).max(30),
+  value: z.number().nonnegative().max(1_000_000_000).nullable(),
+  decimals: z.number().int().min(0).max(3),
+  prefix: z.string().max(4),
+  suffix: z.string().max(6),
+  icon: z.enum(METRIC_ICONS),
+  enabled: z.boolean(),
+});
+const METRIC_DEFAULTS = [
+  ["ROAS", "X", "trend"],
+  ["Sales", "X", "cart"],
+  ["Orders", "X", "box"],
+  ["Impressions", "M+", "eye"],
+  ["Lower CPA", "%", "currency"],
+  ["Conversion rate", "%", "cursor"],
+] as const;
+const showcaseMetrics = (values: (number | null)[]) =>
+  METRIC_DEFAULTS.map(([label, suffix, icon], i) => ({
+    label,
+    value: values[i] ?? null,
+    decimals: String(values[i] ?? "").split(".")[1]?.length ?? 0,
+    prefix: "",
+    suffix,
+    icon,
+    enabled: true,
+  }));
+const showcaseSlide = (brand: string, values: (number | null)[]) => ({
+  brand,
+  poster: emptySlot("1:1"),
+  period: "",
+  source: "",
+  currency: "₹",
+  metrics: showcaseMetrics(values),
+});
+
+// From the live e-commerce page's hero.
+const HERO_TAGLINE = ["Shopify Development", "Performance Marketing", "Automation"];
+
+/** Product mockups from the live page's product carousel, uploaded by `npm run seed:home`. */
+export const PRODUCT_IMAGES = ["grow", "boost", "launch", "scale", "market"] as const;
 
 export const homeSchema = z.object({
   hero: z
     .object({
+      /** composition = headline + video on the left, visual on the right; slider = the two baked-text slides. */
+      mode: z.enum(["composition", "slider"]).default("composition"),
       eyebrow: z.string().max(60),
       h1: z.string().min(1).max(120),
       h1Accent: z.string().max(60),
       subline: z.string().max(240),
       ctaLabel: z.string().min(1).max(40),
-      slides: z.array(slide).length(2), // R14: exactly two
+      /** Composition: the line under the headline, shown dot-separated. */
+      tagline: z.array(z.string().min(1).max(40)).max(5).default(HERO_TAGLINE),
+      /** Composition: a rectangular video (a muted loop clip, or a player with sound). */
+      video: slotSchema(["16:9"]).default(emptySlot("16:9", "video")),
+      videoCaption: z.string().max(80).default("Watch how we help brands grow"),
+      ctaNote: z.string().max(120).default("Book a free strategic call with our experts"),
+      /** Composition: the coded magnet illustration, or your own transparent image/video. */
+      visual: z.enum(["illustration", "media"]).default("illustration"),
+      visualMedia: slotSchema(["1:1", "4:5", "16:10", "16:9"]).default(emptySlot("1:1")),
+      slides: z.array(slide).length(2), // R14: exactly two (slider mode)
     })
     .default({
+      mode: "composition",
+      tagline: HERO_TAGLINE,
+      video: emptySlot("16:9", "video"),
+      videoCaption: "Watch how we help brands grow",
+      ctaNote: "Book a free strategic call with our experts",
+      visual: "illustration",
+      visualMedia: emptySlot("1:1"),
       eyebrow: "Digital marketing & growth agency",
       h1: "We make brands",
       h1Accent: "unstoppable.",
@@ -117,8 +199,10 @@ export const homeSchema = z.object({
           z.object({
             title: z.string().min(1).max(60),
             text: z.string().max(240),
-            /** Shown when no platform logo is set. */
+            /** Shown when no platform logo is set ("shopify" = the official Shopify bag). */
             icon: z.enum(SERVICE_ICONS),
+            /** Icon colour, on a translucent disc of the same colour. */
+            tint: z.enum(TINTS).default("coral"),
             /** Optional official platform logos (e.g. Shopify; Meta + Google), unmodified files only. */
             logos: z.array(logo).max(3),
           }),
@@ -139,31 +223,36 @@ export const homeSchema = z.object({
         {
           title: "Shopify Development",
           text: "Custom stores built for speed, UX and scale.",
-          icon: "cart",
+          icon: "shopify",
+          tint: "green",
           logos: [],
         },
         {
           title: "Ecommerce Strategy",
           text: "Winning products, positioning and store strategy that convert.",
-          icon: "bag",
+          icon: "cart",
+          tint: "coral",
           logos: [],
         },
         {
           title: "Performance Marketing",
           text: "Data-driven ads that drive traffic, sales and profitable growth.",
           icon: "megaphone",
+          tint: "purple",
           logos: [],
         },
         {
           title: "Creative Production",
           text: "Scroll-stopping creatives and videos that turn attention into sales.",
           icon: "play",
+          tint: "orange",
           logos: [],
         },
         {
           title: "Automation & Retention",
           text: "Email, SMS and automation systems that maximise LTV and repeat sales.",
-          icon: "sparkles",
+          icon: "network",
+          tint: "blue",
           logos: [],
         },
       ],
@@ -183,7 +272,7 @@ export const homeSchema = z.object({
           z.object({
             label: z.string().max(40),
             action: z.string().min(1).max(40),
-            media: mediaSlotSchema,
+            media: slotSchema(["9:16", "3:4", "4:5"]),
           }),
         )
         .min(1)
@@ -197,10 +286,16 @@ export const homeSchema = z.object({
       accent: "Let’s Scale It.",
       intro:
         "From first launch to seven-figure scale, we help ecommerce brands turn products into profitable growth through Shopify, creative and performance marketing.",
-      items: ["Grow", "Boost", "Launch", "Scale", "Market"].map((verb) => ({
+      // The live page's mockups (9:16, so nothing is cropped); replace them in the admin.
+      items: PRODUCT_IMAGES.map((slug) => ({
         label: "Your Product",
-        action: `${verb} This Product`,
-        media: emptySlot("4:5"),
+        action: `${slug.charAt(0).toUpperCase()}${slug.slice(1)} This Product`,
+        media: {
+          ...emptySlot("9:16"),
+          publicId: `rohtre-media/images/products/${slug}`,
+          format: "png",
+          alt: "Product placeholder image",
+        },
       })),
       cta: { text: "Have a product to grow? Let’s talk about it.", label: "Book a Call" },
     }),
@@ -292,24 +387,24 @@ export const homeSchema = z.object({
       title: z.string().max(100),
       accent: z.string().max(60),
       intro: z.string().max(300),
-      items: z
+      /** One slide per client: a big poster and up to six counting numbers. */
+      slides: z
         .array(
-          z.object({
-            client: z.string().max(80),
-            logo_public_id: pid.nullable(),
-            media: mediaSlotSchema,
-            /** Each metric shows only when it has a value. */
-            metrics: z.object({
-              roas: metric,
-              sales: metric,
-              orders: metric,
-              impressions: metric,
-              lowerCpa: metric,
-              conversionRate: metric,
-            }),
-          }),
+          z
+            .object({
+              brand: z.string().max(80),
+              poster: slotSchema(["1:1", "4:5", "16:10"]),
+              /** Optional, e.g. "Last 90 days"; shown under the brand name. */
+              period: z.string().max(40),
+              /** Optional, e.g. "Meta Ads"; shown under the brand name. */
+              source: z.string().max(60),
+              /** Shown in the Lower CPA icon (rupee by default). */
+              currency: z.string().min(1).max(3),
+              metrics: z.array(showcaseMetric).min(1).max(6),
+            })
+            .default(showcaseSlide("", [null, null, null, null, null, null])),
         )
-        .max(6),
+        .max(12),
       cta,
     })
     .default({
@@ -318,13 +413,12 @@ export const homeSchema = z.object({
       title: "We build growth",
       accent: "that shows.",
       intro: "Strategy. Creative. Technology. All working together for real results.",
-      // Two empty cards: no client names or numbers until real, approved ones exist.
-      items: [0, 1].map(() => ({
-        client: "",
-        logo_public_id: null,
-        media: emptySlot("4:5"),
-        metrics: { roas: null, sales: null, orders: null, impressions: null, lowerCpa: null, conversionRate: null },
-      })),
+      // Names and numbers from the live page's own counters (rohtremedia.com/e-commerce-marketing,
+      // Elementor data-to-value + suffix). Posters ship empty; period and source are still owed.
+      slides: [
+        showcaseSlide("Rama Chikan", [1.5, 28, 12, 49, 17, 20]),
+        showcaseSlide("Harmiche", [2.6, 3.2, 2.8, 5.4, 3.1, 1.7]),
+      ],
       cta: { text: "Want results like this for your brand? Let’s make it happen.", label: "Book a Call" },
     }),
 
@@ -450,8 +544,8 @@ export const homeSchema = z.object({
           z.object({
             q: z.string().min(1).max(200),
             a: z.string().min(1).max(1200),
-            /** Drafts show while building but never on the live site until approved. */
-            status: z.enum(["draft", "ready"]),
+            /** Approved in the admin; unapproved answers show only while building and never on the live site. */
+            approved: z.boolean().default(false),
           }),
         )
         .max(16),
@@ -466,32 +560,32 @@ export const homeSchema = z.object({
         {
           q: "What does RohTre Media do?",
           a: "We’re a digital marketing and growth agency. We plan and run Meta and Google ad campaigns, make the creatives and videos for them, and build the websites and landing pages they send people to.",
-          status: "draft",
+          approved: false,
         },
         {
           q: "Which countries do you work with?",
           a: "We work with brands in India, the USA, the UK, Australia and the UAE.",
-          status: "draft",
+          approved: false,
         },
         {
           q: "How much does it cost?",
           a: "It depends on your goals, the channels and your ad budget. After a short discovery call, we send you a proposal.",
-          status: "draft",
+          approved: false,
         },
         {
           q: "Do you make the ads and creatives too?",
           a: "Yes. Our team writes the copy and designs the images, videos and reels for your campaigns.",
-          status: "draft",
+          approved: false,
         },
         {
           q: "How do we get started?",
           a: "Book a call or send the enquiry form. We’ll talk about your brand and goals, then suggest a plan.",
-          status: "draft",
+          approved: false,
         },
         {
           q: "Will I know what my budget is doing?",
           a: "Yes. We report regularly on what your budget is doing and what we’re changing next.",
-          status: "draft",
+          approved: false,
         },
       ],
       cta: { text: "Still have a question?", label: "Ask us directly" },
@@ -517,9 +611,21 @@ export const homeSchema = z.object({
 export type HomeContent = z.infer<typeof homeSchema>;
 export const DEFAULT_HOME: HomeContent = homeSchema.parse({});
 
+/** Older saved content: FAQ answers had `status: "draft" | "ready"` instead of `approved`. */
+function upgrade(input: Record<string, unknown>): Record<string, unknown> {
+  const faq = input.faq as { items?: unknown } | undefined;
+  if (!faq || !Array.isArray(faq.items)) return input;
+  const items = faq.items.map((f) =>
+    f && typeof f === "object" && "status" in f && !("approved" in f)
+      ? { ...f, approved: (f as { status?: unknown }).status === "ready" }
+      : f,
+  );
+  return { ...input, faq: { ...faq, items } };
+}
+
 /** Parse stored JSON section by section, so one bad section never wipes the others. */
 export function parseHome(raw: unknown): HomeContent {
-  const input = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const input = upgrade(raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {});
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(homeSchema.shape) as (keyof HomeContent)[]) {
     const parsed = homeSchema.shape[key].safeParse(input[key]);

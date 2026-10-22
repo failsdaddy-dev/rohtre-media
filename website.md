@@ -7,7 +7,7 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
-| `/` | home page (R13), order since 2026-10-22: dark hero + slider (image or video slides), full-width partner strip, Who We Serve (dark, replaced the 9 service cards), Product Showcase, Scroll. Engage. Convert (dark, phone frames), Video Ads & Reels, Results (stacking, untouched), Client showcase, stripe band, Process, Brands we've worked with (dark logo marquee), Testimonials (marquee, + company logos), Founder, FAQ, CTA panel | public | built (Phase 2, redesigned 2026-10-22) |
+| `/` | home page (R13), order since 2026-10-22: dark hero (composition: headline + 16:9 video left, magnet illustration right; or the old slider), full-width partner strip, Who We Serve (dark, replaced the 9 service cards), Product Showcase, Scroll. Engage. Convert (dark, phone frames), Video Ads & Reels, Results (stacking, untouched), Client showcase, stripe band, Process, Brands we've worked with (dark logo marquee), Testimonials (marquee, + company logos), Founder, FAQ, CTA panel | public | built (Phase 2, redesigned 2026-10-22) |
 | `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
 | `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
 | `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
@@ -57,6 +57,7 @@ Applied to Supabase `rqvugkcoohzpylbbwqlb`:
 - `20261017180000_badges_showcase`: drops the badge proof rule; switches on 5 badges.
 - `20261022120000_testimonial_logos` (**written, NOT applied yet**; founder runs it): `testimonials.logo_public_id` + fills it for NealGuides, KSI/Sidemen, Pedram/PedTalkSports, Charlotte Marsh/EA. Until it runs, saving a testimonial in the admin fails (the form has the new field); the public page reads `*` so it works either way.
 - Home content JSON (no migration): new sections `whoWeServe`, `products`, `engage`, `videoAds`, `showcase`, `brands`; `services` removed; hero slides are now `{desktop, mobile, href}` media slots (the old `alt` moved into each slot). `page_content` had no saved row, so nothing needed converting.
+- Home content JSON, round 2 (2026-10-22, no migration, all additive with defaults so older saved copies still parse): hero `mode`, `tagline[]`, `video` (16:9 slot), `videoCaption`, `ctaNote`, `visual` illustration|media, `visualMedia` (slot 1:1/4:5/16:10/16:9); whoWeServe items `tint`; icon keys `shopify`, `network`; products slots 9:16 (also 3:4, 4:5) seeded with the live mockups; `showcase.items` replaced by `showcase.slides[]` (an old saved showcase falls back to the default slides); FAQ `status` replaced by `approved` (old `status: "ready"` is read as approved). Media slots gained the 16:10 shape and per-slot shape lists (`slotSchema([...])`).
 - RLS check: `npm run check:rls` (37 checks against the live project; creates and removes a temporary editor, test lead, page and audit rows).
 
 Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, page_dimensions, page_versions, preview_tokens, media, clients, case_studies, testimonials, results, creatives, concept_works, proof_tags, badges, page_badges, redirects, ad_mappings, audit_log.
@@ -83,22 +84,42 @@ Home page sections (Phase 2, `src/components/home/`), content in `src/content/ho
 
 | Section | Fields | Variants |
 |---|---|---|
-| hero | eyebrow, h1, h1Accent, subline, ctaLabel, slides[2] {desktop slot 12:5, mobile slot 4:5, href} | – |
+| hero | mode composition (default) or slider; eyebrow, h1, h1Accent, ctaLabel; composition: tagline[] (dot-separated), video (16:9 slot, loop clip or player with sound), videoCaption, ctaNote, visual illustration (coded `HeroMagnet`, inline SVG about 5.7 KB, official Shopify + Meta files, transform-only float 6.5-10 s, still for reduced motion) or media (`visualMedia`, shown whole: `MediaSlot fit="contain"`); slider: subline, WhatsApp button, slides[2] {desktop slot 12:5, mobile slot 4:5, href} | composition, slider |
 | badges (partner strip) | enabled, eyebrow, title, accent, cta (items from `badges`); full-bleed band, one row ≥768 px, 2 columns on phones | – |
-| whoWeServe | eyebrow, title, accent, intro, items[1-8] {title, text, icon, logos[0-3] {logo_public_id, alt}}, values[], cta | – |
-| products | eyebrow, title, accent, intro, items[1-8] {label, action, media slot 4:5}, cta | – |
+| whoWeServe | eyebrow, title, accent, intro, items[1-8] {title, text, icon (`shopify` = official bag file), tint green/coral/purple/orange/blue, logos[0-3] {logo_public_id, alt}}, values[], cta. Icon on a 96 px (104 px from 1024 px) translucent disc of its tint | – |
+| products | eyebrow, title, accent, intro, items[1-8] {label, action (one line), media slot 9:16}, cta. `ScrollRow` slider: scroll-snap, prev/next buttons (48 px, hidden at the ends, smooth only with motion), cards clamp(260px, 21.5vw, 340px), 2.2 visible from 640 px, 1.15 on phones | slider |
 | engage | eyebrow, title, accent, subline, body, points[], phones[1-4] (slots in `PhoneFrame`, 9:16), cta | – |
 | videoAds | eyebrow, title, accent, intro, strapline, body, items[1-8] {title, media slot 9:16}, cta | – |
-| results | eyebrow, title, accent, intro, cta (items from `results`); image-only slots, untouched (pending migration to media slots, needs founder OK) | – |
-| showcase | eyebrow, title, accent, intro, items[0-6] {client, logo_public_id, media slot 4:5, metrics {roas, sales, orders, impressions, lowerCpa, conversionRate}}, cta. A metric shows only with a value; a card with nothing in it is hidden on the live site (so the section is hidden until filled) | – |
+| results | eyebrow, title, accent, intro, cta (items from `results`); image-only (not a media slot: that needs a `results` migration and changes its DB check). Media area 1:1 at up to 460 px (was 4:3), placeholder min 384 px (was 288) | – |
+| showcase | eyebrow, title, accent, intro, slides[0-12] {brand, poster (slot 1:1 default, 4:5, 16:10), period, source, currency (₹ default), metrics[1-6] {label, value, decimals, prefix, suffix, icon trend/cart/box/eye/currency/cursor, enabled}}, cta. A slide with nothing in it is hidden on the live site | carousel |
 | brands | eyebrow, title, accent, items[] {name, logo_public_id, alt, enabled} (order = list order), cta | marquee |
 | process | eyebrow, title, accent, intro, steps[1-5], cta | – |
 | testimonials | eyebrow, title, accent, variant, cta (items from `testimonials`) | grid, slider (marquee) |
 | founder | eyebrow, quote (live-site CEO quote), name, role, bio, yearsExperience (null until confirmed), photo, ctaLabel | – |
-| faq | eyebrow, title, accent, items[] {q, a, status draft/ready}, cta | – |
+| faq | eyebrow, title, accent, items[] {q, a, approved}, cta. One 2-column grid, every closed card 96 px tall (question clamped to 2 lines), cards top-aligned so opening one moves no neighbour. Approval is shown only in the admin (no pills on the page); unapproved answers show only while building | – |
 | finalCta | eyebrow, title, accent, text, label | – |
 
 **Media slot** (`src/content/media-slot.ts`, `src/components/media/media-slot.tsx`, admin `src/components/admin/media-slot-field.tsx`): `{type image|video, publicId, format, alt, aspect 16:9|12:5|4:5|1:1|3:4|9:16, loop, poster, bytes, duration}`; alt required for filled images. Fixed aspect ratio (no layout shift). Image = Cloudinary srcset (f_auto, q_auto, widths 320-2400). Video = a still (poster, or first frame `so_0`) under the clip; loop clips are muted, get their file only when in view (`MediaPlayback`, IntersectionObserver, starts after page load, max 3 playing, pause off screen, nothing for reduced motion or save-data); other videos get controls + `preload="none"`. GIF = image upload delivered as a looping MP4 (`.mp4` extension) with a `pg_1` still. Empty = neutral dotted frame, labelled "Placeholder · 9:16 · image or video · up to N MB" only outside production. `PhoneFrame` = CSS phone outline (no brand marks) around a 9:16 slot. Limits in `src/lib/media-limits.ts`: images 10 MB, video 100 MB (Cloudinary Free, verified on cloudinary.com/pricing/compare-plans), loop clip warning above 10 MB or 15 s, 3 playing at once. Admin form: any slot-shaped field gets the slot editor automatically. Launch blockers: `src/lib/home-blockers.ts`, shown on Admin → Home page.
+
+**Client showcase carousel** (`src/components/home/showcase-slider.tsx`): all slides in one grid cell (height = tallest, no jump), one visible; arrows 48 px (56 px from 1024 px) below the slides on phones/tablets and at the section edges from 1024 px; ←/→ keys when the carousel has focus; swipe (pointer, 40 px); wrap-around; `aria-live` "Slide n of N"; `role=region` + `aria-roledescription=carousel`; no autoplay; one slide = no arrows. Slide layout: poster 46% + metrics panel (brand, short red underline, optional "period · source", 3×2 grid with 1 px dividers; 2×3 on phones).
+**Count-up** (`src/lib/count-up.ts`): `COUNT_UP_MS` 1400, ease-out cubic; text = prefix + value.toFixed(decimals) + suffix, the last frame is exactly the stored text; starts the first time the carousel is 35% in view and again on every slide change; the server renders the final value, the invisible final text reserves the width (tabular numerals), `aria-label` on each value; reduced motion = final values only. Icon tints per metric: ROAS/Sales/Orders coral (pink), Impressions purple, Lower CPA orange (currency symbol), Conversion blue.
+**Icon tints**: `--tint-green|coral|purple|orange|blue` in `globals.css` (darker on light cards, brighter in `.rm-dark`); disc = 16% of the tint; icon-to-disc ≥ 3:1 checked in `tests/theme.test.ts`.
+**Admin lists** (all generated forms): add, duplicate (⧉), move, remove. Home editor hints can differ per tab (`TAB_HINTS`).
+
+**Media sizes at 1920 px** (computed from the CSS, not measured in a browser):
+
+| Area | Before | Now | 1366 px | 390 px |
+|---|---|---|---|---|
+| Hero video (16:9) | none | 620 × 349 | 620 × 349 | 358 wide |
+| Hero visual | none | about 708 wide (640:560) | about 634 wide | 358 wide, below the button |
+| Who We Serve icon disc | 52 px square | 104 px circle | 104 | 96 |
+| Product card / frame | 218 card, 194 × 242 (4:5) | 340 card, 316 × 562 (9:16) | 294 card (4 + 63 px peek) | 311 card (1.15 visible) |
+| Phone frame | about 247 × 426 | 370 × 645 | 333 × 580 | 172 wide |
+| Video Ads frame | 250 wide | 378 wide (container 1680) | 300 wide | 72vw row |
+| Client poster | 223 × 279 (4:5) | 530 × 530 (1:1, 46%) | 530 | full width |
+| Results media | 460 × 345 / placeholder 288 tall | 460 × 460 / 384 tall | same | full width |
+
+Wider containers: hero 1440, products 1600, phones section 1440, video ads 1680 (others stay 1200).
 
 Landing-page section registry (Phase 3, R28) - `src/sections/schemas.ts` (data), `src/sections/render.tsx` (components), `src/sections/master-template.ts` (default page), `src/sections/tone.ts` (header tone):
 
@@ -137,7 +158,7 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 - Smooth scrolling: Lenis (`src/components/smooth-scroll.tsx`, lazy-loaded, about 4 KB; off for reduced motion).
 - Intro splash (`src/components/intro.tsx`): Vault-style stripes + "ROHTRE MEDIA", first page of a visit only, never on /lp, /admin, /login, /preview.
 - Header: sticky; transparent with white logo/nav over a `.rm-hero-dark` hero, white with dark nav once `data-scrolled` (0.5 s transitions).
-- Hero: full-screen `.rm-beams` (drifting light beams drawn in CSS + red glow), pill label, two-tone H1, Book a Call + WhatsApp; the 2-slide slider below in a framed card.
+- Hero: full-screen `.rm-beams` (drifting light beams drawn in CSS + red glow). Composition layout (default): pill, two-tone H1, dot line, 16:9 video, Book a Call + small line on the left; magnet illustration or uploaded visual on the right. Slider layout: centred H1, Book a Call + WhatsApp, the 2-slide slider below in a framed card.
 - Cards: `.rm-glow-card` (black square; hover = 4-corner red/white gradient border + blurred bloom) on dark; `.rm-card` (white, soft shadow, lift on hover) on light.
 - Results: `.rm-stack` sticky stacking cards (white / red / black). `.rm-stripe-band`: "ROHTRE MEDIA" in moving red/off-white stripes. Testimonials: `.rm-marquee` two rows, opposite directions, pause on hover. FAQ: `.rm-faq` details with smooth height. Final CTA: dark `CtaPanel` with dots, squiggles, quarter circles.
 - All motion off for prefers-reduced-motion.
@@ -212,6 +233,13 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-22 | Client showcase built (not a duplicate of Results: Results has one headline metric per client in stacking cards; the showcase has up to six metrics per card). Empty cards hidden on the live site | Brief 5.7 |
 | 2026-10-22 | Client logos: 17 files downloaded once from the live page into `scripts/seed-assets/brands/`, uploaded by `npm run seed:logos` to `rohtre-media/images/brands/{slug}` (code defaults reference these ids, like the badges). 16 identified, 1 unidentified (stored switched off). Logos are shown unmodified (testimonials and client cards put them on a dark chip) | Brief Part 7 |
 | 2026-10-22 | Platform logos (Shopify, Meta, Google, YouTube) not added: no official files supplied; Who We Serve cards show our icons until the founder uploads official files | Brief 7.1 |
+| 2026-10-22 | Round 2 (visual fixes + showcase slider) also stayed on `dev`: the brief asked for a new branch, the two-branch rule wins | Founder rule |
+| 2026-10-22 | Official Shopify bag (Shopify brand-assets zip) and Meta mono-white lockup (Meta brand resources zip) committed unmodified in `public/brand/platforms/`; used only as "platforms we work with" (Who We Serve icon, hero illustration). Sources in `docs/seed-manifest.md` | Brief C1, C2 |
+| 2026-10-22 | Hero default = composition with the coded magnet illustration (passed a static render check; no people, no photos). The slider layout and its fields are kept (`hero.mode`). Composition drops the subline and the WhatsApp button (the floating WhatsApp button stays) | Brief C1 |
+| 2026-10-22 | Hero visual uploads: PNG/WebP/AVIF with transparency. SVG uploads stay refused (an uploaded SVG can carry script) | Security |
+| 2026-10-22 | Product mockups from the live carousel seeded as the product slots (9:16, alt "Product placeholder image"); client-showcase names and numbers from the live page's counters (Rama Chikan, Harmiche) | Brief C3, C7 |
+| 2026-10-22 | FAQ approval became an admin-only flag; pills removed from the page in every environment; unapproved answers are launch blockers (landing-page FAQs keep `status` and map it to the same rendering) | Brief C8 |
+| 2026-10-22 | Carousel and count-up written by hand (no new dependency); home first-load JS 185.1 → 186.5 KB gzip | Brief Part 0.4, 0.7 |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -254,7 +282,10 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Platform logos for Who We Serve (official Shopify, Meta, Google files), optional | founder | Admin → Home page → Who we serve |
 | Unidentified client logo (`scripts/seed-assets/brands/unidentified-1.png`: brown round "b" mark) and the Harmiche.com testimonial logo | founder | Admin → Home page → Brands; Proof → Testimonials |
 | Run `npm run seed:logos` (uploads the client logos) and apply migration `20261022120000_testimonial_logos` | founder | terminal |
-| 5 testimonials need written permission; 6 FAQ answers need approval | founder | `testimonials`, home FAQ |
+| 5 testimonials need written permission; 6 FAQ answers need approval (each unapproved one is listed in Admin → Home page → Launch blockers; they never show on the live site until approved) | founder | `testimonials`, Admin → Home page → FAQ |
+| Client showcase: period and source for Rama Chikan and Harmiche (numbers are live, but without "Last N days" and "Meta Ads"-style context); 2 posters (1:1) | founder | Admin → Home page → Client showcase |
+| Empty media after round 2: hero video (16:9), 2 phone videos, 4 video-ad frames, 2 showcase posters | founder | Admin → Home page |
+| Run `npm run seed:home` (uploads the 5 product mockups; fills a saved home copy if one exists). Until it runs, the product cards show broken images | founder | terminal |
 
 Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` renders "[TO CONFIRM: …]" (legal pages); home uses `PlaceholderBox` / `NotLiveTag` (`src/components/home/parts.tsx`) behind `SHOW_PLACEHOLDERS` (dev only).
 
@@ -280,7 +311,10 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Client-logo use: big-brand logos (EA, DayZ, BetterHelp, italki, Sidemen, SPORTbible…) imply they were clients; confirm each, with permission where needed | founder | before launch |
 | Optional home sections from the live page not built: Paid media & PPC swipe carousel, One Growth System, News & Recognition | founder | no |
 | Results section slots are image-only (pending migration to media slots, needs approval) | founder | no |
-| Home redesign not checked in a browser (founder runs the site): mobile LCP/CLS before/after not measured; first-load JS `/` 184.1 → 185.1 KB gzip | founder | no |
+| Home redesign not checked in a browser (founder runs the site): mobile LCP/CLS before/after not measured; first-load JS `/` 184.1 → 185.1 KB gzip (round 1) → 186.5 KB (round 2) | founder | no |
+| Round 2 not seen in a browser either: only the hero illustration was rendered on its own (static, headless Chrome). Check 1920, 1366, 1280 and 390 px | founder | no |
+| Results media as image-or-video slot: needs an additive `results` migration plus a change to its "approved needs an image" check; not done | founder | no |
+| Hero visual: `hero.visual = illustration` by default; switch to `media` after uploading your own transparent image | founder | no |
 
 ## 10a. Phase 3 not done (needs founder input or later phases)
 
@@ -290,7 +324,7 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-**Home redesign done on `dev` (2026-10-22), waiting for the founder's "go".** Founder: run `npm run seed:logos`, apply migration `20261022120000_testimonial_logos` (`npx supabase db push`), then check the home page with `npm run dev` and fill slots in Admin → Home page.
+**Home round 2 done on `dev` (2026-10-22), waiting for the founder's "go".** Founder: run `npm run seed:home` (and `npm run seed:logos` + `npx supabase db push` from round 1 if not done yet), then check the home page with `npm run dev`.
 Then Phase 5 (AI page creation, R29-R32), which needs `docs/design-guide.md`; if it's missing, stop and ask.
 
 Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.

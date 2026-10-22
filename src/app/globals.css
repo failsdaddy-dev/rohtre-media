@@ -37,6 +37,14 @@
   --grad-b: #e50914;
   --grad-c: #ff3b3b;
   --grad-to: #ff3b3b;
+  /* Icon tints (Who We Serve icons, client-showcase metrics): the icon in the
+     tint on a translucent disc of the same tint. Darker on light cards,
+     brighter in .rm-dark; icon-to-disc contrast is checked in tests/theme.test.ts. */
+  --tint-green: #4b8a1d;
+  --tint-coral: #d6335a;
+  --tint-purple: #7c3aed;
+  --tint-orange: #c2410c;
+  --tint-blue: #2563eb;
 
   /* Striped brand panel (login, intro, accents) */
   --stripe-top: #ffffff;
@@ -86,6 +94,11 @@
   --grad-b: #ff4d4d;
   --grad-c: #ff8a8a;
   --grad-to: #ff5a5f;
+  --tint-green: #95bf47;
+  --tint-coral: #ff7085;
+  --tint-purple: #b48cff;
+  --tint-orange: #ff9a3d;
+  --tint-blue: #5aa2ff;
   --stripe-top: #060606;
   --stripe-mid: #3a0709;
   --stripe-fg: #ffffff;

@@ -15,6 +15,7 @@ import { z } from "zod";
 
 export const ASPECTS = {
   "16:9": 16 / 9,
+  "16:10": 16 / 10,
   "12:5": 12 / 5,
   "4:5": 4 / 5,
   "1:1": 1,
@@ -26,36 +27,41 @@ const ASPECT_KEYS = Object.keys(ASPECTS) as [Aspect, ...Aspect[]];
 
 const pid = z.string().regex(/^rohtre-media\/[A-Za-z0-9_./-]+$/);
 
-export const mediaSlotSchema = z
-  .object({
-    type: z.enum(["image", "video"]),
-    publicId: pid.nullable(),
-    format: z.string().max(10).nullable(),
-    alt: z.string().max(250),
-    aspect: z.enum(ASPECT_KEYS),
-    loop: z.boolean(),
-    poster: pid.nullable(),
-    bytes: z.number().int().nonnegative().nullable(),
-    duration: z.number().nonnegative().nullable(),
-  })
-  .superRefine((s, ctx) => {
-    if (s.publicId && s.type === "image" && !s.alt.trim())
-      ctx.addIssue({ code: "custom", path: ["alt"], message: "Describe the image (alt text is required)." });
-  });
+/** A slot schema; `aspects` limits the shapes the admin offers (the first is listed first). */
+export const slotSchema = (aspects: readonly [Aspect, ...Aspect[]] = ASPECT_KEYS) =>
+  z
+    .object({
+      type: z.enum(["image", "video"]),
+      publicId: pid.nullable(),
+      format: z.string().max(10).nullable(),
+      alt: z.string().max(250),
+      aspect: z.enum(aspects),
+      loop: z.boolean(),
+      poster: pid.nullable(),
+      bytes: z.number().int().nonnegative().nullable(),
+      duration: z.number().nonnegative().nullable(),
+    })
+    .superRefine((s, ctx) => {
+      if (s.publicId && s.type === "image" && !s.alt.trim())
+        ctx.addIssue({ code: "custom", path: ["alt"], message: "Describe the image (alt text is required)." });
+    });
+
+export const mediaSlotSchema = slotSchema();
 export type MediaSlotValue = z.infer<typeof mediaSlotSchema>;
 
 /** An empty slot (the default for every slot until real media is uploaded). */
-export const emptySlot = (aspect: Aspect, type: "image" | "video" = "image"): MediaSlotValue => ({
-  type,
-  publicId: null,
-  format: null,
-  alt: "",
-  aspect,
-  loop: true,
-  poster: null,
-  bytes: null,
-  duration: null,
-});
+export const emptySlot = <A extends Aspect>(aspect: A, type: "image" | "video" = "image") =>
+  ({
+    type,
+    publicId: null,
+    format: null,
+    alt: "",
+    aspect,
+    loop: true,
+    poster: null,
+    bytes: null,
+    duration: null,
+  }) satisfies MediaSlotValue;
 
 export const isGif = (s: Pick<MediaSlotValue, "format">) => s.format?.toLowerCase() === "gif";
 /** Plays as a video: a real video, or a GIF (served as a looping MP4). */

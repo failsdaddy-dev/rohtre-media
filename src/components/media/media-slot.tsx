@@ -26,6 +26,8 @@ export type SlotProps = {
   className?: string;
   /** Widest file needed (keeps small slots from offering huge files). */
   maxWidth?: number;
+  /** "contain" shows the whole file (e.g. a transparent PNG/SVG cut-out) instead of filling the frame. */
+  fit?: "cover" | "contain";
 };
 
 /** The still image's URL at a given width (image, video poster or GIF frame). */
@@ -44,9 +46,10 @@ export function stillSrcSet(slot: MediaSlotValue, maxWidth = 2400): string | und
     .join(", ");
 }
 
-export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 2400 }: SlotProps) {
+export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 2400, fit = "cover" }: SlotProps) {
   const frame: CSSProperties = { aspectRatio: String(ASPECTS[slot.aspect]) };
   const box = `relative w-full overflow-hidden ${className}`;
+  const objectFit = fit === "contain" ? "object-contain" : "object-cover";
 
   if (!slot.publicId) {
     return (
@@ -75,7 +78,7 @@ export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 24
       loading={priority ? "eager" : "lazy"}
       fetchPriority={priority ? "high" : "auto"}
       decoding="async"
-      className="absolute inset-0 size-full object-cover"
+      className={`absolute inset-0 size-full ${objectFit}`}
     />
   );
   if (!playsAsVideo(slot)) {
@@ -101,7 +104,7 @@ export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 24
           preload="none"
           aria-label={slot.alt || undefined}
           aria-hidden={slot.alt ? undefined : true}
-          className="rm-loop-clip absolute inset-0 size-full object-cover"
+          className={`rm-loop-clip absolute inset-0 size-full ${objectFit}`}
         />
       ) : (
         <video
@@ -111,7 +114,7 @@ export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 24
           playsInline
           preload="none"
           aria-label={slot.alt || "Video"}
-          className="absolute inset-0 size-full bg-black object-cover"
+          className={`absolute inset-0 size-full bg-black ${objectFit}`}
         />
       )}
     </div>

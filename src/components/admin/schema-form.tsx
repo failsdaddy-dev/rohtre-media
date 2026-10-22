@@ -1,6 +1,6 @@
 "use client";
 
-import type { MediaSlotValue } from "@/content/media-slot";
+import type { Aspect, MediaSlotValue } from "@/content/media-slot";
 import { MediaField } from "./media-field";
 import { MediaSlotField } from "./media-slot-field";
 import { SELECT_CLASS } from "./ui";
@@ -16,7 +16,7 @@ import { SELECT_CLASS } from "./ui";
 //   media slot       → image-or-video slot editor (MediaSlotField)
 //   *_public_id      → image/video upload storing the id string
 //   object           → group of fields
-//   array            → repeatable list (add, remove, move)
+//   array            → repeatable list (add, duplicate, remove, move)
 // The server validates everything again with Zod when saving.
 
 export type JsonSchema = {
@@ -128,6 +128,7 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
           onChange={onChange}
           error={err}
           altError={errors[`${path}.alt`]}
+          aspects={schema.properties?.aspect?.enum as Aspect[] | undefined}
         />
         {help}
       </div>
@@ -208,6 +209,14 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
                 <SmallButton disabled={i === list.length - 1} onClick={() => move(i, 1)} label="Move down">
                   ↓
                 </SmallButton>
+                {list.length < max && (
+                  <SmallButton
+                    onClick={() => onChange([...list.slice(0, i + 1), structuredClone(item), ...list.slice(i + 1)])}
+                    label="Duplicate"
+                  >
+                    ⧉
+                  </SmallButton>
+                )}
                 <SmallButton onClick={() => onChange(list.filter((_, j) => j !== i))} label="Remove">
                   ✕
                 </SmallButton>

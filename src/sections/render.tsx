@@ -358,7 +358,8 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
       return <Process s={{ enabled: true, ...s.props }} />;
     case "faq": {
       const visible = s.props.items.some((f) => SHOW_PLACEHOLDERS || f.status === "ready");
-      return visible ? <Faq s={{ enabled: true, ...s.props }} /> : null;
+      const items = s.props.items.map(({ q, a, status }) => ({ q, a, approved: status === "ready" }));
+      return visible ? <Faq s={{ enabled: true, ...s.props, items }} /> : null;
     }
     case "form":
       return <Form s={s} ctx={ctx} />;
