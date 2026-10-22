@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { HomeContent } from "@/content/home-schema";
-import { isFilled, playsAsVideo } from "@/content/media-slot";
+import { HERO_VIDEO } from "@/content/layout-presets";
+import { ASPECTS, isFilled, playsAsVideo } from "@/content/media-slot";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import { ArrowRightIcon, ChatIcon } from "../icons";
 import { MediaSlot, stillFor, stillSrcSet } from "../media/media-slot";
@@ -12,7 +13,8 @@ import { PlaceholderBox, reveal } from "./parts";
 
 // Hero (R14), two layouts chosen in the admin (hero.mode):
 //   composition (default): on the left the pill, the real visible H1
-//     (two-tone), a dot-separated line, a 16:9 video with its caption, Book a
+//     (two-tone), a dot-separated line, a landscape video (16:9 by default,
+//     height capped so taller shapes get narrower) with its caption, Book a
 //     Call and a small line; on the right the visual (the coded magnet
 //     illustration, or an uploaded transparent image/video shown whole).
 //     Phones stack it: headline, line, video, button, visual.
@@ -131,7 +133,19 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
                 ))}
               </ul>
             )}
-            <figure className="rm-hero-in mb-9 w-full max-w-[620px]" style={{ "--i": 3 } as CSSProperties}>
+            <figure
+              className="rm-hero-in rm-hero-video mb-9"
+              style={
+                {
+                  "--i": 3,
+                  "--ar": ASPECTS[hero.video.aspect],
+                  "--hv-max": `${HERO_VIDEO.maxPx}px`,
+                  "--hv-vh": HERO_VIDEO.capVh,
+                  "--hv-base": `${Math.round(HERO_VIDEO.maxPx / ASPECTS["16:9"])}px`,
+                  "--hv-room": `${HERO_VIDEO.roomPx}px`,
+                } as CSSProperties
+              }
+            >
               <MediaSlot
                 slot={hero.video}
                 sizes="(min-width: 1280px) 620px, (min-width: 1024px) 46vw, 92vw"

@@ -12,11 +12,13 @@ import { z } from "zod";
 //   loop      video: a muted looping clip that plays while in view (else a player with controls)
 //   poster    video: optional still; default is the clip's first frame
 //   bytes, duration  recorded at upload, for the admin's size and length warnings
-//   fit       phone-shaped slots only: fill (crop to the screen, default) | fit (show the whole file)
+//   fit       phone and landscape slots: fill (crop to the frame, default) | fit (show the whole file)
 
 export const ASPECTS = {
   "16:9": 16 / 9,
   "16:10": 16 / 10,
+  "4:3": 4 / 3,
+  "21:9": 21 / 9,
   "12:5": 12 / 5,
   "4:5": 4 / 5,
   "1:1": 1,
@@ -36,19 +38,47 @@ export const PHONE_ASPECTS = ["9:19.5", "9:16", "9:18"] as const satisfies reado
 export type PhoneAspect = (typeof PHONE_ASPECTS)[number];
 export const isPhoneAspect = (a: unknown): a is PhoneAspect => PHONE_ASPECTS.includes(a as PhoneAspect);
 
+/**
+ * Landscape screens (hero video, the Video Ads monitor). 16:9 first: it is
+ * the default, so slots saved before this list existed keep their shape.
+ */
+export const LANDSCAPE_ASPECTS = ["16:9", "16:10", "4:3", "21:9"] as const satisfies readonly Aspect[];
+export type LandscapeAspect = (typeof LANDSCAPE_ASPECTS)[number];
+export const isLandscapeAspect = (a: unknown): a is LandscapeAspect => LANDSCAPE_ASPECTS.includes(a as LandscapeAspect);
+
+/**
+ * The shape registry: every shape belongs to one family, and each media
+ * field declares the shapes (so the families) it accepts. The admin's Shape
+ * list shows the family headings, the ratio and the best upload size.
+ */
+export const SHAPE_FAMILIES = [
+  { key: "phone", label: "Phone", aspects: PHONE_ASPECTS },
+  { key: "landscape", label: "Landscape", aspects: LANDSCAPE_ASPECTS },
+  { key: "other", label: "Square and portrait", aspects: ["1:1", "4:5", "3:4", "12:5"] },
+] as const satisfies readonly { key: string; label: string; aspects: readonly Aspect[] }[];
+export type ShapeFamily = (typeof SHAPE_FAMILIES)[number]["key"];
+export const familyOf = (a: Aspect): ShapeFamily =>
+  SHAPE_FAMILIES.find((f) => (f.aspects as readonly Aspect[]).includes(a))!.key;
+
 /** How the admin names a shape (the stored value stays e.g. "9:19.5"). */
 export const ASPECT_LABELS: Partial<Record<Aspect, string>> = {
   "9:19.5": "Modern phone 9:19.5",
   "9:16": "Classic 9:16",
   "9:18": "Tall 9:18",
+  "16:9": "Widescreen 16:9",
+  "16:10": "Desktop 16:10",
+  "4:3": "Classic 4:3",
+  "21:9": "Ultrawide 21:9",
 };
 /** Recommended upload size per shape, shown on empty slots and in the admin. */
-export const ASPECT_UPLOAD: Partial<Record<Aspect, string>> = {
+export const ASPECT_UPLOAD: Record<Aspect, string> = {
   "9:19.5": "1080×2340",
   "9:16": "1080×1920",
   "9:18": "1080×2160",
   "16:9": "1920×1080",
   "16:10": "1920×1200",
+  "4:3": "1440×1080",
+  "21:9": "2520×1080",
   "12:5": "1920×800",
   "4:5": "1080×1350",
   "1:1": "1080×1080",
@@ -85,12 +115,21 @@ export const phoneSlotSchema = () =>
   z.object({ ...slotFields(PHONE_ASPECTS), fit: z.enum(SLOT_FITS).default("fill") }).superRefine(altRequired);
 export type PhoneSlotValue = z.infer<ReturnType<typeof phoneSlotSchema>>;
 
+/** A landscape screen: landscape shapes only, plus Fill/Fit (missing `fit` reads as fill). */
+export const landscapeSlotSchema = () =>
+  z.object({ ...slotFields(LANDSCAPE_ASPECTS), fit: z.enum(SLOT_FITS).default("fill") }).superRefine(altRequired);
+export type LandscapeSlotValue = z.infer<ReturnType<typeof landscapeSlotSchema>>;
+
 export const mediaSlotSchema = slotSchema();
 export type MediaSlotValue = z.infer<typeof mediaSlotSchema>;
 
 /** An empty phone screen (Fill by default). */
 export const emptyPhone = (aspect: PhoneAspect = "9:19.5", type: "image" | "video" = "video") =>
   ({ ...emptySlot(aspect, type), fit: "fill" }) satisfies PhoneSlotValue;
+
+/** An empty landscape screen (16:9, Fill by default). */
+export const emptyLandscape = (aspect: LandscapeAspect = "16:9", type: "image" | "video" = "video") =>
+  ({ ...emptySlot(aspect, type), fit: "fill" }) satisfies LandscapeSlotValue;
 
 /** An empty slot (the default for every slot until real media is uploaded). */
 export const emptySlot = <A extends Aspect>(aspect: A, type: "image" | "video" = "image") =>
@@ -118,4 +157,4 @@ export function looksLikeSlot(v: unknown): v is MediaSlotValue {
 
 /** The words shown on an empty slot while building. */
 export const slotLabel = (s: Pick<MediaSlotValue, "aspect" | "type">, imageMb: number, videoMb: number) =>
-  `Placeholder · ${s.aspect}${ASPECT_UPLOAD[s.aspect] ? ` (${ASPECT_UPLOAD[s.aspect]})` : ""} · image or video · up to ${s.type === "video" ? videoMb : imageMb} MB`;
+  `Placeholder · ${s.aspect} (${ASPECT_UPLOAD[s.aspect]}) · image or video · up to ${s.type === "video" ? videoMb : imageMb} MB`;

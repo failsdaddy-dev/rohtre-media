@@ -392,9 +392,14 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand">{s.role}</p>
             <p className="max-w-xl text-lg leading-relaxed text-fg-2">{s.bio}</p>
             {s.yearsExperience ? (
-              <p className="text-lg">
-                <span className="text-4xl font-bold text-brand">{s.yearsExperience}+</span> years as a digital
-                consultant
+              // One baseline for the number and its label; the symbol is part of the number (same size,
+              // not raised). The label wraps under the number when the line is too narrow.
+              <p className="my-2 flex max-w-full flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="whitespace-nowrap text-[29px] font-bold leading-none tracking-[-0.02em] text-brand tabular-nums md:text-[32px]">
+                  {s.yearsExperience}
+                  {s.yearsSuffix}
+                </span>
+                <span className="min-w-0 text-[18px] leading-snug md:text-[20px]">{s.yearsLabel}</span>
               </p>
             ) : (
               SHOW_PLACEHOLDERS && <NotLiveTag>Years of experience: to confirm (brief says about 20)</NotLiveTag>

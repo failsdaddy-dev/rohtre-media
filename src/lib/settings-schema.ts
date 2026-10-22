@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DEFAULT_AI_BOTS } from "./crawlers";
+import { SOCIAL_NETWORKS } from "./social-links";
 
 // Global settings (R8, R9, R12, R38). Stored as one JSON row in
 // public.site_settings; anything missing or invalid falls back to these
@@ -13,9 +14,16 @@ const phone = z.object({
   tel: z.string().regex(/^\+[0-9]{6,15}$/, "Use +countrycode and digits only"),
 });
 
+/**
+ * One footer social link (src/lib/social-links.ts). The link is checked
+ * (https only) when saving and again before it is shown, so reading stays
+ * lenient: an older saved value never wipes the list.
+ */
 const social = z.object({
-  network: z.enum(["instagram", "youtube", "linkedin", "facebook", "x"]),
-  url: z.url().nullable(), // null = placeholder, hidden on the site
+  network: z.enum(SOCIAL_NETWORKS),
+  url: z.string().max(500).nullable(), // null = no link yet, hidden on the site
+  /** Shown/hidden switch (older rows without it are shown). */
+  enabled: z.boolean().default(true),
 });
 
 export const settingsSchema = z.object({
@@ -34,13 +42,10 @@ export const settingsSchema = z.object({
   callbackCountries: z
     .array(z.object({ country: z.string().length(2), label: z.string().max(40) }))
     .default([{ country: "AE", label: "UAE" }]),
-  socials: z.array(social).default([
-    { network: "instagram", url: null },
-    { network: "youtube", url: null },
-    { network: "linkedin", url: null },
-    { network: "facebook", url: null },
-    { network: "x", url: null },
-  ]),
+  socials: z
+    .array(social)
+    .max(16)
+    .default(SOCIAL_NETWORKS.slice(0, 5).map((network) => ({ network, url: null, enabled: true }))),
   whatsapp: z
     .object({
       /** Digits only, with country code (wa.me format). From the live site's chat widget. */

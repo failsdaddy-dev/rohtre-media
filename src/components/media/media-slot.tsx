@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { phoneFrameRatio } from "@/content/layout-presets";
+import { MONITOR_FRAME, phoneFrameRatio, SHOW_MONITOR_STAND } from "@/content/layout-presets";
 import { ASPECTS, isGif, playsAsVideo, slotLabel, type MediaSlotValue, type SlotFit } from "@/content/media-slot";
 import { clipUrl, cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
 import { MEDIA_IMAGE_MAX_MB, MEDIA_VIDEO_MAX_MB } from "@/lib/media-limits";
@@ -148,6 +148,39 @@ export function PhoneFrame({
         <span aria-hidden="true" className="rm-phone-pill" />
         <MediaSlot slot={slot} sizes={sizes} maxWidth={828} className="rm-phone-screen" />
       </div>
+    </div>
+  );
+}
+
+/**
+ * A generic, CSS-drawn desktop monitor (no brand marks) in the PhoneFrame's
+ * visual language: the same dark body and 1 px edge, a uniform bezel of
+ * 1.6% of the frame width, rounded corners, around a landscape slot (its own
+ * shape). The width comes from the parent; a slim stand exists but is off
+ * (SHOW_MONITOR_STAND).
+ */
+export function MonitorFrame({
+  slot,
+  sizes,
+  className = "",
+  style,
+}: Omit<SlotProps, "priority"> & { style?: CSSProperties }) {
+  return (
+    <div
+      className={`rm-monitor ${className}`}
+      data-aspect={slot.aspect}
+      style={
+        {
+          "--mbz": `${MONITOR_FRAME.bezel * 100}cqw`,
+          "--mrad": `${MONITOR_FRAME.radius * 100}cqw`,
+          ...style,
+        } as CSSProperties
+      }
+    >
+      <div className="rm-monitor-body">
+        <MediaSlot slot={slot} sizes={sizes} maxWidth={1920} className="rm-monitor-screen" />
+      </div>
+      {SHOW_MONITOR_STAND && <span aria-hidden="true" className="rm-monitor-stand" />}
     </div>
   );
 }

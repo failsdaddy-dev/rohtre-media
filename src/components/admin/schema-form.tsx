@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { isGif, type Aspect, type MediaSlotValue } from "@/content/media-slot";
+import { ASPECT_LABELS, isGif, isPhoneAspect, type Aspect, type MediaSlotValue } from "@/content/media-slot";
 import { cloudinaryUrl, stillUrl } from "@/lib/cloudinary/url";
 import { MediaField } from "./media-field";
 import { MediaSlotField } from "./media-slot-field";
-import { SELECT_CLASS } from "./ui";
+import { Select } from "./select";
 
 // A form drawn from a JSON Schema (made from the Zod schemas with
 // z.toJSONSchema on the server). Every section type and proof record gets
@@ -58,6 +58,12 @@ export type FieldHint = {
   noun?: [string, string];
   /** Media slots: the admin calls the shape "Screen shape" and explains Fill/Fit. */
   phone?: boolean;
+  /** Media slots: show the chosen shape in the box title, e.g. "Video (4:3)". */
+  showShape?: boolean;
+  /** Lists: labels for the fields inside each item (win over the page's hints there). */
+  itemHints?: Hints;
+  /** Dropdowns: a small icon or preview per option (e.g. the icon pickers). */
+  optionIcon?: (value: string) => React.ReactNode;
 };
 export type Hints = Record<string, FieldHint>;
 
@@ -156,7 +162,8 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
           error={err}
           altError={errors[`${path}.alt`]}
           aspects={schema.properties?.aspect?.enum as Aspect[] | undefined}
-          phone={hint.phone || Boolean(schema.properties?.fit)}
+          phone={hint.phone || Boolean((schema.properties?.aspect?.enum as string[] | undefined)?.every(isPhoneAspect))}
+          showShape={hint.showShape}
         />
         {help}
       </div>
@@ -287,13 +294,16 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
     return (
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="font-semibold">{label}</span>
-        <select className={SELECT_CLASS} value={String(value ?? "")} onChange={(e) => onChange(e.target.value)}>
-          {schema.enum.map((o) => (
-            <option key={String(o)} value={String(o)}>
-              {hint.optionLabels?.[String(o)] ?? humanize(String(o))}
-            </option>
-          ))}
-        </select>
+        <Select
+          value={String(value ?? "")}
+          onChange={onChange}
+          invalid={Boolean(err)}
+          options={schema.enum.map((o) => ({
+            value: String(o),
+            label: hint.optionLabels?.[String(o)] ?? humanize(String(o)),
+            icon: hint.optionIcon?.(String(o)),
+          }))}
+        />
         {help}
         {error}
       </label>
@@ -372,7 +382,9 @@ function thumbFor(item: unknown): string | null {
 }
 
 const TITLE_KEYS = ["title", "brand", "label", "name", "q", "action", "person_name"];
-const SHAPE_NAMES: Record<string, string> = { "9:19.5": "modern phone", "9:16": "classic 9:16", "9:18": "tall 9:18" };
+const SHAPE_NAMES: Record<string, string> = Object.fromEntries(
+  Object.entries(ASPECT_LABELS).map(([a, l]) => [a, a === "9:19.5" ? "modern phone" : l.toLowerCase()]),
+);
 
 /** A short title for a list row. */
 export function itemTitle(item: unknown, noun: string, i: number): string {
@@ -415,6 +427,7 @@ function ListField({
   const [open, setOpen] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<number | null>(null);
   const hint = hints[name] ?? {};
+  const inner = hint.itemHints ? { ...hints, ...hint.itemHints } : hints;
   const words = humanize(name).toLowerCase();
   const [one, many] = hint.noun ?? [singular(words), words];
   const max = schema.maxItems ?? Infinity;
@@ -522,7 +535,7 @@ function ListField({
                   schema={schema.items!}
                   value={x}
                   onChange={(v) => set(list.map((y, j) => (j === i ? v : y)))}
-                  hints={{ ...hints, [`${name}Item`]: { label: `${one} ${i + 1}`, ...hints[`${name}Item`] } }}
+                  hints={{ ...inner, [`${name}Item`]: { label: `${one} ${i + 1}`, ...hints[`${name}Item`] } }}
                   errors={errors}
                   path={`${path}.${i}`}
                 />
@@ -580,7 +593,7 @@ function ListField({
                       schema={schema.items!}
                       value={x}
                       onChange={(v) => set(list.map((y, j) => (j === i ? v : y)))}
-                      hints={toggle ? { ...hints, enabled: { hidden: true } } : hints}
+                      hints={toggle ? { ...inner, enabled: { hidden: true } } : inner}
                       errors={errors}
                       path={`${path}.${i}`}
                     />

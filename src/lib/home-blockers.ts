@@ -56,7 +56,8 @@ function heroInUse(hero: HomeContent["hero"]) {
 export function homeBlockers(home: HomeContent): HomeBlocker[] {
   const out: HomeBlocker[] = [];
   for (const [key, raw] of Object.entries(home)) {
-    const section = key === "hero" ? heroInUse(home.hero) : raw;
+    // Video Ads: the old four cards (`items`) are kept in the data but no longer shown.
+    const section = key === "hero" ? heroInUse(home.hero) : key === "videoAds" ? { ...home.videoAds, items: [] } : raw;
     if ("enabled" in section && section.enabled === false) continue;
     const name = SECTION_NAMES[key] ?? key;
     walkSlots(section, [], (raw, path) => {

@@ -1,12 +1,19 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { METRIC_TINT, type HomeContent, type Tint } from "@/content/home-schema";
-import { PHONE_FRAME, phoneHeight, VIDEO_AD_FRAME, videoAdHeight } from "@/content/layout-presets";
+import {
+  PHONE_FRAME,
+  phoneFrameRatio,
+  phoneHeight,
+  stageHeight,
+  stageWidthFactor,
+  VIDEO_STAGE,
+} from "@/content/layout-presets";
 import { ASPECTS, isFilled } from "@/content/media-slot";
 import { metricText } from "@/lib/count-up";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import { CheckIcon, ArrowRightIcon, ServiceIcon } from "../icons";
-import { MediaSlot, PhoneFrame } from "../media/media-slot";
+import { MediaSlot, MonitorFrame, PhoneFrame } from "../media/media-slot";
 import { Container } from "../page-parts";
 import { NotLiveTag, reveal, SectionCta, SectionHead } from "./parts";
 import { ScrollRow } from "./scroll-row";
@@ -242,51 +249,74 @@ export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
 
 // ------------------------------------------------------ video ads & reels
 /**
- * Phone-sized cards. Frame height = clamp(380px, 68svh, 720px) × the admin's
- * size, capped so the whole card (frame + title) fits on screen. Cards line
- * up at the top and each is as tall as its own frame (no stretched white
- * space when shapes differ). 4 across from 1280 px, 2 from 768 px, a swipe
- * row with about 1.3 cards below that (frames at most 70svh).
+ * A stage of three frames (left phone, centre monitor, right phone; the
+ * phones sit in front of the monitor's edges), the strapline and paragraph
+ * centred under the monitor, then a row of icons and titles. Sizes in
+ * layout-presets.ts (VIDEO_STAGE): phone height clamp(380px, 62svh, 640px)
+ * × the admin's size, at most 68svh, and never wider than the container.
+ * Below 768 px: monitor, the two phones side by side, then the text.
+ * (The old four phone cards, `items`, are kept in the data but not shown.)
  */
 export function VideoAds({ s }: { s: HomeContent["videoAds"] }) {
+  const { left, centre, right } = s.stage;
+  const frl = phoneFrameRatio(ASPECTS[left.aspect]);
+  const frr = phoneFrameRatio(ASPECTS[right.aspect]);
+  const phoneSizes = "(min-width: 1280px) 320px, (min-width: 768px) 22vw, 46vw";
   return (
     <section id="video-ads" className={`overflow-hidden border-y border-line ${PAD}`}>
       <Wide max={1680}>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
-        {(s.strapline || s.body) && (
-          <div className="mx-auto -mt-4 mb-12 flex max-w-2xl flex-col items-center gap-3 text-center" {...reveal(2)}>
-            {s.strapline && <p className="text-2xl font-bold tracking-[-0.02em]">{s.strapline}</p>}
-            {s.body && <p className="text-lg leading-relaxed text-fg-2">{s.body}</p>}
+        <div className="rm-stage-wrap" {...reveal(1, "up-lg")}>
+          <div
+            className="rm-stage"
+            style={
+              {
+                ...heightVars("st", stageHeight(s.size)),
+                "--k": stageWidthFactor(frl, frr),
+                "--frl": frl,
+                "--frr": frr,
+                "--ms": VIDEO_STAGE.monitorScale,
+                "--ov": VIDEO_STAGE.overlap,
+                "--mcap-n": VIDEO_STAGE.mobileCapVh,
+                "--bz": `${PHONE_FRAME.bezel * 100}cqw`,
+                "--rad": `${PHONE_FRAME.radius * 100}cqw`,
+              } as CSSProperties
+            }
+          >
+            <PhoneFrame slot={left} sizes={phoneSizes} className="rm-stage-left" />
+            <MonitorFrame
+              slot={centre}
+              sizes="(min-width: 1280px) 680px, (min-width: 768px) 46vw, 92vw"
+              className="rm-stage-monitor"
+            />
+            <PhoneFrame slot={right} sizes={phoneSizes} className="rm-stage-right" />
+            {(s.strapline || s.body) && (
+              <div className="rm-stage-text flex flex-col items-center gap-3 text-center">
+                {s.strapline && (
+                  <p className="text-xl font-bold tracking-[-0.02em] md:text-2xl">
+                    {s.strapline}
+                    <span aria-hidden="true" className="mx-auto mt-2.5 block h-[3px] w-14 rounded-full bg-brand" />
+                  </p>
+                )}
+                {s.body && <p className="max-w-xl text-[17px] leading-relaxed text-fg-2">{s.body}</p>}
+              </div>
+            )}
           </div>
-        )}
+        </div>
         <ul
-          aria-label="Video ads"
-          tabIndex={0}
-          style={
-            { ...heightVars("ad", videoAdHeight(s.size)), "--ad-cap": VIDEO_AD_FRAME.mobileCapVh } as CSSProperties
-          }
-          className="rm-ads no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 items-start gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:justify-items-center md:gap-6 md:overflow-visible md:px-0 xl:grid-cols-4"
+          className="rm-icon-row mt-14 md:mt-16"
+          style={{ "--n": Math.min(Math.max(s.icons.length, 2), 6) } as CSSProperties}
         >
-          {s.items.map((item, i) => (
-            <li
-              key={item.title}
-              className="flex w-[calc((100vw-2rem)/1.3)] shrink-0 snap-start justify-center md:w-full"
-              {...reveal(i % 4)}
-            >
-              <figure
-                className="rm-card rm-ad flex flex-col gap-3 p-1.5"
-                style={{ "--ar": ASPECTS[item.media.aspect] } as CSSProperties}
-              >
-                <MediaSlot
-                  slot={item.media}
-                  sizes="(min-width: 1280px) 340px, (min-width: 768px) 46vw, 72vw"
-                  maxWidth={1080}
-                  className="rounded-[14px]"
-                />
-                <figcaption className="px-2 pb-3 text-center text-[17px] font-bold leading-snug md:text-lg">
-                  {item.title}
-                </figcaption>
-              </figure>
+          {s.icons.map((it, i) => (
+            <li key={`${it.title}-${i}`} {...reveal(i % 4)}>
+              <div className="rm-icon-item">
+                <span aria-hidden="true" className="rm-icon-disc">
+                  <ServiceIcon name={it.icon} size={40} strokeWidth={1.7} />
+                </span>
+                <span className="min-w-0 text-[17px] font-semibold leading-snug [overflow-wrap:break-word] md:text-lg">
+                  {it.title}
+                </span>
+              </div>
             </li>
           ))}
         </ul>

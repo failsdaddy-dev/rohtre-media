@@ -46,10 +46,7 @@ export function Button({ variant = "plain", className = "", ...rest }: BtnProps)
 }
 
 export const INPUT_CLASS = "rm-field w-full px-3.5 py-2.5 text-[15px] outline-none";
-/** Full-width dropdown, same height as text fields. */
-export const SELECT_CLASS = "rm-field h-[46px] w-full cursor-pointer bg-transparent px-3.5 text-[15px] outline-none";
-/** Compact dropdown for table rows. */
-export const SELECT_SM_CLASS = "rm-field h-9 cursor-pointer bg-transparent pl-3 pr-2 text-sm leading-none outline-none";
+// Dropdowns: use <Select> (./select.tsx), never a native <select>.
 
 export function Field({
   label,

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type KeyboardEvent } from "react";
 import { COMMON_HINTS, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
 import { SaveBar } from "@/components/admin/save-bar";
-import { Button, SELECT_CLASS } from "@/components/admin/ui";
+import { Select } from "@/components/admin/select";
+import { Button } from "@/components/admin/ui";
 import { ServiceIcon } from "@/components/icons";
 import type { HomeContent } from "@/content/home-schema";
 import { FRAME_SIZE_LABELS } from "@/content/layout-presets";
@@ -58,7 +59,7 @@ export const SECTIONS: { key: Key; icon: string; anchor: string; about: string }
     key: "videoAds",
     icon: "play",
     anchor: "video-ads",
-    about: "The four phone-sized video cards (“Video Ads & Reels”).",
+    about: "Two phones in front of a screen, the strapline under it and the icon row (“Video Ads & Reels”).",
   },
   {
     key: "results",
@@ -90,6 +91,16 @@ export const SECTIONS: { key: Key; icon: string; anchor: string; about: string }
   },
 ];
 
+/** An icon picker's preview (the Shopify file has no drawn icon, so it shows the name only). */
+const iconPreview = (name: string) =>
+  name === "shopify" ? null : <ServiceIcon name={name} size={20} className="text-brand" />;
+const AD_ICON_LABELS: Record<string, string> = {
+  reel: "Reel (play + clapper)",
+  clapper: "Clapperboard",
+  target: "Target with arrow",
+  growth: "Rising bars",
+};
+
 /** Labels and help for every home field (keys never change). */
 const HINTS: Hints = {
   ...COMMON_HINTS,
@@ -100,8 +111,7 @@ const HINTS: Hints = {
   h1Accent: { label: "Headline, second line (shown in red)" },
   ctaLabel: { label: "Button text" },
   photo: { label: "Photo" },
-  yearsExperience: { label: "Years as a digital consultant", help: "Leave empty until confirmed." },
-  icon: { label: "Icon" },
+  icon: { label: "Icon", optionIcon: iconPreview },
   tint: { label: "Icon colour" },
   logos: {
     label: "Platform logos (optional)",
@@ -132,8 +142,9 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     },
     tagline: { label: "Line under the headline (shown with dots between)", noun: ["phrase", "phrases"] },
     video: {
-      label: "Video (16:9)",
-      help: "Loop clip on: muted 10-15 s loop. Off: poster with a play button and sound.",
+      label: "Video",
+      showShape: true,
+      help: "Landscape shapes only. The frame keeps its width and takes its height from the shape (very tall shapes get a little narrower so the headline and button stay in place). Loop clip on: muted 10-15 s loop. Off: poster with a play button and sound.",
     },
     videoCaption: { label: "Caption under the video" },
     ctaNote: { label: "Small line under the button" },
@@ -166,9 +177,26 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     size: { label: "Phone size", optionLabels: FRAME_SIZE_LABELS, help: SIZE_HELP },
   },
   videoAds: {
-    items: { label: "Video cards", noun: ["video card", "video cards"] },
-    title: { label: "Heading" },
-    media: { label: "Card video or image", phone: true },
+    // The old four cards are kept in the data (deprecated) but no longer shown or edited.
+    items: { hidden: true },
+    strapline: { label: "Strapline under the screen (with a short red line)" },
+    body: { label: "Paragraph under the strapline" },
+    stage: {
+      label: "Screens",
+      help: "The phones sit in front of the screen’s left and right edges, so keep important content away from the edges.",
+    },
+    left: { label: "Left phone", showShape: true },
+    centre: { label: "Centre screen", showShape: true },
+    right: { label: "Right phone", showShape: true },
+    icons: {
+      label: "Icon row",
+      noun: ["icon", "icons"],
+      help: "2 to 6 items under the screens. The row re-flows when you add or remove one.",
+      itemHints: {
+        title: { label: "Title" },
+        icon: { label: "Icon", optionLabels: AD_ICON_LABELS, optionIcon: iconPreview },
+      },
+    },
     size: { label: "Frame size", optionLabels: FRAME_SIZE_LABELS, help: SIZE_HELP },
   },
   process: { steps: { label: "Steps", noun: ["step", "steps"] }, text: { label: "Step text" } },
@@ -206,7 +234,15 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     decimals: { label: "Decimal places" },
     icon: { label: "Icon" },
   },
-  founder: { name: { label: "Name" }, role: { label: "Role" }, bio: { label: "Short bio" }, quote: { label: "Quote" } },
+  founder: {
+    name: { label: "Name" },
+    role: { label: "Role" },
+    bio: { label: "Short bio" },
+    quote: { label: "Quote" },
+    yearsExperience: { label: "Number", help: "1 to 4 digits. Leave empty until confirmed (then nothing shows)." },
+    yearsSuffix: { label: "Symbol after the number (optional)", help: "Same size as the number, e.g. +" },
+    yearsLabel: { label: "Label", help: "Shown next to the number; wraps under it on narrow screens." },
+  },
   finalCta: {
     text: { label: "Supporting line" },
     label: { label: "Button text" },
@@ -226,7 +262,7 @@ const GROUPS: { key: Group; title: string; open: boolean }[] = [
 
 const BUTTON_KEYS = new Set(["cta", "ctaLabel", "ctaNote", "label"]);
 const ADVANCED_KEYS = new Set(["mode", "variant"]);
-const MEDIA_KEYS = new Set(["size", "visual", "animated", "photo", "yearsExperience"]);
+const MEDIA_KEYS = new Set(["size", "visual", "animated", "photo"]);
 
 /** Does a schema hold an image/video anywhere inside? */
 const hasMedia = (s: JsonSchema | undefined): boolean =>
@@ -318,14 +354,16 @@ export function HomeEditor({ initial, schemas }: { initial: HomeContent; schemas
         {/* Section list: a rail from 1024 px, a dropdown below. */}
         <label className="flex flex-col gap-1.5 text-sm lg:hidden">
           <span className="font-semibold">Section</span>
-          <select className={SELECT_CLASS} value={tab} onChange={(e) => setTab(e.target.value as Key)}>
-            {sections.map((s, i) => (
-              <option key={s.key} value={s.key}>
-                {i + 1}. {SECTION_NAMES[s.key]} {shown(s.key) ? "" : "(hidden)"}
-                {empties(s.key) ? ` · ${empties(s.key)} to fill` : ""}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={tab}
+            onChange={(v) => setTab(v as Key)}
+            options={sections.map((s, i) => ({
+              value: s.key,
+              label: `${i + 1}. ${SECTION_NAMES[s.key]}${shown(s.key) ? "" : " (hidden)"}`,
+              hint: empties(s.key) ? `${empties(s.key)} to fill` : undefined,
+              icon: <ServiceIcon name={s.icon} size={17} />,
+            }))}
+          />
         </label>
         <nav
           aria-label="Home page sections"

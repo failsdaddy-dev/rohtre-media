@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SaveBar } from "@/components/admin/save-bar";
 import { COMMON_HINTS, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
-import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS, SELECT_SM_CLASS } from "@/components/admin/ui";
+import { Select } from "@/components/admin/select";
+import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import type { PublishIssue } from "@/lib/publish-check";
 import type { PageContent, Section, SectionType } from "@/sections/schemas";
 import {
@@ -213,18 +214,13 @@ export function PageEditor(props: {
                     <span className={s.enabled ? "" : "text-fg-2 line-through"}>{TYPE_LABELS[s.type]}</span>
                   </button>
                   {VARIANTS[s.type].length > 1 && (
-                    <select
+                    <Select
                       aria-label="Layout"
-                      className={SELECT_SM_CLASS}
+                      size="sm"
                       value={s.variant}
-                      onChange={(e) => setSection(i, { ...s, variant: e.target.value } as Section)}
-                    >
-                      {VARIANTS[s.type].map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(v) => setSection(i, { ...s, variant: v } as Section)}
+                      options={VARIANTS[s.type].map((v) => ({ value: v, label: v }))}
+                    />
                   )}
                   <label className="flex items-center gap-1.5 text-sm">
                     <input
@@ -428,15 +424,15 @@ export function PageEditor(props: {
                 </span>
               </Field>
               <Field label="Visibility" hint="Unlisted: anyone with the link, no search engines or AI crawlers.">
-                <select
-                  className={SELECT_CLASS}
+                <Select
                   value={settings.visibility}
-                  onChange={(e) => setSettings({ ...settings, visibility: e.target.value })}
-                >
-                  <option value="unlisted">Unlisted</option>
-                  <option value="public">Public</option>
-                  <option value="private">Private (preview links only)</option>
-                </select>
+                  onChange={(v) => setSettings({ ...settings, visibility: v })}
+                  options={[
+                    { value: "unlisted", label: "Unlisted" },
+                    { value: "public", label: "Public" },
+                    { value: "private", label: "Private (preview links only)" },
+                  ]}
+                />
               </Field>
               <Button
                 disabled={pending}
@@ -458,19 +454,13 @@ export function PageEditor(props: {
 
         <Panel title="Duplicate for another country">
           <div className="flex gap-2">
-            <select
-              className={SELECT_CLASS}
+            <Select
               value={country}
-              onChange={(e) => setCountry(e.target.value)}
+              onChange={setCountry}
               aria-label="Country"
-            >
-              <option value="">Choose a country…</option>
-              {props.countries.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              placeholder="Choose a country…"
+              options={props.countries.map((c) => ({ value: c.id, label: c.label }))}
+            />
             <Button
               disabled={pending || !country}
               onClick={() =>

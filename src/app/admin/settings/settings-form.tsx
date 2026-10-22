@@ -6,15 +6,15 @@ import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import { callbacksToText, phonesToText } from "@/lib/settings-form";
 import type { SiteSettings } from "@/lib/settings-schema";
 import { saveSettings, type SaveState } from "./actions";
+import { SocialLinksField } from "./social-links-field";
 
 const AREA = `${INPUT_CLASS} font-mono text-[13px] leading-6`;
 const CHECK = "size-4 accent-[var(--brand)]";
 
-const networkLabel = (n: string) => (n === "x" ? "X (Twitter)" : n[0].toUpperCase() + n.slice(1));
-
 export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; isOwner: boolean }) {
   const form = useRef<HTMLFormElement>(null);
   const [dirty, setDirty] = useState(false);
+  const [resets, setResets] = useState(0);
   // Same save action as before; a successful save clears "Unsaved changes".
   const [state, action, pending] = useActionState<SaveState, FormData>(
     async (prev, data) => {
@@ -104,20 +104,9 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
       </Panel>
 
       <Panel title="Social links">
-        <p className="-mt-2 mb-4 text-sm text-fg-2">Empty links stay hidden on the website.</p>
-        <div className="grid gap-4 md:grid-cols-2">
-          {settings.socials.map((s) => (
-            <Field key={s.network} label={networkLabel(s.network)} error={e.socials}>
-              <input
-                name={`social_${s.network}`}
-                type="url"
-                defaultValue={s.url ?? ""}
-                placeholder="https://"
-                className={INPUT_CLASS}
-              />
-            </Field>
-          ))}
-        </div>
+        {/* Remounted by Discard (key) so the rows go back to the saved list. */}
+        <SocialLinksField key={resets} initial={settings.socials} onDirty={() => setDirty(true)} />
+        {e.socials && <p className="mt-2 text-xs font-medium text-danger">{e.socials}</p>}
       </Panel>
 
       <Panel title="Lead form">
@@ -225,6 +214,7 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
         idle="Saved. Changes go live on the website when you save."
         onDiscard={() => {
           form.current?.reset();
+          setResets((n) => n + 1);
           setDirty(false);
         }}
       >

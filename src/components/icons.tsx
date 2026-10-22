@@ -183,6 +183,35 @@ export const ServiceIcon = ({ name, ...p }: P & { name: string }) => (
       </>
     )}
     {name === "cursor" && <path d="M5 3l14 7-6 2-2 6L5 3Zm8 9 6 6" />}
+    {/* Video Ads icon row (drawn for this site): reel, clapperboard, target, rising bars. */}
+    {name === "reel" && (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="4.5" />
+        <path d="M3 8.5h18M8.5 3l2.5 5.5M14 3l2.5 5.5" />
+        <path d="m10 12 4.5 2.75L10 17.5V12Z" />
+      </>
+    )}
+    {name === "clapper" && (
+      <>
+        <path d="M3.5 10.5h17V19a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19v-8.5Z" />
+        <path d="m3.5 10.5-.7-3.7L18.6 4l.7 3.8-15.8 2.7ZM7.7 5.9l2.1 3.3M12.8 5l2.1 3.3" />
+        <path d="m10.5 13 4 2.25-4 2.25V13Z" />
+      </>
+    )}
+    {name === "target" && (
+      <>
+        <circle cx="11" cy="13" r="8" />
+        <circle cx="11" cy="13" r="4.5" />
+        <circle cx="11" cy="13" r="1" />
+        <path d="m11 13 8.5-8.5M17 3.5v3.5h3.5" />
+      </>
+    )}
+    {name === "growth" && (
+      <>
+        <path d="M4 15h3.5v5H4zM10.25 12h3.5v8h-3.5zM16.5 9H20v11h-3.5z" />
+        <path d="m4 11 5-4 3 2 7-6M15 3h4v4" />
+      </>
+    )}
   </Svg>
 );
 

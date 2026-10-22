@@ -17,8 +17,6 @@ import {
   PHONE_FRAME,
   phoneFrameRatio,
   phoneHeight,
-  VIDEO_AD_FRAME,
-  videoAdHeight,
 } from "../src/content/layout-presets";
 import { ASPECTS, emptyPhone, emptySlot, PHONE_ASPECTS } from "../src/content/media-slot";
 import { homeJsonSchemas } from "../src/lib/json-schemas";
@@ -125,17 +123,13 @@ describe("phone and Video Ads frame sizes", () => {
   it("writes the CSS height with the viewport cap, in vh and svh", () => {
     expect(phoneHeight("medium").svh).toBe("min(calc(clamp(460px, 76svh, 820px) * 1), 92svh)");
     expect(phoneHeight("xl").vh).toBe("min(calc(clamp(460px, 76vh, 820px) * 1.3), 92vh)");
-    expect(videoAdHeight("small").svh).toBe("min(calc(clamp(380px, 68svh, 720px) * 0.8), calc(100svh - 150px))");
   });
 
   for (const v of VIEWPORTS) {
     for (const size of FRAME_SIZES) {
-      it(`${v.name}, ${size}: the phone and the whole Video Ads card fit the visible height`, () => {
+      it(`${v.name}, ${size}: the phone fits the visible height`, () => {
         const phone = height(PHONE_FRAME, FRAME_SCALE[size], v.h, (PHONE_FRAME.capVh / 100) * v.h);
         expect(phone).toBeLessThanOrEqual(v.h);
-        const frame = height(VIDEO_AD_FRAME, FRAME_SCALE[size], v.h, v.h - VIDEO_AD_FRAME.titleRoomPx);
-        const card = frame + 12 + 60; // padding + centred title (two lines at most)
-        expect(card).toBeLessThanOrEqual(v.h);
       });
     }
   }
@@ -169,7 +163,7 @@ describe("phone and Video Ads frame sizes", () => {
     const out = html(<ScrollEngage s={{ ...DEFAULT_HOME.engage, size: "xl" }} />);
     expect(out).toContain("--phone-h-svh:min(calc(clamp(460px, 76svh, 820px) * 1.3), 92svh)");
     const ads = html(<VideoAds s={{ ...DEFAULT_HOME.videoAds, size: "small" }} />);
-    expect(ads).toContain("* 0.8), calc(100svh - 150px))");
+    expect(ads).toContain("--st-h-svh:min(calc(clamp(380px, 62svh, 640px) * 0.8), 68svh)");
   });
 
   it("the phone frame keeps the chosen screen shape (it used to force 9:16)", () => {
@@ -178,18 +172,6 @@ describe("phone and Video Ads frame sizes", () => {
       expect(out).toContain(`data-aspect="${a}"`);
       expect(out).toContain(`aspect-ratio:${ASPECTS[a]}`);
     }
-  });
-
-  it("Video Ads cards follow their own shape and line up at the top", () => {
-    const items = DEFAULT_HOME.videoAds.items.map((it, i) => ({
-      ...it,
-      media: emptyPhone(i === 0 ? "9:16" : "9:19.5"),
-    }));
-    const out = html(<VideoAds s={{ ...DEFAULT_HOME.videoAds, items }} />);
-    expect(out).toContain(`--ar:${9 / 16}`);
-    expect(out).toContain(`--ar:${9 / 19.5}`);
-    expect(out).toContain("items-start");
-    expect(out).not.toContain("h-full");
   });
 });
 

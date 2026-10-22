@@ -3,7 +3,7 @@
 // src/app/design.css reads them as custom properties set from here, so
 // changing a number here changes the site (no CSS edit needed).
 
-/** The admin's section-level size control (phones and Video Ads). */
+/** The admin's section-level size control (phones and the Video Ads stage). */
 export const FRAME_SIZES = ["small", "medium", "large", "xl"] as const;
 export type FrameSize = (typeof FRAME_SIZES)[number];
 export const FRAME_SCALE: Record<FrameSize, number> = { small: 0.8, medium: 1, large: 1.15, xl: 1.3 };
@@ -33,20 +33,6 @@ export const PHONE_FRAME = {
   rowFrom: 4,
 };
 
-/**
- * Video Ads card frame: height clamp(380px, 68svh, 720px) × the size
- * scale; the whole card (frame + title) stays inside the viewport, and on
- * phones the frame is never taller than 70svh.
- */
-export const VIDEO_AD_FRAME = {
-  minPx: 380,
-  vh: 68,
-  maxPx: 720,
-  /** Room kept for the title and card padding inside the viewport. */
-  titleRoomPx: 150,
-  mobileCapVh: 70,
-};
-
 /** "clamp(min, vh, max) × scale, capped" as CSS, with an svh version for browsers that have it. */
 export function frameHeight(
   f: { minPx: number; vh: number; maxPx: number },
@@ -59,11 +45,79 @@ export function frameHeight(
 
 export const phoneHeight = (size: FrameSize) =>
   frameHeight(PHONE_FRAME, FRAME_SCALE[size], (u) => `${PHONE_FRAME.capVh}${u}`);
-export const videoAdHeight = (size: FrameSize) =>
-  frameHeight(VIDEO_AD_FRAME, FRAME_SCALE[size], (u) => `calc(100${u} - ${VIDEO_AD_FRAME.titleRoomPx}px)`);
 
 /** Outer frame width ÷ height for a screen of width÷height `a` with the bezel above. */
 export const phoneFrameRatio = (a: number, bezel = PHONE_FRAME.bezel) => a / (1 - 2 * bezel + 2 * bezel * a);
+
+/**
+ * Monitor frame (the Video Ads centre screen): same dark body and 1 px
+ * edge as the phone, a uniform bezel of 1.6% of the frame width, corners
+ * at 2.4%. No brand marks. The stand is drawn but off.
+ */
+export const MONITOR_FRAME = { bezel: 0.016, radius: 0.024 };
+export const SHOW_MONITOR_STAND = false;
+export const monitorFrameRatio = (a: number) => phoneFrameRatio(a, MONITOR_FRAME.bezel);
+
+/**
+ * Video Ads stage: left phone, centre monitor, right phone. From 1280 px
+ * the phone height is clamp(380px, 62svh, 640px) × the size scale, never
+ * taller than 68svh; the monitor is 2.1 × the phones' (average) width and
+ * each phone overlaps it by 6% of the monitor's width. The whole stage
+ * also shrinks to fit its container (768-1279 px is the same composition,
+ * scaled by the container width). Below 768 px: monitor full width, the two
+ * phones side by side (46% each, at most 70svh tall), then the text.
+ */
+export const VIDEO_STAGE = {
+  minPx: 380,
+  vh: 62,
+  maxPx: 640,
+  capVh: 68,
+  monitorScale: 2.1,
+  overlap: 0.06,
+  mobilePhoneShare: 0.46,
+  mobileCapVh: 70,
+};
+export const stageHeight = (size: FrameSize) =>
+  frameHeight(VIDEO_STAGE, FRAME_SCALE[size], (u) => `${VIDEO_STAGE.capVh}${u}`);
+/**
+ * Stage width ÷ phone height, for phone frame ratios `l` and `r`: both
+ * phones plus the monitor minus the two overlaps. The phone height is
+ * capped at (container width ÷ this), so the stage never overflows.
+ */
+export const stageWidthFactor = (l: number, r: number) =>
+  l + r + VIDEO_STAGE.monitorScale * ((l + r) / 2) * (1 - 2 * VIDEO_STAGE.overlap);
+
+/**
+ * The stage's CSS (design.css .rm-stage) worked out in pixels for a
+ * viewport of w × h CSS px and the section's container (1680 px max, 16 or
+ * 24 px side padding), for the tests and the docs. Frame ratios are
+ * width ÷ height of the whole frame (screen + bezel).
+ */
+export function stageLayout(w: number, h: number, size: FrameSize, frl: number, frr: number, frm: number) {
+  const pad = w >= 640 ? 24 : 16;
+  const cw = Math.min(w, 1680) - 2 * pad;
+  const s = VIDEO_STAGE;
+  let ph: number;
+  let wm: number;
+  let width: number;
+  if (w >= 768) {
+    const byScreen = Math.min(
+      Math.min(Math.max(s.minPx, (s.vh / 100) * h), s.maxPx) * FRAME_SCALE[size],
+      (s.capVh / 100) * h,
+    );
+    ph = Math.min(byScreen, cw / stageWidthFactor(frl, frr));
+    wm = (s.monitorScale * (ph * frl + ph * frr)) / 2;
+    width = ph * frl + ph * frr + wm * (1 - 2 * s.overlap);
+  } else {
+    ph = Math.min((s.mobileCapVh / 100) * h, (s.mobilePhoneShare * cw) / Math.max(frl, frr));
+    wm = cw;
+    width = cw;
+  }
+  return { container: cw, phoneH: ph, phoneW: [ph * frl, ph * frr], monitorW: wm, monitorH: wm / frm, width };
+}
+
+/** Hero video: up to 620 px wide; its height follows the shape, capped (see design.css .rm-hero-video). */
+export const HERO_VIDEO = { maxPx: 620, capVh: 70, roomPx: 620 };
 
 /**
  * Partner strip: logo height by the number of shown badges (the badge

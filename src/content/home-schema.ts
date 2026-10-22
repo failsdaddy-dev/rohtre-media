@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { FRAME_SIZES } from "./layout-presets";
-import { emptyPhone, emptySlot, isPhoneAspect, mediaSlotSchema, phoneSlotSchema, slotSchema } from "./media-slot";
+import {
+  emptyLandscape,
+  emptyPhone,
+  emptySlot,
+  isLandscapeAspect,
+  isPhoneAspect,
+  landscapeSlotSchema,
+  mediaSlotSchema,
+  phoneSlotSchema,
+  slotSchema,
+} from "./media-slot";
 
 // Home page content (R13, R14). Stored as JSON in public.page_content
 // (key "home"), checked here. Any section that is missing or invalid falls
@@ -76,6 +86,41 @@ export const SERVICE_ICONS = [
 export const TINTS = ["green", "coral", "purple", "orange", "blue"] as const;
 export type Tint = (typeof TINTS)[number];
 
+/**
+ * Video Ads icon row icons (ServiceIcon names). The first four are the
+ * live page's meanings: reel (Reels & UGC), clapperboard (Product Films),
+ * target (Paid Social), rising bars (Performance Storytelling).
+ */
+export const AD_ICONS = [
+  "reel",
+  "clapper",
+  "target",
+  "growth",
+  "play",
+  "megaphone",
+  "sparkles",
+  "eye",
+  "cart",
+  "users",
+] as const;
+export type AdIcon = (typeof AD_ICONS)[number];
+const AD_ROW = [
+  ["Reels & UGC Ads", "reel"],
+  ["Product Films", "clapper"],
+  ["Paid Social Creatives", "target"],
+  ["Performance Storytelling", "growth"],
+] as const;
+const adIconFor = (title: string, i: number): AdIcon =>
+  AD_ROW.find(([t]) => t.toLowerCase() === title.trim().toLowerCase())?.[1] ?? AD_ROW[i % AD_ROW.length][1];
+
+/** The Video Ads stage, empty: two modern phones and a 16:9 monitor. */
+function emptyStage() {
+  return { left: emptyPhone(), centre: emptyLandscape(), right: emptyPhone() };
+}
+function defaultAdIcons(): { title: string; icon: AdIcon }[] {
+  return AD_ROW.map(([title, icon]) => ({ title, icon }));
+}
+
 /** Client-showcase metric icons; each has its own tint (the live page's colours). */
 export const METRIC_ICONS = ["trend", "cart", "box", "eye", "currency", "cursor"] as const;
 export type MetricIcon = (typeof METRIC_ICONS)[number];
@@ -147,8 +192,8 @@ export const homeSchema = z.object({
       ctaLabel: z.string().min(1).max(40),
       /** Composition: the line under the headline, shown dot-separated. */
       tagline: z.array(z.string().min(1).max(40)).max(5).default(HERO_TAGLINE),
-      /** Composition: a rectangular video (a muted loop clip, or a player with sound). */
-      video: slotSchema(["16:9"]).default(emptySlot("16:9", "video")),
+      /** Composition: a landscape video (a muted loop clip, or a player with sound); 16:9 by default, Fill or Fit. */
+      video: landscapeSlotSchema().default(emptyLandscape()),
       videoCaption: z.string().max(80).default("Watch how we help brands grow"),
       ctaNote: z.string().max(120).default("Book a free strategic call with our experts"),
       /** Composition: the coded magnet illustration, or your own transparent image/video. */
@@ -159,7 +204,7 @@ export const homeSchema = z.object({
     .default({
       mode: "composition",
       tagline: HERO_TAGLINE,
-      video: emptySlot("16:9", "video"),
+      video: emptyLandscape(),
       videoCaption: "Watch how we help brands grow",
       ctaNote: "Book a free strategic call with our experts",
       visual: "illustration",
@@ -340,13 +385,29 @@ export const homeSchema = z.object({
       title: z.string().max(100),
       accent: z.string().max(60),
       intro: z.string().max(300),
+      /** Shown centred under the monitor, with a short red rule. */
       strapline: z.string().max(80),
       body: z.string().max(300),
+      /**
+       * DEPRECATED (2026-10-22): the old four phone cards. Kept in the saved
+       * row untouched, no longer shown or edited; the stage and the icon row
+       * replaced them (filled media were copied into the stage on read).
+       */
       items: z
         .array(z.object({ title: z.string().min(1).max(60), media: phoneSlotSchema() }))
         .min(1)
         .max(8),
-      /** Card frame size on the site (scale in layout-presets.ts), always capped by the screen height. */
+      /** Left phone, centre monitor, right phone (the phones overlap the monitor's edges). */
+      stage: z
+        .object({ left: phoneSlotSchema(), centre: landscapeSlotSchema(), right: phoneSlotSchema() })
+        .default(emptyStage()),
+      /** The row of icons and titles under the stage (2 to 6). */
+      icons: z
+        .array(z.object({ title: z.string().min(1).max(60), icon: z.enum(AD_ICONS) }))
+        .min(2)
+        .max(6)
+        .default(defaultAdIcons()),
+      /** Stage size on the site (scale in layout-presets.ts), always capped by the screen height. */
       size: z.enum(FRAME_SIZES).default("medium"),
       cta,
     })
@@ -358,10 +419,9 @@ export const homeSchema = z.object({
       intro: "High-performing video content that stops the scroll, builds trust, and drives real D2C growth.",
       strapline: "Creative that scrolls. Ads that sell.",
       body: "From thumb-stopping reels to cinematic product films, we craft video content that engages, converts, and builds brands.",
-      items: ["Reels & UGC Ads", "Product Films", "Paid Social Creatives", "Performance Storytelling"].map((title) => ({
-        title,
-        media: emptyPhone(),
-      })),
+      items: AD_ROW.map(([title]) => ({ title, media: emptyPhone() })),
+      stage: emptyStage(),
+      icons: defaultAdIcons(),
       size: "medium",
       cta: {
         text: "Ready to create ads that drive growth? Let’s make your next campaign your best one yet.",
@@ -519,8 +579,12 @@ export const homeSchema = z.object({
       name: z.string().min(1).max(80),
       role: z.string().max(80),
       bio: z.string().max(800),
-      /** About 20 per the brief; null until the founder confirms. */
-      yearsExperience: z.number().int().min(1).max(60).nullable(),
+      /** The stat's number (about 20 per the brief); null until the founder confirms. Hidden when empty. */
+      yearsExperience: z.number().int().min(1).max(9999).nullable(),
+      /** Shown right after the number, same size, e.g. "+". */
+      yearsSuffix: z.string().max(3).default("+"),
+      /** Shown next to the number (wraps under it on narrow screens). */
+      yearsLabel: z.string().min(1).max(60).default("years as a digital consultant"),
       photo: mediaSchema.nullable(),
       ctaLabel: z.string().min(1).max(40),
     })
@@ -536,6 +600,8 @@ export const homeSchema = z.object({
       role: "CEO & Consultant",
       bio: "Rohan is the founder and CEO of RohTre Media and a digital growth consultant. He leads the team’s strategy and creative direction.",
       yearsExperience: null,
+      yearsSuffix: "+",
+      yearsLabel: "years as a digital consultant",
       photo: { publicId: "rohtre-media/images/team/rohan-trehan", width: 400, height: 400 },
       ctaLabel: "Book a call with Rohan’s team",
     }),
@@ -639,6 +705,54 @@ export function upgradePhoneSlot(slot: unknown, legacy: boolean): unknown {
   return { ...slot, aspect };
 }
 
+const STAGE_SLOTS = [
+  ["left", "Left phone"],
+  ["centre", "Centre screen"],
+  ["right", "Right phone"],
+] as const;
+
+/**
+ * Video Ads saved before the stage existed (2026-10-22): the first three
+ * old cards that have media move, in order, into Left phone, Centre screen
+ * and Right phone (a phone video in the centre becomes a 16:9 screen shown
+ * with Fit, so nothing is cropped); the icon row is seeded from the old
+ * card titles. Only missing keys are added, so it happens once: after a
+ * save the section has `stage` and `icons` and is never touched again. The
+ * old `items` stay as they are. `moved` lists what moved.
+ */
+export function videoAdsStage(ads: Obj): { add: Obj; moved: string[] } {
+  const add: Obj = {};
+  const moved: string[] = [];
+  const items = Array.isArray(ads.items) ? ads.items.filter(isObj) : [];
+  if (!("stage" in ads)) {
+    const stage: Obj = emptyStage();
+    items
+      .map((it, i) => ({ m: it.media, i }))
+      .filter((x): x is { m: Obj; i: number } => isObj(x.m) && Boolean(x.m.publicId))
+      .slice(0, 3)
+      .forEach(({ m, i }, k) => {
+        const [key, name] = STAGE_SLOTS[k];
+        const fit = m.fit ?? "fill";
+        stage[key] =
+          key === "centre"
+            ? isLandscapeAspect(m.aspect)
+              ? { ...m, fit }
+              : { ...m, aspect: "16:9", fit: "fit" }
+            : { ...m, aspect: isPhoneAspect(m.aspect) ? m.aspect : "9:19.5", fit };
+        moved.push(`card ${i + 1} → ${name}`);
+      });
+    add.stage = stage;
+  }
+  if (!("icons" in ads)) {
+    const titles = items.map((it) => it.title).filter((t): t is string => typeof t === "string" && Boolean(t.trim()));
+    add.icons =
+      titles.length >= 2
+        ? titles.slice(0, 6).map((title, i) => ({ title: title.slice(0, 60), icon: adIconFor(title, i) }))
+        : defaultAdIcons();
+  }
+  return { add, moved };
+}
+
 /** Older saved content, brought up to date when read (saving in the admin stores the new form). */
 function upgrade(input: Obj): Obj {
   const out = { ...input };
@@ -659,10 +773,8 @@ function upgrade(input: Obj): Obj {
   const ads = input.videoAds;
   if (isObj(ads) && Array.isArray(ads.items)) {
     const legacy = !("size" in ads);
-    out.videoAds = {
-      ...ads,
-      items: ads.items.map((it) => (isObj(it) ? { ...it, media: upgradePhoneSlot(it.media, legacy) } : it)),
-    };
+    const items = ads.items.map((it) => (isObj(it) ? { ...it, media: upgradePhoneSlot(it.media, legacy) } : it));
+    out.videoAds = { ...ads, items, ...videoAdsStage({ ...ads, items }).add };
   }
   return out;
 }

@@ -143,8 +143,9 @@ describe("launch blockers (unfilled slots)", () => {
   it("lists every empty slot of the shipped home page", () => {
     const list = homeBlockers(DEFAULT_HOME);
     const slots = list.filter((b) => b.message.startsWith("Empty"));
-    // hero video + 2 phones + 4 video ads + 2 showcase posters (products ship with the seeded mockups)
-    expect(slots).toHaveLength(1 + 2 + 4 + 2);
+    // hero video + 2 phones + 3 Video Ads screens (the old 4 cards are not shown) + 2 showcase posters
+    // (products ship with the seeded mockups)
+    expect(slots).toHaveLength(1 + 2 + 3 + 2);
     expect(slots.some((b) => b.section === "Client showcase" && b.where === "slide 2 › poster")).toBe(true);
     expect(list.some((b) => b.section === "Brands we've worked with" && /not identified/.test(b.message))).toBe(true);
     const showcase = list.filter((b) => b.section === "Client showcase" && !b.message.startsWith("Empty"));

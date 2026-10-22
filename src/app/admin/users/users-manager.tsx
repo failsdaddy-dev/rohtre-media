@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS as SELECT, SELECT_SM_CLASS } from "@/components/admin/ui";
+import { Select } from "@/components/admin/select";
+import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import { createStaff, resetPassword, updateStaff, type Result } from "./actions";
 
 export type StaffRow = {
@@ -99,17 +100,11 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
             />
           </Field>
           <Field label="Role">
-            <select
+            <Select
               value={draft.role}
-              onChange={(e) => setDraft({ ...draft, role: e.target.value })}
-              className={SELECT}
-            >
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setDraft({ ...draft, role: v })}
+              options={ROLES.map((r) => ({ value: r.value, label: r.label }))}
+            />
           </Field>
           <Button type="submit" variant="primary" disabled={pending}>
             Add
@@ -151,19 +146,18 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
                 <p className="text-xs text-fg-2">Change your own password on the Password tab.</p>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
-                  <select
+                  <Select
                     aria-label={`Role for ${r.name ?? r.email}`}
+                    size="sm"
                     value={r.role}
                     disabled={pending}
-                    onChange={(e) => run(() => updateStaff(r.userId, { role: e.target.value }), "Role changed.")}
-                    className={SELECT_SM_CLASS}
-                  >
-                    {ROLES.map((x) => (
-                      <option key={x.value} value={x.value}>
-                        {x.value[0].toUpperCase() + x.value.slice(1)}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => run(() => updateStaff(r.userId, { role: v }), "Role changed.")}
+                    options={ROLES.map((x) => ({
+                      value: x.value,
+                      label: x.value[0].toUpperCase() + x.value.slice(1),
+                      description: x.label.split("— ")[1],
+                    }))}
+                  />
                   <Button
                     className="h-9 px-4 text-xs"
                     disabled={pending}

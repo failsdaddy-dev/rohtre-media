@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import type { SiteSettings } from "@/lib/settings-schema";
-import { MailIcon, PhoneIcon, PinIcon, SocialIcon } from "./icons";
+import { footerSocials } from "@/lib/social-links";
+import { BrandIcon } from "./brand-icons";
+import { MailIcon, PhoneIcon, PinIcon } from "./icons";
 import { Logo } from "./logo";
 import { BOOK_CALL_HREF } from "./site-header";
 
-// Footer on every page (R8, R12). Contact details come from global settings.
+// Footer on every page (R8, R12). Contact details and social links come
+// from global settings (saving them refreshes every page). Social icons
+// follow the render rule in src/lib/social-links.ts.
+
+/** Outside production, switched-on icons without a link show dimmed so the row can be reviewed. */
+const SHOW_UNLINKED = process.env.NODE_ENV !== "production";
 
 async function currentYear() {
   "use cache";
@@ -25,7 +32,7 @@ const LEGAL = [
 
 export async function SiteFooter({ settings }: { settings: SiteSettings }) {
   const year = await currentYear();
-  const socials = settings.socials.filter((s) => s.url);
+  const socials = footerSocials(settings.socials, SHOW_UNLINKED);
   const heading = "text-xs font-semibold uppercase tracking-[0.2em] text-fg-2";
   const link = "text-[15px] text-fg-2 transition-colors hover:text-fg";
 
@@ -96,21 +103,28 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
       </div>
 
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-4 py-5 text-sm text-fg-2 sm:px-6">
+        {/* Copyright left, social icons right; stacked and centred on phones. */}
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-4 px-4 py-5 text-center text-sm text-fg-2 sm:px-6 md:flex-row md:justify-between md:text-left">
           <p>© {year} RohTre Media. All rights reserved.</p>
           {socials.length > 0 && (
-            <ul className="flex gap-2">
+            <ul aria-label="RohTre Media on social media" className="flex flex-wrap justify-center gap-2.5">
               {socials.map((s) => (
                 <li key={s.network}>
-                  <a
-                    href={s.url!}
-                    target="_blank"
-                    rel="noopener"
-                    aria-label={`RohTre Media on ${s.network === "x" ? "X" : s.network}`}
-                    className="grid size-9 place-items-center rounded-full bg-chip hover:bg-chip-hover hover:text-fg"
-                  >
-                    <SocialIcon network={s.network} size={17} />
-                  </a>
+                  {s.href ? (
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={s.label}
+                      className="rm-social"
+                    >
+                      <BrandIcon network={s.network} size={19} />
+                    </a>
+                  ) : (
+                    <span role="img" aria-label={s.label} title="No link yet" className="rm-social" data-unlinked="">
+                      <BrandIcon network={s.network} size={19} />
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

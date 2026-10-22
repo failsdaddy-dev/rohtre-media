@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, Field, INPUT_CLASS, Panel, SELECT_CLASS as SELECT } from "@/components/admin/ui";
+import { Select } from "@/components/admin/select";
+import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import { deleteMapping, deleteRedirect, saveMapping, saveRedirect, type Result } from "./actions";
 
 // Redirects (owner/developer) and the ad-group → page reference table (all
@@ -101,14 +102,14 @@ export function RoutingEditor({
               />
             </Field>
             <Field label="Type">
-              <select
-                value={redirect.status}
-                onChange={(e) => setRedirect({ ...redirect, status: Number(e.target.value) })}
-                className={SELECT}
-              >
-                <option value={301}>301 permanent</option>
-                <option value={308}>308 permanent (keeps method)</option>
-              </select>
+              <Select
+                value={String(redirect.status)}
+                onChange={(v) => setRedirect({ ...redirect, status: Number(v) })}
+                options={[
+                  { value: "301", label: "301 permanent" },
+                  { value: "308", label: "308 permanent (keeps method)" },
+                ]}
+              />
             </Field>
             <Button type="submit" variant="primary" disabled={pending}>
               Add redirect
@@ -165,15 +166,15 @@ export function RoutingEditor({
           }}
         >
           <Field label="Platform">
-            <select
+            <Select
               value={mapping.platform}
-              onChange={(e) => setMapping({ ...mapping, platform: e.target.value as Mapping["platform"] })}
-              className={SELECT}
-            >
-              <option value="google">Google Ads</option>
-              <option value="meta">Meta ads</option>
-              <option value="other">Other</option>
-            </select>
+              onChange={(v) => setMapping({ ...mapping, platform: v as Mapping["platform"] })}
+              options={[
+                { value: "google", label: "Google Ads" },
+                { value: "meta", label: "Meta ads" },
+                { value: "other", label: "Other" },
+              ]}
+            />
           </Field>
           <Field label="Campaign">
             <input
@@ -198,18 +199,14 @@ export function RoutingEditor({
             />
           </Field>
           <Field label="Landing page">
-            <select
+            <Select
               value={mapping.page_id ?? ""}
-              onChange={(e) => setMapping({ ...mapping, page_id: e.target.value || null })}
-              className={SELECT}
-            >
-              <option value="">— none —</option>
-              {pages.map((p) => (
-                <option key={p.id} value={p.id}>
-                  /lp/{p.slug}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setMapping({ ...mapping, page_id: v || null })}
+              options={[
+                { value: "", label: "— none —" },
+                ...pages.map((p) => ({ value: p.id, label: `/lp/${p.slug}` })),
+              ]}
+            />
           </Field>
           <Field label="Notes">
             <input

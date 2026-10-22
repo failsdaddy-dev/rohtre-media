@@ -181,6 +181,19 @@ select:focus-visible {
   border-color: color-mix(in srgb, var(--focus) 55%, var(--field-border));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 13%, transparent);
 }
+/* Admin dropdown popup (src/components/admin/select.tsx): a short fade and
+   slight scale from the trigger's edge; nothing under reduced motion. */
+.rm-select-pop {
+  transform-origin: top center;
+}
+.rm-select-pop[data-up] {
+  transform-origin: bottom center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-select-pop {
+    animation: rm-pop-in 140ms var(--ease) both;
+  }
+}
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {

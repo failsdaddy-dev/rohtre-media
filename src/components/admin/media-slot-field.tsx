@@ -5,7 +5,9 @@ import {
   ASPECT_LABELS,
   ASPECT_UPLOAD,
   ASPECTS,
+  familyOf,
   isGif,
+  SHAPE_FAMILIES,
   type Aspect,
   type MediaSlotValue,
   type SlotFit,
@@ -22,7 +24,7 @@ import {
   VIDEO_MIME,
 } from "@/lib/media-limits";
 import { MediaField } from "./media-field";
-import { SELECT_SM_CLASS } from "./ui";
+import { Select, type SelectOption } from "./select";
 import { uploadToCloudinary } from "./upload";
 
 // Editor for one image-or-video slot (see src/content/media-slot.ts): switch
@@ -35,6 +37,21 @@ import { uploadToCloudinary } from "./upload";
 
 const INPUT = "rm-field w-full px-3.5 py-2.5 text-[15px] outline-none";
 
+/** The Shape list: the slot's shapes under their family headings, each with its best upload size. */
+export function shapeOptions(aspects: Aspect[]): SelectOption[] {
+  const multi = new Set(aspects.map(familyOf)).size > 1;
+  return SHAPE_FAMILIES.flatMap((f) =>
+    (f.aspects as readonly Aspect[])
+      .filter((a) => aspects.includes(a))
+      .map((a) => ({
+        value: a,
+        label: ASPECT_LABELS[a] ?? a,
+        hint: ASPECT_UPLOAD[a],
+        group: multi || f.key !== "other" ? f.label : undefined,
+      })),
+  );
+}
+
 export function MediaSlotField({
   label,
   value,
@@ -43,6 +60,7 @@ export function MediaSlotField({
   altError,
   aspects = Object.keys(ASPECTS) as Aspect[],
   phone = false,
+  showShape = false,
 }: {
   label: string;
   value: MediaSlotValue & { fit?: SlotFit };
@@ -51,8 +69,10 @@ export function MediaSlotField({
   altError?: string;
   /** The shapes this slot allows (from its schema). */
   aspects?: Aspect[];
-  /** A phone screen: "Screen shape" + Fill/Fit. */
+  /** A phone screen: called "Screen shape", with the 9:16 cropping note. */
   phone?: boolean;
+  /** Show the chosen shape in the box title, e.g. "Video (4:3)". */
+  showShape?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
@@ -101,7 +121,7 @@ export function MediaSlotField({
 
   return (
     <fieldset className="flex flex-col gap-3 rounded-2xl border border-line p-4">
-      <legend className="px-1 text-sm font-semibold">{label}</legend>
+      <legend className="px-1 text-sm font-semibold">{showShape ? `${label} (${v.aspect})` : label}</legend>
 
       <div className="flex flex-wrap items-center gap-3">
         <div role="radiogroup" aria-label="Media type" className="inline-flex rounded-full bg-chip p-1">
@@ -124,23 +144,18 @@ export function MediaSlotField({
         </div>
         <label className="flex items-center gap-2 text-sm">
           <span className="font-semibold">{phone ? "Screen shape" : "Shape"}</span>
-          <select
-            className={SELECT_SM_CLASS}
+          <Select
+            size="sm"
             value={v.aspect}
-            onChange={(e) => set({ aspect: e.target.value as Aspect })}
-          >
-            {aspects.map((a) => (
-              <option key={a} value={a}>
-                {ASPECT_LABELS[a] ?? a}
-              </option>
-            ))}
-          </select>
+            onChange={(a) => set({ aspect: a as Aspect })}
+            options={shapeOptions(aspects)}
+          />
         </label>
-        {phone && v.fit && (
-          <div role="radiogroup" aria-label="Fit" className="inline-flex rounded-full bg-chip p-1">
+        {v.fit && (
+          <div role="radiogroup" aria-label="Fit" className="inline-flex flex-wrap rounded-[22px] bg-chip p-1">
             {(
               [
-                ["fill", "Fill (crop to the screen)"],
+                ["fill", "Fill (crop to the frame)"],
                 ["fit", "Fit (show the whole video)"],
               ] as const
             ).map(([f, text]) => (
@@ -158,13 +173,13 @@ export function MediaSlotField({
           </div>
         )}
       </div>
-      {ASPECT_UPLOAD[v.aspect] && (
-        <p className="text-xs text-fg-2">
-          Best upload size: {ASPECT_UPLOAD[v.aspect]} px ({v.aspect}).
-          {phone &&
-            " A 9:16 video in a 9:19.5 screen loses about 18% of its width when filled, so export at 9:19.5 (for example 1080×2340), or choose Fit."}
-        </p>
-      )}
+      <p className="text-xs text-fg-2">
+        Best upload size: {ASPECT_UPLOAD[v.aspect]} px ({v.aspect}).
+        {v.fit &&
+          " Fill crops the edges when the video’s shape differs from the frame; Fit shows the whole video with dark bars."}
+        {phone &&
+          " A 9:16 video in a 9:19.5 screen loses about 18% of its width when filled, so export at 9:19.5 (for example 1080×2340), or choose Fit."}
+      </p>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-line p-3">
         {preview ? (
