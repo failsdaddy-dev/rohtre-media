@@ -160,7 +160,11 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
       help: "Each slide needs a desktop and a phone version (image with the text baked in, or a video) and alt text.",
     },
   },
-  whoWeServe: { items: { label: "Service cards", noun: ["card", "cards"] }, text: { label: "Card text" } },
+  whoWeServe: {
+    items: { label: "Service cards", noun: ["card", "cards"] },
+    text: { label: "Card text" },
+    tags: { label: "Tags (up to 3, shown in capitals)", noun: ["tag", "tags"] },
+  },
   products: {
     items: { label: "Products", noun: ["product", "products"] },
     label: { label: "Small label (e.g. Your Product)" },

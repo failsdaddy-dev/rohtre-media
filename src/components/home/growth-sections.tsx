@@ -43,12 +43,16 @@ const DISC =
 // ------------------------------------------------------------ who we serve
 type ServiceItem = HomeContent["whoWeServe"]["items"][number];
 
-/** One white service card: light icon tint, lifts with a soft red glow on hover. */
+/**
+ * One service card: white, square corners, a square light-red icon box with
+ * the red icon, title, one line, then up to 3 square tag chips. Hover, tap
+ * (:active) and focus light a red gradient border and glow and lift it 4 px.
+ */
 function ServiceCard({ item }: { item: ServiceItem }) {
   const logos = item.logos.filter((l) => l.logo_public_id);
   return (
-    <div className="rm-service-card flex h-full flex-col rounded-[20px] border border-[#e5e5e5] bg-white p-5 lg:p-6">
-      <span className="mb-4 flex min-h-10 flex-wrap items-center gap-3 md:min-h-16">
+    <article className="rm-svc flex h-full flex-col">
+      <span className="mb-6 flex min-h-16 flex-wrap items-center gap-3">
         {logos.length > 0 ? (
           logos.map((l) => (
             <Image
@@ -59,55 +63,53 @@ function ServiceCard({ item }: { item: ServiceItem }) {
               height={80}
               sizes="140px"
               loading="lazy"
-              className="h-8 w-auto max-w-[120px] object-contain max-md:max-h-10"
+              className="h-9 w-auto max-w-[140px] object-contain"
             />
           ))
         ) : (
-          <span className={`${DISC} size-10 md:size-16`} style={tint(item.tint)}>
+          <span className="rm-svc-icon" aria-hidden="true">
             {item.icon === "shopify" ? (
               // eslint-disable-next-line @next/next/no-img-element -- the official Shopify file, served as is
-              <img
-                src="/brand/platforms/shopify-bag.svg"
-                alt=""
-                width={44}
-                height={50}
-                loading="lazy"
-                className="h-5 w-auto md:h-8"
-              />
+              <img src="/brand/platforms/shopify-bag.svg" alt="" width={44} height={50} loading="lazy" className="h-8 w-auto" />
             ) : (
-              <ServiceIcon name={item.icon} size={30} strokeWidth={1.8} className="size-5 md:size-[30px]" />
+              <ServiceIcon name={item.icon} size={30} strokeWidth={1.8} />
             )}
           </span>
         )}
       </span>
-      <h3 className="mb-2 text-lg font-bold leading-snug tracking-[-0.01em] text-[#0a0a0a]">{item.title}</h3>
-      <p className="text-[15px] leading-relaxed text-[#555]">{item.text}</p>
-    </div>
+      <h3 className="mb-2 text-xl font-bold tracking-[-0.01em] text-[#0a0a0a]">{item.title}</h3>
+      <p className="text-base leading-relaxed text-[#5b6472]">{item.text}</p>
+      {item.tags.length > 0 && (
+        <ul className="mt-auto flex flex-wrap gap-2 pt-6" aria-label={`${item.title} services`}>
+          {item.tags.map((t) => (
+            <li key={t} className="rm-svc-tag">
+              {t}
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
   );
 }
 
 /**
- * White section. The five white service cards: one static row of equal
- * columns from 1024 px (20 px gap); below that one swipeable row with
- * scroll-snap (cards about 78% wide), no animation. Then the values row.
+ * White section with the service cards in a grid: 3 + 3 from 1024 px, 2
+ * columns from 640 px, 1 on phones. Then the values row.
  */
 export function WhoWeServe({ s }: { s: HomeContent["whoWeServe"] }) {
   return (
     <section id="services" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ul
-          aria-label="Services"
-          className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 py-3 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0"
-        >
+        <ul aria-label="Services" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {s.items.map((item, i) => (
-            <li key={item.title} className="w-[78%] shrink-0 snap-start lg:w-auto" {...reveal(i % 5)}>
+            <li key={item.title} {...reveal(i % 3)}>
               <ServiceCard item={item} />
             </li>
           ))}
         </ul>
         {s.values.length > 0 && (
-          <ul className="mt-10 flex flex-wrap justify-center gap-3" {...reveal(1)}>
+          <ul className="mt-12 flex flex-wrap justify-center gap-3" {...reveal(1)}>
             {s.values.map((v) => (
               <li
                 key={v}

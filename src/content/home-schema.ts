@@ -82,6 +82,56 @@ export const SERVICE_ICONS = [
   "shopify",
 ] as const;
 
+/**
+ * The six "Who We Serve" cards (the 6th card and all tags added 2026-10-22
+ * at the founder's request). Also used to bring older saved copies up to
+ * date (see upgrade()).
+ */
+const SERVICE_CARDS = [
+  {
+    title: "Shopify Development",
+    text: "Custom stores built for speed, UX and scale.",
+    icon: "shopify",
+    tint: "green",
+    tags: ["Shopify", "CRO", "Store design"],
+  },
+  {
+    title: "Ecommerce Strategy",
+    text: "Winning products, positioning and store strategy that convert.",
+    icon: "cart",
+    tint: "coral",
+    tags: ["Positioning", "Product research", "Pricing"],
+  },
+  {
+    title: "Performance Marketing",
+    text: "Data-driven ads that drive traffic, sales and profitable growth.",
+    icon: "megaphone",
+    tint: "purple",
+    tags: ["Meta ads", "Google ads", "Retargeting"],
+  },
+  {
+    title: "Creative Production",
+    text: "Scroll-stopping creatives and videos that turn attention into sales.",
+    icon: "play",
+    tint: "orange",
+    tags: ["UGC", "Video ads", "Static ads"],
+  },
+  {
+    title: "Automation & Retention",
+    text: "Email, SMS and automation systems that maximise LTV and repeat sales.",
+    icon: "network",
+    tint: "blue",
+    tags: ["Email", "SMS", "WhatsApp"],
+  },
+  {
+    title: "Social Media & Influencers",
+    text: "Content, creators and community that build trust and reach.",
+    icon: "users",
+    tint: "coral",
+    tags: ["Content", "Influencers", "Community"],
+  },
+] as const;
+
 /** Icon tints: the --tint-* tokens in src/app/globals.css. */
 export const TINTS = ["green", "coral", "purple", "orange", "blue"] as const;
 export type Tint = (typeof TINTS)[number];
@@ -251,6 +301,8 @@ export const homeSchema = z.object({
             tint: z.enum(TINTS).default("coral"),
             /** Optional official platform logos (e.g. Shopify; Meta + Google), unmodified files only. */
             logos: z.array(logo).max(3),
+            /** Up to 3 short tags shown as square chips at the bottom of the card (e.g. META ADS). */
+            tags: z.array(z.string().min(1).max(24)).max(3).default([]),
           }),
         )
         .min(1)
@@ -265,43 +317,7 @@ export const homeSchema = z.object({
       title: "Everything Your",
       accent: "Ecommerce Brand Needs.",
       intro: "One Partner, Every Stage of Growth.",
-      items: [
-        {
-          title: "Shopify Development",
-          text: "Custom stores built for speed, UX and scale.",
-          icon: "shopify",
-          tint: "green",
-          logos: [],
-        },
-        {
-          title: "Ecommerce Strategy",
-          text: "Winning products, positioning and store strategy that convert.",
-          icon: "cart",
-          tint: "coral",
-          logos: [],
-        },
-        {
-          title: "Performance Marketing",
-          text: "Data-driven ads that drive traffic, sales and profitable growth.",
-          icon: "megaphone",
-          tint: "purple",
-          logos: [],
-        },
-        {
-          title: "Creative Production",
-          text: "Scroll-stopping creatives and videos that turn attention into sales.",
-          icon: "play",
-          tint: "orange",
-          logos: [],
-        },
-        {
-          title: "Automation & Retention",
-          text: "Email, SMS and automation systems that maximise LTV and repeat sales.",
-          icon: "network",
-          tint: "blue",
-          logos: [],
-        },
-      ],
+      items: SERVICE_CARDS.map((c) => ({ ...c, tags: [...c.tags], logos: [] })),
       values: ["One Team", "End-to-End Solutions", "Proven Process", "Real Growth"],
       cta: { text: "Book a free strategic call and let’s grow your brand.", label: "Book a Call" },
     }),
@@ -756,6 +772,19 @@ export function videoAdsStage(ads: Obj): { add: Obj; moved: string[] } {
 /** Older saved content, brought up to date when read (saving in the admin stores the new form). */
 function upgrade(input: Obj): Obj {
   const out = { ...input };
+  // Who We Serve saved before tags existed (five cards): add each card's tags
+  // by title and the sixth card. Once saved with tags it is left alone.
+  const serve = input.whoWeServe;
+  if (isObj(serve) && Array.isArray(serve.items) && !serve.items.some((it) => isObj(it) && "tags" in it)) {
+    const items = serve.items.map((it) => {
+      const known = isObj(it) ? SERVICE_CARDS.find((c) => c.title === it.title) : undefined;
+      return isObj(it) ? { ...it, tags: known ? [...known.tags] : [] } : it;
+    });
+    const sixth = SERVICE_CARDS[5];
+    if (items.length === 5 && !items.some((it) => isObj(it) && it.title === sixth.title))
+      items.push({ ...sixth, tags: [...sixth.tags], logos: [] });
+    out.whoWeServe = { ...serve, items };
+  }
   // FAQ answers had `status: "draft" | "ready"` instead of `approved`.
   const faq = input.faq;
   if (isObj(faq) && Array.isArray(faq.items)) {

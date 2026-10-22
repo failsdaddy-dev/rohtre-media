@@ -464,25 +464,87 @@ html[data-intro] {
 .rm-glow-card:focus-within::after {
   opacity: 0.9;
 }
-/* White service cards (home): soft shadow; on hover a 6 px lift and a soft red glow. */
-.rm-service-card {
-  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.18);
+/* Service cards (home): white, square corners, 1 px grey border. Hover,
+   tap (:active) and keyboard focus: a red gradient border (light red to
+   brand red to a deep red edge), a red glow and a 4 px lift, 250 ms. Touch
+   screens (no hover) keep a faint red border at rest. */
+.rm-svc {
+  position: relative;
+  padding: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: #ffffff;
   transition:
-    transform 200ms var(--ease),
-    box-shadow 200ms var(--ease);
+    transform 250ms ease,
+    box-shadow 250ms ease,
+    border-color 250ms ease;
+}
+.rm-svc::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  background: linear-gradient(135deg, #ff4d5a, var(--brand) 55%, #5a0006);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 250ms ease;
+  pointer-events: none;
+}
+.rm-svc:active,
+.rm-svc:focus-within {
+  transform: translateY(-4px);
+  border-color: transparent;
+  box-shadow: 0 0 28px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+.rm-svc:active::after,
+.rm-svc:focus-within::after {
+  opacity: 1;
 }
 @media (hover: hover) {
-  .rm-service-card:hover {
-    transform: translateY(-6px);
-    box-shadow:
-      0 18px 40px -14px rgba(225, 6, 19, 0.25),
-      0 0 0 1px rgba(225, 6, 19, 0.12);
+  .rm-svc:hover {
+    transform: translateY(-4px);
+    border-color: transparent;
+    box-shadow: 0 0 28px color-mix(in srgb, var(--brand) 35%, transparent);
+  }
+  .rm-svc:hover::after {
+    opacity: 1;
+  }
+}
+@media (hover: none) {
+  .rm-svc {
+    border-color: color-mix(in srgb, var(--brand) 22%, #e5e7eb);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rm-service-card:hover {
+  .rm-svc:hover,
+  .rm-svc:active,
+  .rm-svc:focus-within {
     transform: none;
   }
+}
+.rm-svc-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--brand) 9%, #ffffff);
+  color: var(--brand);
+}
+.rm-svc-tag {
+  padding: 6px 10px;
+  border: 1px solid #d6dae0;
+  border-radius: 0;
+  color: #0a0a0a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 /* -------------------------------------------------------- stacking cards
