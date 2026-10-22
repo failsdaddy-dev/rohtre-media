@@ -99,7 +99,7 @@ export function Hero(props: HeroProps) {
 /** Headline + video on the left, the visual on the right (stacked on phones). */
 function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
   return (
-    <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-beams overflow-hidden">
+    <section aria-label="Introduction" className="rm-hero-dark rm-hero-sky overflow-hidden">
       <div className="flex min-h-[100svh] items-center">
         <div className="mx-auto grid w-full max-w-[1440px] items-center gap-12 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14 xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)] xl:gap-16">
           <div className="flex min-w-0 flex-col items-start">
@@ -109,7 +109,7 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
               </p>
             )}
             <h1
-              className="rm-hero-in mb-5 text-[clamp(2.5rem,4.8vw,4.5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
+              className="rm-hero-in mb-5 text-[clamp(2.5rem,4.8vw,4.5rem)] max-md:text-[clamp(2rem,9vw,2.5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
               style={{ "--i": 1 } as CSSProperties}
             >
               {hero.h1}
@@ -122,7 +122,7 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
             </h1>
             {hero.tagline.length > 0 && (
               <ul
-                className="rm-hero-in mb-8 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[15px] font-semibold text-[#f2f2f2] md:text-base"
+                className="rm-hero-in mb-8 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[15px] font-semibold text-fg md:text-base"
                 style={{ "--i": 2 } as CSSProperties}
               >
                 {hero.tagline.map((t, i) => (
@@ -151,10 +151,10 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
                 sizes="(min-width: 1280px) 620px, (min-width: 1024px) 46vw, 92vw"
                 maxWidth={1280}
                 priority
-                className="rounded-[20px] border border-white/10 shadow-[0_30px_90px_-40px_rgba(229,9,20,0.5)]"
+                className="rounded-[20px] border border-black/10 shadow-[0_30px_90px_-40px_rgba(10,40,80,0.45)]"
               />
               {hero.videoCaption && (
-                <figcaption className="mt-3 text-[15px] font-semibold text-white/85">{hero.videoCaption}</figcaption>
+                <figcaption className="mt-3 text-[15px] font-semibold text-fg">{hero.videoCaption}</figcaption>
               )}
             </figure>
             <div className="rm-hero-in flex flex-col items-start gap-3" style={{ "--i": 4 } as CSSProperties}>
@@ -163,7 +163,7 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
                   {hero.ctaLabel} <ArrowRightIcon size={20} />
                 </ButtonLink>
               </span>
-              {hero.ctaNote && <p className="text-sm text-white/75">{hero.ctaNote}</p>}
+              {hero.ctaNote && <p className="text-sm text-fg-2">{hero.ctaNote}</p>}
             </div>
           </div>
           <div className="rm-hero-in mx-auto w-full max-w-[720px] min-w-0" style={{ "--i": 3 } as CSSProperties}>
@@ -188,7 +188,7 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
 function SliderHero({ hero, whatsappHref }: HeroProps) {
   const slides = hero.slides.filter((s) => SHOW_PLACEHOLDERS || slideFilled(s));
   return (
-    <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-beams overflow-hidden">
+    <section aria-label="Introduction" className="rm-hero-dark rm-hero-sky overflow-hidden">
       <div className="flex min-h-[100svh] items-center">
         <Container className="flex flex-col items-center py-24 text-center">
           {hero.eyebrow && (
@@ -197,7 +197,7 @@ function SliderHero({ hero, whatsappHref }: HeroProps) {
             </p>
           )}
           <h1
-            className="rm-hero-in mb-6 max-w-5xl text-[clamp(2.5rem,6.4vw,5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
+            className="rm-hero-in mb-6 max-w-5xl text-[clamp(2.5rem,6.4vw,5rem)] max-md:text-[clamp(2rem,9vw,2.5rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
             style={{ "--i": 1 } as CSSProperties}
           >
             {hero.h1}
@@ -210,7 +210,7 @@ function SliderHero({ hero, whatsappHref }: HeroProps) {
           </h1>
           {hero.subline && (
             <p
-              className="rm-hero-in mb-10 max-w-3xl text-lg leading-relaxed text-[#f2f2f2] md:text-xl"
+              className="rm-hero-in mb-10 max-w-3xl text-lg leading-relaxed text-fg-2 md:text-xl"
               style={{ "--i": 2 } as CSSProperties}
             >
               {hero.subline}
@@ -230,7 +230,7 @@ function SliderHero({ hero, whatsappHref }: HeroProps) {
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener"
-                className="rm-press inline-flex h-14 items-center gap-2 rounded-full border border-white/20 px-7 text-lg font-semibold text-white transition-colors hover:bg-white/10"
+                className="rm-press inline-flex h-14 items-center gap-2 rounded-full border border-black/15 px-7 text-lg font-semibold text-fg transition-colors hover:bg-white/60"
               >
                 <ChatIcon size={18} /> WhatsApp us
               </a>
@@ -242,7 +242,7 @@ function SliderHero({ hero, whatsappHref }: HeroProps) {
       {slides.length > 0 && (
         <Container className="pb-20 sm:pb-28">
           <div
-            className="overflow-hidden rounded-[28px] border border-white/10 shadow-[0_40px_120px_-40px_rgba(229,9,20,0.45)]"
+            className="overflow-hidden rounded-[28px] border border-black/10 shadow-[0_40px_120px_-40px_rgba(10,40,80,0.4)]"
             {...reveal(0, "up-lg")}
           >
             <HeroSlider labels={slides.map((s, i) => s.desktop.alt || s.mobile.alt || `Slide ${i + 1}`)}>

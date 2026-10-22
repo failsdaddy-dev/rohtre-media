@@ -48,11 +48,11 @@ export function SiteHeader({ tone = DEFAULT_HEADER_TONE }: { tone?: HeaderTone }
           <Link
             href={BOOK_CALL_HREF}
             data-track="book_call_click"
-            className="rm-press hidden h-12 items-center gap-2 rounded-full bg-brand px-6 text-[15px] font-semibold text-brand-fg sm:inline-flex"
+            className="rm-press inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-brand px-4 text-sm font-semibold text-brand-fg md:h-12 md:px-6 md:text-[15px]"
           >
-            Book a Call <ArrowRightIcon size={16} />
+            Book a Call <ArrowRightIcon size={16} className="hidden md:block" />
           </Link>
-          <MobileMenu items={NAV} bookHref={BOOK_CALL_HREF} />
+          <MobileMenu items={NAV} />
         </div>
       </div>
     </header>

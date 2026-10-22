@@ -59,7 +59,7 @@ export const SECTIONS: { key: Key; icon: string; anchor: string; about: string }
     key: "videoAds",
     icon: "play",
     anchor: "video-ads",
-    about: "Two phones in front of a screen, the strapline under it and the icon row (“Video Ads & Reels”).",
+    about: "A desktop screen between two phones, the strapline under them and the icon row (“Video Ads & Reels”).",
   },
   {
     key: "results",
@@ -183,7 +183,7 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     body: { label: "Paragraph under the strapline" },
     stage: {
       label: "Screens",
-      help: "The phones sit in front of the screen’s left and right edges, so keep important content away from the edges.",
+      help: "Centre: a desktop screen on a stand (16:9, 1920×1080). Left and right: phones (9:19.5, 1080×2340).",
     },
     left: { label: "Left phone", showShape: true },
     centre: { label: "Centre screen", showShape: true },

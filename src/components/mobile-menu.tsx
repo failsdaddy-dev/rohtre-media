@@ -7,7 +7,8 @@ import { CloseIcon, MenuIcon } from "./icons";
 
 // Phone menu: a panel under the header. Closes on navigation, Escape, or a
 // tap outside; focus returns to the button.
-export function MobileMenu({ items, bookHref }: { items: { href: string; label: string }[]; bookHref: string }) {
+// Book a Call is not in this menu: the header keeps it visible at every width.
+export function MobileMenu({ items }: { items: { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const path = usePathname();
@@ -64,13 +65,6 @@ export function MobileMenu({ items, bookHref }: { items: { href: string; label: 
                 {item.label}
               </Link>
             ))}
-            <Link
-              href={bookHref}
-              data-track="book_call_click"
-              className="rm-press mt-2 inline-flex h-12 items-center justify-center rounded-full bg-brand font-semibold text-brand-fg"
-            >
-              Book a Call
-            </Link>
           </nav>
         </>
       )}

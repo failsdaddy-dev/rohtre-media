@@ -41,69 +41,77 @@ const DISC =
   "grid shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,var(--tint)_16%,transparent)] text-[var(--tint)] ring-1 ring-[color-mix(in_srgb,var(--tint)_28%,transparent)]";
 
 // ------------------------------------------------------------ who we serve
-/** Five service cards with large colourful icons on tinted discs, then the values row. */
-export function WhoWeServe({ s }: { s: HomeContent["whoWeServe"] }) {
-  const five = s.items.length === 5;
+type ServiceItem = HomeContent["whoWeServe"]["items"][number];
+
+/** One white service card: light icon tint, lifts with a soft red glow on hover. */
+function ServiceCard({ item }: { item: ServiceItem }) {
+  const logos = item.logos.filter((l) => l.logo_public_id);
   return (
-    <section id="services" className={`rm-dark ${PAD}`}>
+    <div className="rm-service-card flex h-full flex-col rounded-[20px] border border-[#e5e5e5] bg-white p-5 lg:p-6">
+      <span className="mb-4 flex min-h-10 flex-wrap items-center gap-3 md:min-h-16">
+        {logos.length > 0 ? (
+          logos.map((l) => (
+            <Image
+              key={l.logo_public_id}
+              src={l.logo_public_id!}
+              alt={l.alt}
+              width={200}
+              height={80}
+              sizes="140px"
+              loading="lazy"
+              className="h-8 w-auto max-w-[120px] object-contain max-md:max-h-10"
+            />
+          ))
+        ) : (
+          <span className={`${DISC} size-10 md:size-16`} style={tint(item.tint)}>
+            {item.icon === "shopify" ? (
+              // eslint-disable-next-line @next/next/no-img-element -- the official Shopify file, served as is
+              <img
+                src="/brand/platforms/shopify-bag.svg"
+                alt=""
+                width={44}
+                height={50}
+                loading="lazy"
+                className="h-5 w-auto md:h-8"
+              />
+            ) : (
+              <ServiceIcon name={item.icon} size={30} strokeWidth={1.8} className="size-5 md:size-[30px]" />
+            )}
+          </span>
+        )}
+      </span>
+      <h3 className="mb-2 text-lg font-bold leading-snug tracking-[-0.01em] text-[#0a0a0a]">{item.title}</h3>
+      <p className="text-[15px] leading-relaxed text-[#555]">{item.text}</p>
+    </div>
+  );
+}
+
+/**
+ * White section. The five white service cards: one static row of equal
+ * columns from 1024 px (20 px gap); below that one swipeable row with
+ * scroll-snap (cards about 78% wide), no animation. Then the values row.
+ */
+export function WhoWeServe({ s }: { s: HomeContent["whoWeServe"] }) {
+  return (
+    <section id="services" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-6 lg:gap-8">
-          {s.items.map((item, i) => {
-            const logos = item.logos.filter((l) => l.logo_public_id);
-            return (
-              <li
-                key={item.title}
-                className={`${five && i >= 3 ? "lg:col-span-3" : "lg:col-span-2"} ${five && i === 4 ? "md:col-span-2 lg:col-span-3" : ""}`}
-                {...reveal(i % 3)}
-              >
-                <div className="rm-glow-card p-7 md:p-9">
-                  <span className="rm-glow-face" aria-hidden="true" />
-                  <span className="mb-6 flex min-h-24 flex-wrap items-center gap-4 lg:min-h-[104px]">
-                    {logos.length > 0 ? (
-                      logos.map((l) => (
-                        <Image
-                          key={l.logo_public_id}
-                          src={l.logo_public_id!}
-                          alt={l.alt}
-                          width={200}
-                          height={80}
-                          sizes="140px"
-                          loading="lazy"
-                          className="h-9 w-auto max-w-[140px] object-contain"
-                        />
-                      ))
-                    ) : (
-                      <span className={`${DISC} size-24 lg:size-[104px]`} style={tint(item.tint)}>
-                        {item.icon === "shopify" ? (
-                          // eslint-disable-next-line @next/next/no-img-element -- the official Shopify file, served as is
-                          <img
-                            src="/brand/platforms/shopify-bag.svg"
-                            alt=""
-                            width={44}
-                            height={50}
-                            loading="lazy"
-                            className="h-12 w-auto lg:h-[52px]"
-                          />
-                        ) : (
-                          <ServiceIcon name={item.icon} size={44} strokeWidth={1.8} />
-                        )}
-                      </span>
-                    )}
-                  </span>
-                  <h3 className="mb-3 text-[22px] font-bold tracking-[-0.02em] text-white md:text-2xl">{item.title}</h3>
-                  <p className="text-lg leading-relaxed text-white/70">{item.text}</p>
-                </div>
-              </li>
-            );
-          })}
+        <ul
+          aria-label="Services"
+          className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 py-3 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0"
+        >
+          {s.items.map((item, i) => (
+            <li key={item.title} className="w-[78%] shrink-0 snap-start lg:w-auto" {...reveal(i % 5)}>
+              <ServiceCard item={item} />
+            </li>
+          ))}
         </ul>
         {s.values.length > 0 && (
-          <ul className="mt-12 flex flex-wrap justify-center gap-3" {...reveal(1)}>
+          <ul className="mt-10 flex flex-wrap justify-center gap-3" {...reveal(1)}>
             {s.values.map((v) => (
               <li
                 key={v}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2.5 text-[15px] font-semibold text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-[15px] font-semibold text-fg"
               >
                 <CheckIcon size={16} className="text-brand" strokeWidth={2.4} />
                 {v}
@@ -128,11 +136,11 @@ export function ProductShowcase({ s }: { s: HomeContent["products"] }) {
     <section id="products" className={`overflow-hidden ${PAD}`}>
       <Wide max={1600}>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
-        <ScrollRow label="Products" className="-mx-4 scroll-px-4 gap-5 px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6">
+        <ScrollRow label="Products" className="-mx-4 scroll-px-4 gap-5 px-4 py-6 sm:-mx-6 sm:scroll-px-6 sm:px-6">
           {s.items.map((p, i) => (
             <li
               key={i}
-              className="w-[calc((100vw-2rem)/1.15)] shrink-0 snap-start sm:w-[calc((100vw-3rem)/2.2)] lg:w-[clamp(260px,21.5vw,340px)]"
+              className="w-[72vw] shrink-0 snap-start md:w-[calc((100vw-3rem)/2.2)] lg:w-[clamp(260px,21.5vw,340px)]"
               {...reveal(i % 5)}
             >
               <div className="rm-card flex h-full flex-col gap-4 p-3">
@@ -154,7 +162,7 @@ export function ProductShowcase({ s }: { s: HomeContent["products"] }) {
             </li>
           ))}
         </ScrollRow>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Wide>
     </section>
   );
@@ -249,9 +257,9 @@ export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
 
 // ------------------------------------------------------ video ads & reels
 /**
- * A stage of three frames (left phone, centre monitor, right phone; the
- * phones sit in front of the monitor's edges), the strapline and paragraph
- * centred under the monitor, then a row of icons and titles. Sizes in
+ * A stage of three frames (left phone, centre monitor on a stand, right
+ * phone; separate, bottoms aligned on the stand's base), the strapline and paragraph
+ * centred under the stage, then a row of icons and titles. Sizes in
  * layout-presets.ts (VIDEO_STAGE): phone height clamp(380px, 62svh, 640px)
  * × the admin's size, at most 68svh, and never wider than the container.
  * Below 768 px: monitor, the two phones side by side, then the text.
@@ -276,7 +284,7 @@ export function VideoAds({ s }: { s: HomeContent["videoAds"] }) {
                 "--frl": frl,
                 "--frr": frr,
                 "--ms": VIDEO_STAGE.monitorScale,
-                "--ov": VIDEO_STAGE.overlap,
+                "--gr": VIDEO_STAGE.gap,
                 "--mcap-n": VIDEO_STAGE.mobileCapVh,
                 "--bz": `${PHONE_FRAME.bezel * 100}cqw`,
                 "--rad": `${PHONE_FRAME.radius * 100}cqw`,
@@ -320,7 +328,7 @@ export function VideoAds({ s }: { s: HomeContent["videoAds"] }) {
             </li>
           ))}
         </ul>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Wide>
     </section>
   );
@@ -343,11 +351,11 @@ function MetricCell({ m, currency }: { m: Metric & { value: number }; currency: 
         {m.label}
       </dt>
       <dd aria-label={final} className="flex flex-col items-center gap-3">
-        <span aria-hidden="true" className={`${DISC} size-14 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
+        <span aria-hidden="true" className={`${DISC} size-10 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
           {m.icon === "currency" ? (
-            <span className="text-2xl font-bold leading-none md:text-[26px]">{currency}</span>
+            <span className="text-lg font-bold leading-none md:text-[26px]">{currency}</span>
           ) : (
-            <ServiceIcon name={m.icon} size={26} />
+            <ServiceIcon name={m.icon} size={26} className="size-5 md:size-[26px]" />
           )}
         </span>
         <span
@@ -377,9 +385,9 @@ function ShowcaseSlide({ sl }: { sl: Slide }) {
     <article className="grid items-center gap-6 lg:grid-cols-[46%_minmax(0,1fr)] lg:gap-10">
       <MediaSlot
         slot={sl.poster}
-        sizes="(min-width: 1280px) 530px, (min-width: 1024px) 44vw, 92vw"
+        sizes="(min-width: 1280px) 530px, (min-width: 1024px) 44vw, (min-width: 768px) 92vw, 72vw"
         maxWidth={1600}
-        className="rounded-[1.5rem]"
+        className="rounded-[1.5rem] max-md:mx-auto max-md:w-[72vw]"
       />
       <div className="rm-card p-6 md:p-10">
         {sl.brand ? (
@@ -424,7 +432,7 @@ export function ClientShowcase({ s }: { s: HomeContent["showcase"] }) {
             ))}
           </ShowcaseSlider>
         </div>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Container>
     </section>
   );
@@ -443,7 +451,7 @@ function BrandTile({ b }: { b: BrandItem }) {
         height={120}
         sizes="180px"
         loading="lazy"
-        className="max-h-14 w-auto max-w-full object-contain md:max-h-16"
+        className="max-h-10 w-auto max-w-full object-contain md:max-h-16"
       />
     </span>
   );

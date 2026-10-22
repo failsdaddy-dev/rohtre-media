@@ -74,7 +74,7 @@ export function SectionHead({
       <p className="rm-label" {...reveal(0)}>
         {eyebrow}
       </p>
-      <h2 className="text-[clamp(2.1rem,5vw,3.75rem)] font-bold leading-[1.05] tracking-[-0.045em]" {...reveal(1)}>
+      <h2 className="text-[clamp(2.1rem,5vw,3.75rem)] max-md:text-[clamp(1.75rem,8vw,2.1rem)] font-bold leading-[1.05] tracking-[-0.045em]" {...reveal(1)}>
         {title}
         {accent && (
           <>
@@ -97,16 +97,14 @@ export function SectionCta({
   text,
   label,
   center = true,
-  variant = "brand",
 }: {
   text: string;
   label: string;
   center?: boolean;
-  variant?: "brand" | "dark";
 }) {
   return (
     <div className={`mt-14 flex flex-col gap-4 ${center ? "items-center text-center" : "items-start"}`} {...reveal(0)}>
-      <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" variant={variant} size="lg">
+      <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
         {label} <ArrowRightIcon size={20} />
       </ButtonLink>
       {text && (

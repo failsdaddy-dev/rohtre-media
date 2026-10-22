@@ -81,7 +81,7 @@ export function ShowcaseSlider({ children, label }: { children: ReactNode; label
 
   // Below the slides on phones and tablets; at the section edges from 1024 px.
   const arrow =
-    "grid size-12 place-items-center rounded-full border border-line bg-bg-elev text-fg shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] transition-colors hover:bg-chip-hover lg:absolute lg:top-[calc(50%-40px)] lg:z-10 lg:size-14 lg:-translate-y-1/2";
+    "grid size-12 max-md:size-9 place-items-center rounded-full border border-line bg-bg-elev text-fg shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)] transition-colors hover:bg-chip-hover lg:absolute lg:top-[calc(50%-40px)] lg:z-10 lg:size-14 lg:-translate-y-1/2";
   return (
     <div
       ref={root}

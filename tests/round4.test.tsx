@@ -176,7 +176,7 @@ describe("Video Ads stage", () => {
     expect(css).toMatch(
       /\.rm-stage-monitor \{[^}]*z-index: 1;[^}]*margin-inline: calc\(var\(--wm\) \* var\(--ov\) \* -1\);/,
     );
-    expect(VIDEO_STAGE.overlap).toBe(0.06);
+    expect(VIDEO_STAGE.gap).toBe(0.06);
     expect(VIDEO_STAGE.monitorScale).toBe(2.1);
   });
 

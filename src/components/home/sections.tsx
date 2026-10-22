@@ -57,7 +57,7 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
   if (badges.length === 0) return null;
   const layout = badgeLayout(badges.length);
   return (
-    <section id="partners" aria-label="Partners and recognition" className={`border-y border-line ${PAD}`}>
+    <section id="partners" aria-label="Partners and recognition" className={`rm-dark border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>
@@ -99,7 +99,7 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
         </ul>
       </div>
       <Container>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Container>
     </section>
   );
@@ -183,7 +183,7 @@ export function Process({ s }: { s: HomeContent["process"] }) {
       <Container className="grid gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="lg:sticky lg:top-[calc(var(--header-h)+56px)] lg:self-start">
           <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} className="md:mb-0" />
-          <SectionCta {...s.cta} center={false} variant="dark" />
+          <SectionCta {...s.cta} center={false} />
         </div>
         <ol className="flex flex-col">
           {s.steps.map((step, i) => (
@@ -328,7 +328,7 @@ export function Testimonials({ s, items }: { s: HomeContent["testimonials"]; ite
         </Container>
       )}
       <Container>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Container>
     </section>
   );
@@ -373,7 +373,7 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
 
         <div className="mt-14 grid w-full max-w-4xl items-center gap-10 text-left md:grid-cols-[260px_1fr]">
           {s.photo ? (
-            <div className="rm-offset overflow-hidden [--offset-surface:#000]" {...reveal(0)}>
+            <div className="rm-offset overflow-hidden [--offset-surface:#000] max-md:mx-auto max-md:w-[65%] max-md:max-w-[320px]" {...reveal(0)}>
               <Image
                 src={s.photo.publicId}
                 alt={`${s.name}, ${s.role}`}
@@ -385,7 +385,9 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
               />
             </div>
           ) : (
-            SHOW_PLACEHOLDERS && <PlaceholderBox title="Founder photo" className="aspect-square" />
+            SHOW_PLACEHOLDERS && (
+              <PlaceholderBox title="Founder photo" className="aspect-square max-md:mx-auto max-md:w-[65%] max-md:max-w-[320px]" />
+            )
           )}
           <div className="flex flex-col items-start gap-4" {...reveal(1)}>
             <h3 className="text-[clamp(1.9rem,3.6vw,2.75rem)] font-bold leading-none tracking-[-0.03em]">{s.name}</h3>
@@ -446,7 +448,7 @@ export function Faq({ s }: { s: HomeContent["faq"] }) {
             </li>
           ))}
         </ul>
-        <SectionCta {...s.cta} variant="dark" />
+        <SectionCta {...s.cta} />
       </Container>
     </section>
   );

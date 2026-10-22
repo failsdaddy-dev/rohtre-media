@@ -52,17 +52,18 @@ export const phoneFrameRatio = (a: number, bezel = PHONE_FRAME.bezel) => a / (1 
 /**
  * Monitor frame (the Video Ads centre screen): same dark body and 1 px
  * edge as the phone, a uniform bezel of 1.6% of the frame width, corners
- * at 2.4%. No brand marks. The stand is drawn but off.
+ * at 2.4%. No brand marks. A neck and base stand under it (on).
  */
 export const MONITOR_FRAME = { bezel: 0.016, radius: 0.024 };
-export const SHOW_MONITOR_STAND = false;
+export const SHOW_MONITOR_STAND = true;
 export const monitorFrameRatio = (a: number) => phoneFrameRatio(a, MONITOR_FRAME.bezel);
 
 /**
  * Video Ads stage: left phone, centre monitor, right phone. From 1280 px
  * the phone height is clamp(380px, 62svh, 640px) × the size scale, never
- * taller than 68svh; the monitor is 2.1 × the phones' (average) width and
- * each phone overlaps it by 6% of the monitor's width. The whole stage
+ * taller than 68svh; the monitor is 2.1 × the phones' (average) width,
+ * on its stand, with a gap of 6% of the phone height to each phone (no
+ * overlap) and all bottoms aligned on the stand's base. The whole stage
  * also shrinks to fit its container (768-1279 px is the same composition,
  * scaled by the container width). Below 768 px: monitor full width, the two
  * phones side by side (46% each, at most 70svh tall), then the text.
@@ -73,7 +74,8 @@ export const VIDEO_STAGE = {
   maxPx: 640,
   capVh: 68,
   monitorScale: 2.1,
-  overlap: 0.06,
+  /** Gap between each phone and the monitor, as a share of the phone height. */
+  gap: 0.06,
   mobilePhoneShare: 0.46,
   mobileCapVh: 70,
 };
@@ -81,11 +83,11 @@ export const stageHeight = (size: FrameSize) =>
   frameHeight(VIDEO_STAGE, FRAME_SCALE[size], (u) => `${VIDEO_STAGE.capVh}${u}`);
 /**
  * Stage width ÷ phone height, for phone frame ratios `l` and `r`: both
- * phones plus the monitor minus the two overlaps. The phone height is
+ * phones, the monitor and the two gaps. The phone height is
  * capped at (container width ÷ this), so the stage never overflows.
  */
 export const stageWidthFactor = (l: number, r: number) =>
-  l + r + VIDEO_STAGE.monitorScale * ((l + r) / 2) * (1 - 2 * VIDEO_STAGE.overlap);
+  l + r + VIDEO_STAGE.monitorScale * ((l + r) / 2) + 2 * VIDEO_STAGE.gap;
 
 /**
  * The stage's CSS (design.css .rm-stage) worked out in pixels for a
@@ -107,7 +109,7 @@ export function stageLayout(w: number, h: number, size: FrameSize, frl: number, 
     );
     ph = Math.min(byScreen, cw / stageWidthFactor(frl, frr));
     wm = (s.monitorScale * (ph * frl + ph * frr)) / 2;
-    width = ph * frl + ph * frr + wm * (1 - 2 * s.overlap);
+    width = ph * frl + ph * frr + wm + 2 * s.gap * ph;
   } else {
     ph = Math.min((s.mobileCapVh / 100) * h, (s.mobilePhoneShare * cw) / Math.max(frl, frr));
     wm = cw;
@@ -132,7 +134,7 @@ export const BADGE_LAYOUT = {
   four: { logoPx: 80 },
   mid: { upTo: 6, logoPx: 68, oneRowFromPx: 1280, perRow: 3 },
   many: { logoPx: 56, perRow: 4 },
-  mobile: { logoPx: 44, cols: 2 },
+  mobile: { logoPx: 40, cols: 2 },
 } as const;
 export type BadgeGroup = "few" | "four" | "mid" | "many";
 
