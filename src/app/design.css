@@ -34,18 +34,38 @@ html.lenis body {
 }
 
 /* ---------------------------------------------------------------- header */
+/* Glass panel (the open mobile menu): same glass as the scrolled header. */
+.rm-glass {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 32px rgba(30, 70, 130, 0.12);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rm-glass {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+/* Scrolled look (and the solid tone): liquid glass, the page blurs underneath. */
 .rm-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 8px 30px -18px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(30, 70, 130, 0.12);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
   transition:
-    background-color 0.5s var(--ease-soft),
-    border-color 0.5s var(--ease-soft),
-    box-shadow 0.5s var(--ease-soft);
+    background-color 250ms var(--ease-soft),
+    border-color 250ms var(--ease-soft),
+    box-shadow 250ms var(--ease-soft);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rm-header {
+    background: rgba(255, 255, 255, 0.92);
+  }
 }
 .rm-header .rm-nav-link {
   color: #2b2b2b;
@@ -78,12 +98,8 @@ html:not([data-scrolled]) .rm-header:is([data-tone="transparent-light-text"], [d
   background: transparent;
   border-bottom-color: transparent;
   box-shadow: none;
+  -webkit-backdrop-filter: none;
   backdrop-filter: none;
-}
-/* Light hero (home): a soft see-through white bar that blends with the sky-blue gradient. */
-html:not([data-scrolled]) .rm-header[data-tone="transparent-dark-text"] {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
 }
 html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] .rm-nav-link {
   color: rgba(255, 255, 255, 0.86);
@@ -104,8 +120,47 @@ html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-
 
 /* Home hero: a light sky-blue gradient (dark text, red accents). */
 .rm-hero-sky {
-  background: linear-gradient(135deg, #ffffff 0%, #e3f3ff 50%, #bde0fb 100%);
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(135deg, #eaf4ff 0%, #cfe6fb 50%, #b9d9f7 100%);
   color: #0a0a0a;
+}
+/* Soft diagonal strips (top-left to bottom-right, about 35 degrees), white
+   and light grey, soft edges; a very slow drift (transform only), still for
+   reduced motion. Oversized so the drift never shows an edge. */
+.rm-hero-sky::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    35deg,
+    transparent 8%,
+    rgba(255, 255, 255, 0.45) 14%,
+    transparent 21%,
+    transparent 29%,
+    rgba(221, 229, 238, 0.32) 35%,
+    transparent 42%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.4) 57%,
+    transparent 64%,
+    transparent 70%,
+    rgba(221, 229, 238, 0.28) 76%,
+    transparent 82%,
+    rgba(255, 255, 255, 0.5) 89%,
+    transparent 95%
+  );
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-hero-sky::before {
+    animation: rm-sky-drift 50s ease-in-out infinite alternate;
+  }
+}
+@keyframes rm-sky-drift {
+  to {
+    transform: translate3d(-8%, 5%, 0);
+  }
 }
 /* A hero (dark or light) sits under the sticky header. */
 .rm-hero-dark {
@@ -238,22 +293,63 @@ html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-
 }
 
 /* ------------------------------------------------------- hero illustration
-   Each floating piece of the magnet illustration (HeroMagnet) drifts on its
-   own slow loop; only transform moves. Still for reduced motion. */
+   HeroMagnet: the magnet floats 8 px (10 s); each piece drifts on a curved
+   path towards the magnet and back (--px/--py/--pr, 10 s, own delay); the
+   "New Order" card pops when closest. Transform only; still for reduced
+   motion. Below 768 px the extra pieces are hidden (bottom-right kept clear). */
 @media (prefers-reduced-motion: no-preference) {
-  .rm-magnet .rm-float {
+  .rm-mag-body {
+    animation: rm-mag-float 10s ease-in-out infinite;
+  }
+  .rm-mag-piece {
     transform-box: fill-box;
     transform-origin: center;
-    animation: rm-float var(--fd, 8s) ease-in-out var(--fdl, 0s) infinite;
+    animation: rm-mag-pull 10s cubic-bezier(0.45, 0, 0.25, 1) var(--dl, 0s) infinite;
+  }
+  .rm-mag-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: rm-mag-pop 10s ease-in-out var(--dl, 0s) infinite;
   }
 }
-@keyframes rm-float {
+@keyframes rm-mag-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes rm-mag-pull {
   0%,
   100% {
     transform: translate(0, 0) rotate(0deg);
   }
+  25% {
+    transform: translate(calc(var(--px) * 0.45), calc(var(--py) * 0.15)) rotate(var(--pr));
+  }
   50% {
-    transform: translate(var(--fx, -6px), var(--fy, -12px)) rotate(var(--fr, 2deg));
+    transform: translate(var(--px), var(--py)) rotate(0deg);
+  }
+  75% {
+    transform: translate(calc(var(--px) * 0.55), calc(var(--py) * 0.95)) rotate(calc(var(--pr) * -1));
+  }
+}
+@keyframes rm-mag-pop {
+  0%,
+  42%,
+  58%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+@media (max-width: 767.98px) {
+  .rm-mag-extra {
+    display: none;
   }
 }
 

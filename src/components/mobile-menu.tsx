@@ -53,7 +53,7 @@ export function MobileMenu({ items }: { items: { href: string; label: string }[]
           <nav
             id="mobile-menu"
             aria-label="Main"
-            className="rm-pop-in fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-40 flex flex-col gap-1 rounded-[20px] border border-line bg-menu p-3 shadow-[0_18px_48px_-14px_rgba(0,0,0,0.4)]"
+            className="rm-pop-in rm-glass fixed inset-x-3 top-[calc(var(--header-h)+8px)] z-40 flex flex-col gap-1 rounded-[20px] p-3"
           >
             {items.map((item) => (
               <Link

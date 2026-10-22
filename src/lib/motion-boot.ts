@@ -33,7 +33,7 @@ const source = function () {
   var ticking = false;
   function setScrolled() {
     ticking = false;
-    if (window.scrollY > 24) d.setAttribute("data-scrolled", "");
+    if (window.scrollY >= 8) d.setAttribute("data-scrolled", "");
     else d.removeAttribute("data-scrolled");
   }
   window.addEventListener(
