@@ -7,6 +7,16 @@ import { SOCIAL_NETWORKS } from "./social-links";
 // defaults, so the site always renders. Defaults come from the live site
 // (docs/content/wordpress-inventory.md) and the founder.
 
+/** The WhatsApp button's animations (picked in Admin → Settings). */
+export const WHATSAPP_ANIMATIONS = ["pulse", "bounce", "wiggle", "ring", "glow"] as const;
+export const WHATSAPP_ANIMATION_LABELS: Record<(typeof WHATSAPP_ANIMATIONS)[number], string> = {
+  pulse: "Pulse (soft rings)",
+  bounce: "Bounce",
+  wiggle: "Wiggle",
+  ring: "Ring (like a phone)",
+  glow: "Glow",
+};
+
 const phone = z.object({
   country: z.string().min(2).max(2), // ISO code
   label: z.string().min(1).max(40),
@@ -53,11 +63,26 @@ export const settingsSchema = z.object({
       /** Variables: {page}, {service}, {niche}, {country}. */
       template: z.string().min(1).max(300),
       enabled: z.boolean(),
+      /** The floating button's animation (CSS in design.css, .rm-wa[data-anim]). */
+      animation: z.enum(WHATSAPP_ANIMATIONS).default("pulse"),
+      /** On: a click opens a small chat card (welcome message + Start chat); off: straight to WhatsApp. */
+      widget: z.boolean().default(true),
+      /** Chat card: the name in its header, a short status line, the welcome message and the button. */
+      agentName: z.string().min(1).max(40).default("RohTre Media"),
+      status: z.string().max(60).default("We usually reply quickly"),
+      welcome: z.string().min(1).max(300).default("Hi there! How can we help you grow your brand?"),
+      buttonLabel: z.string().min(1).max(30).default("Start chat"),
     })
     .default({
       number: "919695747475",
       template: "Hi RohTre Media, I'm on your {page} page and I'd like to know more.",
       enabled: true,
+      animation: "pulse",
+      widget: true,
+      agentName: "RohTre Media",
+      status: "We usually reply quickly",
+      welcome: "Hi there! How can we help you grow your brand?",
+      buttonLabel: "Start chat",
     }),
   /** Careers "Chat with HR" WhatsApp number (from the live Careers page). Digits only. */
   hrWhatsapp: z

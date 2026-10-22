@@ -52,7 +52,7 @@ function ServiceCard({ item }: { item: ServiceItem }) {
   const logos = item.logos.filter((l) => l.logo_public_id);
   return (
     <article className="rm-svc flex h-full flex-col">
-      <span className="mb-6 flex min-h-16 flex-wrap items-center gap-3">
+      <span className="mb-6 flex min-h-16 flex-wrap items-center gap-3 max-sm:mb-3 max-sm:min-h-10">
         {logos.length > 0 ? (
           logos.map((l) => (
             <Image
@@ -70,17 +70,19 @@ function ServiceCard({ item }: { item: ServiceItem }) {
           <span className="rm-svc-icon" aria-hidden="true" style={tint(item.tint)}>
             {item.icon === "shopify" ? (
               // eslint-disable-next-line @next/next/no-img-element -- the official Shopify file, served as is
-              <img src="/brand/platforms/shopify-bag.svg" alt="" width={44} height={50} loading="lazy" className="h-8 w-auto" />
+              <img src="/brand/platforms/shopify-bag.svg" alt="" width={44} height={50} loading="lazy" className="h-8 w-auto max-sm:h-5" />
             ) : (
-              <ServiceIcon name={item.icon} size={30} strokeWidth={1.8} />
+              <ServiceIcon name={item.icon} size={30} strokeWidth={1.8} className="max-sm:size-5" />
             )}
           </span>
         )}
       </span>
-      <h3 className="mb-2 text-xl font-bold tracking-[-0.01em] text-[#0a0a0a]">{item.title}</h3>
-      <p className="text-base leading-relaxed text-[#5b6472]">{item.text}</p>
+      <h3 className="mb-2 text-xl font-bold leading-snug tracking-[-0.01em] text-[#0a0a0a] max-sm:mb-1 max-sm:text-[15px]">
+        {item.title}
+      </h3>
+      <p className="text-base leading-relaxed text-[#5b6472] max-sm:text-[13px] max-sm:leading-snug">{item.text}</p>
       {item.tags.length > 0 && (
-        <ul className="mt-auto flex flex-wrap gap-2 pt-6" aria-label={`${item.title} services`}>
+        <ul className="mt-auto flex flex-wrap gap-2 pt-6 max-sm:gap-1 max-sm:pt-3" aria-label={`${item.title} services`}>
           {item.tags.map((t) => (
             <li key={t} className="rm-svc-tag">
               {t}
@@ -101,7 +103,7 @@ export function WhoWeServe({ s }: { s: HomeContent["whoWeServe"] }) {
     <section id="services" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} />
-        <ul aria-label="Services" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul aria-label="Services" className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
           {s.items.map((item, i) => (
             <li key={item.title} {...reveal(i % 3)}>
               <ServiceCard item={item} />
@@ -348,11 +350,11 @@ export const isEmptySlide = (sl: Slide) => !sl.brand.trim() && !isFilled(sl.post
 function MetricCell({ m, currency }: { m: Metric & { value: number }; currency: string }) {
   const final = metricText(m);
   return (
-    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center md:px-4 md:py-8">
+    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center max-md:gap-2 max-md:py-4 md:px-4 md:py-8">
       <dt className="order-last text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-2 md:text-xs">
         {m.label}
       </dt>
-      <dd aria-label={final} className="flex flex-col items-center gap-3">
+      <dd aria-label={final} className="flex flex-col items-center gap-3 max-md:gap-2">
         <span aria-hidden="true" className={`${DISC} size-10 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
           {m.icon === "currency" ? (
             <span className="text-lg font-bold leading-none md:text-[26px]">{currency}</span>
@@ -362,7 +364,7 @@ function MetricCell({ m, currency }: { m: Metric & { value: number }; currency: 
         </span>
         <span
           aria-hidden="true"
-          className="relative whitespace-nowrap text-[clamp(1.9rem,3vw,2.75rem)] font-bold leading-none tracking-[-0.03em] tabular-nums"
+          className="relative whitespace-nowrap text-[clamp(1.9rem,3vw,2.75rem)] font-bold leading-none tracking-[-0.03em] tabular-nums max-md:text-[1.6rem]"
         >
           <span className="invisible">{final}</span>
           <span
@@ -384,23 +386,23 @@ function ShowcaseSlide({ sl }: { sl: Slide }) {
   const metrics = shownMetrics(sl);
   const note = [sl.period, sl.source].filter((v) => v.trim()).join(" · ");
   return (
-    <article className="grid items-center gap-6 lg:grid-cols-[46%_minmax(0,1fr)] lg:gap-10">
+    <article className="grid items-center gap-6 max-md:gap-4 lg:grid-cols-[46%_minmax(0,1fr)] lg:gap-10">
       <MediaSlot
         slot={sl.poster}
         sizes="(min-width: 1280px) 530px, (min-width: 1024px) 44vw, (min-width: 768px) 92vw, 72vw"
         maxWidth={1600}
-        className="rounded-[1.5rem] max-md:mx-auto max-md:w-[72vw]"
+        className="rounded-[1.5rem] max-md:mx-auto max-md:w-[58vw] max-md:max-w-[260px]"
       />
-      <div className="rm-card p-6 md:p-10">
+      <div className="rm-card p-6 max-md:p-4 md:p-10">
         {sl.brand ? (
-          <h3 className="text-xl font-bold tracking-[-0.01em] md:text-2xl">{sl.brand}</h3>
+          <h3 className="text-xl font-bold tracking-[-0.01em] max-md:text-center md:text-2xl">{sl.brand}</h3>
         ) : (
           <NotLiveTag>Client name to add</NotLiveTag>
         )}
-        <span aria-hidden="true" className="mt-3 block h-[3px] w-12 rounded-full bg-brand" />
+        <span aria-hidden="true" className="mt-3 block h-[3px] w-12 rounded-full bg-brand max-md:mx-auto" />
         {note && <p className="mt-3 text-sm text-fg-2">{note}</p>}
         {metrics.length > 0 ? (
-          <div className="mt-6 overflow-hidden">
+          <div className="mt-6 overflow-hidden max-md:mt-4">
             <dl className="-mb-px -mr-px grid grid-cols-2 lg:grid-cols-3">
               {metrics.map((m, i) => (
                 <MetricCell key={i} m={m} currency={sl.currency} />

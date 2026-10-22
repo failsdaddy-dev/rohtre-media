@@ -26,6 +26,7 @@ export async function SiteChrome({ children, tone }: { children: ReactNode; tone
         number={settings.whatsapp.number}
         template={settings.whatsapp.template}
         enabled={settings.whatsapp.enabled}
+        chat={settings.whatsapp}
       />
       <Motion />
     </div>

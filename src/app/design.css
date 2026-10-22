@@ -549,6 +549,21 @@ html[data-intro] {
   line-height: 1;
   text-transform: uppercase;
 }
+/* Phones (2 cards per row): tighter card, smaller icon box and tags. */
+@media (max-width: 639.98px) {
+  .rm-svc {
+    padding: 14px;
+  }
+  .rm-svc-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .rm-svc-tag {
+    padding: 4px 6px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+}
 
 /* -------------------------------------------------------- stacking cards
    Each card sticks a little lower than the one before, so they pile up. */
@@ -863,8 +878,10 @@ html[data-intro] .rm-intro {
   text-align: left;
 }
 
-/* Floating WhatsApp button: pops in, a soft halo pulses every few seconds,
-   the icon wiggles on hover. Still for people who prefer reduced motion. */
+/* Floating WhatsApp button: pops in; then the animation picked in Admin →
+   Settings (data-anim): pulse (soft halo rings), bounce, wiggle, ring (a
+   phone-like shake now and then) or glow. The icon wiggles on hover. Still
+   for people who prefer reduced motion. */
 .rm-wa {
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
@@ -897,6 +914,90 @@ html[data-intro] .rm-intro {
 .rm-wa:focus-visible {
   outline: 2px solid var(--fg);
   outline-offset: 3px;
+}
+.rm-wa:not([data-anim="pulse"])::before,
+.rm-wa:not([data-anim="pulse"])::after {
+  display: none;
+}
+.rm-wa[data-anim="bounce"] {
+  animation:
+    rm-wa-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.8s backwards,
+    rm-wa-bounce 2.8s ease-in-out 1.6s infinite;
+}
+.rm-wa[data-anim="wiggle"] .rm-wa-icon {
+  animation: rm-wa-wiggle-loop 3.2s ease-in-out 1.6s infinite;
+}
+@keyframes rm-wa-wiggle-loop {
+  0%,
+  30%,
+  100% {
+    transform: rotate(0);
+  }
+  7% {
+    transform: rotate(-12deg);
+  }
+  14% {
+    transform: rotate(10deg);
+  }
+  21% {
+    transform: rotate(-6deg);
+  }
+}
+.rm-wa[data-anim="ring"] .rm-wa-icon {
+  animation: rm-wa-ring 3s ease-in-out 1.6s infinite;
+}
+.rm-wa[data-anim="glow"] {
+  animation:
+    rm-wa-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.8s backwards,
+    rm-wa-glow 2.4s ease-in-out 1.6s infinite;
+}
+@keyframes rm-wa-bounce {
+  0%,
+  40%,
+  100% {
+    transform: translateY(0);
+  }
+  15% {
+    transform: translateY(-10px);
+  }
+  25% {
+    transform: translateY(0);
+  }
+  32% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes rm-wa-ring {
+  0%,
+  20%,
+  100% {
+    transform: rotate(0);
+  }
+  2%,
+  6%,
+  10%,
+  14% {
+    transform: rotate(-14deg);
+  }
+  4%,
+  8%,
+  12%,
+  16% {
+    transform: rotate(14deg);
+  }
+}
+@keyframes rm-wa-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 30px -8px rgba(0, 0, 0, 0.45),
+      0 0 0 0 rgba(37, 211, 102, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 10px 30px -8px rgba(0, 0, 0, 0.45),
+      0 0 26px 8px rgba(37, 211, 102, 0.55);
+  }
 }
 @keyframes rm-wa-in {
   from {
@@ -938,6 +1039,7 @@ html[data-intro] .rm-intro {
   .rm-wa,
   .rm-wa::before,
   .rm-wa::after,
+  .rm-wa .rm-wa-icon,
   .rm-wa:hover .rm-wa-icon {
     animation: none;
   }

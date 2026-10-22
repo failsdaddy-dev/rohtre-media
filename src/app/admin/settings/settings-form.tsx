@@ -2,9 +2,10 @@
 
 import { useActionState, useRef, useState } from "react";
 import { SaveBar } from "@/components/admin/save-bar";
+import { Select } from "@/components/admin/select";
 import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
 import { callbacksToText, phonesToText } from "@/lib/settings-form";
-import type { SiteSettings } from "@/lib/settings-schema";
+import { WHATSAPP_ANIMATION_LABELS, WHATSAPP_ANIMATIONS, type SiteSettings } from "@/lib/settings-schema";
 import { saveSettings, type SaveState } from "./actions";
 import { SocialLinksField } from "./social-links-field";
 
@@ -15,6 +16,7 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
   const form = useRef<HTMLFormElement>(null);
   const [dirty, setDirty] = useState(false);
   const [resets, setResets] = useState(0);
+  const [waAnim, setWaAnim] = useState(settings.whatsapp.animation);
   // Same save action as before; a successful save clears "Unsaved changes".
   const [state, action, pending] = useActionState<SaveState, FormData>(
     async (prev, data) => {
@@ -100,6 +102,33 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
             />
             Show the floating WhatsApp button
           </label>
+          <Field label="Button animation" error={e["whatsapp.animation"]}>
+            <Select
+              name="whatsappAnimation"
+              value={waAnim}
+              onChange={(v) => {
+                setWaAnim(v as typeof waAnim);
+                setDirty(true);
+              }}
+              options={WHATSAPP_ANIMATIONS.map((a) => ({ value: a, label: WHATSAPP_ANIMATION_LABELS[a] }))}
+            />
+          </Field>
+          <label className="flex items-center gap-2 text-sm font-medium md:col-span-2">
+            <input type="checkbox" name="whatsappWidget" defaultChecked={settings.whatsapp.widget} className={CHECK} />
+            Open a chat card first (welcome message + button), like a shop chat widget. Off = straight to WhatsApp.
+          </label>
+          <Field label="Chat card: name" error={e["whatsapp.agentName"]}>
+            <input name="whatsappAgent" defaultValue={settings.whatsapp.agentName} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Chat card: status line (optional)" error={e["whatsapp.status"]}>
+            <input name="whatsappStatus" defaultValue={settings.whatsapp.status} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Chat card: welcome message" error={e["whatsapp.welcome"]} className="md:col-span-2">
+            <textarea name="whatsappWelcome" rows={3} defaultValue={settings.whatsapp.welcome} className={INPUT_CLASS} />
+          </Field>
+          <Field label="Chat card: button text" error={e["whatsapp.buttonLabel"]}>
+            <input name="whatsappButton" defaultValue={settings.whatsapp.buttonLabel} className={INPUT_CLASS} />
+          </Field>
         </div>
       </Panel>
 
@@ -215,6 +244,7 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
         onDiscard={() => {
           form.current?.reset();
           setResets((n) => n + 1);
+          setWaAnim(settings.whatsapp.animation);
           setDirty(false);
         }}
       >
