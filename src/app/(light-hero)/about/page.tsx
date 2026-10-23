@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AboutMotion } from "@/components/about/about-motion";
 import { AboutHero, Counters, Diversity, Highlights, Team, WhoWeAre, YearInReview } from "@/components/about/about-sections";
+import { CtaDecor } from "@/components/home/cta-decor";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { CtaPanel } from "@/components/page-parts";
 import { getAboutContent } from "@/lib/about-data";
@@ -26,7 +27,7 @@ export default async function AboutPage() {
       {about.diversity.enabled && <Diversity s={about.diversity} />}
       {about.review.enabled && <YearInReview s={about.review} />}
       <Team s={about.team} />
-      <CtaPanel id="lets-talk" {...about.cta} />
+      <CtaPanel id="lets-talk" {...about.cta} decor={about.cta.animated ? <CtaDecor /> : undefined} />
       <AboutMotion />
       <MediaPlayback />
     </>

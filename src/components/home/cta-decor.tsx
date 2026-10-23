@@ -8,8 +8,9 @@ import { CtaParallax } from "./cta-parallax";
 // (red, white, grey), all aria-hidden and pointer-events: none. Each object
 // has a depth layer (how far it drifts with the pointer) and a slow idle
 // float. Objects inside the text's safe zone are capped at low opacity and
-// sit under the text layer. Admin: Home page → Final call to action →
-// "Show animated objects".
+// sit under the text layer. Used on every page's closing card (Home,
+// About, Careers). Admin: Home page → Final call to action and About page →
+// Closing call to action → "Show animated objects".
 
 type Depth = keyof typeof CTA_DECOR.travel;
 type Obj = {
@@ -158,7 +159,7 @@ export const CTA_OBJECTS: Obj[] = [
   },
 ];
 
-/** The extra objects plus the pointer-drift script (home CTA card only). */
+/** The extra objects plus the pointer-drift script (closing CTA cards). */
 export function CtaDecor() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden sm:block">

@@ -293,8 +293,16 @@ export const aboutSchema = z.object({
       members: TEAM_MEMBERS,
     }),
   cta: z
-    .object({ eyebrow: line(40), title: line(80).min(1), accent: line(80), text: line(200), label: line(40).min(1) })
-    .default({ eyebrow: "RohTre Media", title: "Ready to unlock growth", accent: "Let’s talk!", text: "", label: "Book a Call" }),
+    .object({
+      eyebrow: line(40),
+      title: line(80).min(1),
+      accent: line(80),
+      text: line(200),
+      label: line(40).min(1),
+      /** The home card's moving objects that drift with the pointer (CtaDecor). */
+      animated: z.boolean().default(true),
+    })
+    .default({ eyebrow: "RohTre Media", title: "Ready to unlock growth", accent: "Let’s talk!", text: "", label: "Book a Call", animated: true }),
 });
 
 export type AboutContent = z.infer<typeof aboutSchema>;

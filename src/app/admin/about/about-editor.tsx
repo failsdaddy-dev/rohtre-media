@@ -116,6 +116,10 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     accent: { label: "Heading, end (shown in red)" },
     text: { label: "Supporting line (optional)" },
     label: { label: "Button text" },
+    animated: {
+      label: "Show animated objects",
+      help: "Extra shapes and icons in the card that drift gently with the mouse. Off = the card’s basic shapes only.",
+    },
   },
 };
 

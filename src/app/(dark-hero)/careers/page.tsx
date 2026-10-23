@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { CtaDecor } from "@/components/home/cta-decor";
 import { ChatIcon } from "@/components/icons";
-import { ButtonLink, Card, CtaBand, PageHero, Section } from "@/components/page-parts";
+import { ButtonLink, Card, CtaPanel, PageHero, Section } from "@/components/page-parts";
 import { getSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -218,7 +219,7 @@ export default async function CareersPage() {
         )}
       </Section>
 
-      <CtaBand />
+      <CtaPanel decor={<CtaDecor />} />
     </>
   );
 }
