@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { JsonSchema } from "../components/admin/schema-form";
 import { aboutSchema } from "../content/about-schema";
+import { careersSchema } from "../content/careers-schema";
 import { homeSchema } from "../content/home-schema";
 import { SECTION_TYPES, type SectionType } from "../sections/schemas";
 
@@ -26,6 +27,10 @@ export function homeJsonSchemas(): Record<string, JsonSchema> {
 
 export function aboutJsonSchemas(): Record<string, JsonSchema> {
   return Object.fromEntries(Object.entries(aboutSchema.shape).map(([key, s]) => [key, toJson(s)]));
+}
+
+export function careersJsonSchemas(): Record<string, JsonSchema> {
+  return Object.fromEntries(Object.entries(careersSchema.shape).map(([key, s]) => [key, toJson(s)]));
 }
 
 export { toJson };

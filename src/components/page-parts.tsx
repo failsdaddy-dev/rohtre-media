@@ -175,6 +175,7 @@ export function CtaPanel({
   size = "md",
   decor,
   id,
+  action,
 }: {
   eyebrow?: string;
   title?: string;
@@ -187,6 +188,8 @@ export function CtaPanel({
   decor?: ReactNode;
   /** Anchor for links to this card (the home page's). */
   id?: string;
+  /** Replaces the Book a Call / WhatsApp buttons (e.g. Careers' "Apply Now"). */
+  action?: ReactNode;
 }) {
   return (
     <section id={id} className="pb-20 pt-4 md:pb-28">
@@ -205,20 +208,24 @@ export function CtaPanel({
             </h2>
             {text && <p className="text-lg text-white/65">{text}</p>}
             <div className="flex flex-wrap justify-center gap-3 pt-3">
-              <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
-                <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size={size}>
-                  {label} <ArrowRightIcon size={size === "lg" ? 20 : 18} />
-                </ButtonLink>
-              </span>
-              {whatsappHref && (
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener"
-                  className={`rm-press inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 font-semibold text-white transition-colors hover:bg-white/10 ${size === "lg" ? "h-14 px-7 text-lg" : "h-12 px-6"}`}
-                >
-                  <ChatIcon size={18} /> WhatsApp us
-                </a>
+              {action ?? (
+                <>
+                  <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
+                    <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size={size}>
+                      {label} <ArrowRightIcon size={size === "lg" ? 20 : 18} />
+                    </ButtonLink>
+                  </span>
+                  {whatsappHref && (
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener"
+                      className={`rm-press inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 font-semibold text-white transition-colors hover:bg-white/10 ${size === "lg" ? "h-14 px-7 text-lg" : "h-12 px-6"}`}
+                    >
+                      <ChatIcon size={18} /> WhatsApp us
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>

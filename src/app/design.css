@@ -1544,3 +1544,45 @@ html[data-motion] .rm-about-bar {
     height: 40px;
   }
 }
+
+/* ---------------------------------------------------------- careers page
+   Red strip: the home partner strip (.rm-badges) with 1 / 2 / 5 columns. */
+.rm-badges.rm-careers-strip > li {
+  flex: 0 0 100%;
+}
+@media (min-width: 640px) {
+  .rm-badges.rm-careers-strip > li {
+    flex-basis: 50%;
+  }
+}
+@media (min-width: 1024px) {
+  .rm-badges.rm-careers-strip > li {
+    flex-basis: 20%;
+  }
+}
+/* Hero photo fades to low opacity as the hero scrolls away (scroll-driven,
+   no JavaScript; browsers without support keep it at full strength). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rm-careers-hero {
+      view-timeline-name: --careers-hero;
+    }
+    .rm-careers-hero .rm-about-hero-img {
+      animation: rm-careers-fade linear both;
+      animation-timeline: --careers-hero;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+@keyframes rm-careers-fade {
+  to {
+    opacity: 0.3;
+  }
+}
+/* Application form dialog: square corners like the cards; no page scroll behind it. */
+.rm-apply {
+  border: 1px solid #e5e7eb;
+}
+html:has(.rm-apply[open]) {
+  overflow: hidden;
+}

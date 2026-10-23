@@ -1,5 +1,6 @@
 import "server-only";
 import { DEFAULT_ABOUT } from "@/content/about-schema";
+import { DEFAULT_CAREERS } from "@/content/careers-schema";
 import { DEFAULT_HOME } from "@/content/home-schema";
 import { destroyAsset } from "./cloudinary/server";
 import { collectMediaIds, removedMedia } from "./media-refs";
@@ -28,6 +29,7 @@ export async function deleteMediaIfUnused(
   const used = opts.force ? new Set<string>() : await mediaInUse(db);
   collectMediaIds(DEFAULT_HOME, used); // defaults in code count as "in use"
   collectMediaIds(DEFAULT_ABOUT, used);
+  collectMediaIds(DEFAULT_CAREERS, used);
 
   const out: DeleteOutcome[] = [];
   for (const id of publicIds) {

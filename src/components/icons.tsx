@@ -212,6 +212,43 @@ export const ServiceIcon = ({ name, ...p }: P & { name: string }) => (
         <path d="m4 11 5-4 3 2 7-6M15 3h4v4" />
       </>
     )}
+    {/* Careers page icons (2026-10-23). */}
+    {name === "heart" && (
+      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
+    )}
+    {name === "calendar" && (
+      <>
+        <rect x="4" y="5" width="16" height="15" rx="2" />
+        <path d="M4 10h16M9 3v4M15 3v4" />
+      </>
+    )}
+    {name === "globe" && (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M4 12h16M12 4c2.5 2.6 2.5 13.4 0 16M12 4c-2.5 2.6-2.5 13.4 0 16" />
+      </>
+    )}
+    {name === "clock" && (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4l3 2" />
+      </>
+    )}
+    {name === "leaf" && <path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14Zm0 0 7-7" />}
+    {name === "book" && <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" />}
+    {name === "star" && <path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.3L12 16l-4.9 2.6 1.1-5.3-4-3.7 5.4-.6L12 4Z" />}
+    {name === "key" && (
+      <>
+        <circle cx="8" cy="15" r="4" />
+        <path d="m11 12 8-8M16 7l2 2M14 9l2 2" />
+      </>
+    )}
+    {name === "briefcase" && (
+      <>
+        <rect x="3" y="7" width="18" height="13" rx="2" />
+        <path d="M9 7V5h6v2M3 13h18" />
+      </>
+    )}
   </Svg>
 );
 
