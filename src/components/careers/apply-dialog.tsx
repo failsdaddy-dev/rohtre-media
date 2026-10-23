@@ -176,7 +176,7 @@ export function ApplyDialog({
       <div className="relative p-5 pt-6 sm:p-9">
         <span aria-hidden="true" className="rm-apply-grabber" />
         {/* Zero-height sticky bar: the close button stays in view while the form scrolls. */}
-        <div className="sticky top-0 z-20 h-0">
+        <div className="sticky top-4 z-20 -mt-5 mb-5 h-0 max-sm:top-3 max-sm:-mt-3 max-sm:mb-3">
           <button type="button" onClick={close} aria-label="Close" className="rm-apply-close">
             <svg
               aria-hidden="true"

@@ -1612,8 +1612,8 @@ html:has(.rm-apply[open]) {
 }
 .rm-apply-close {
   position: absolute;
-  top: -14px;
-  right: -14px;
+  top: 0;
+  right: -20px;
   z-index: 2;
   display: grid;
   place-items: center;
@@ -1834,8 +1834,7 @@ input:focus-visible + .rm-seg-label {
     background: #d1d5db;
   }
   .rm-apply-close {
-    top: -10px;
-    right: -6px;
+    right: -8px;
   }
   .rm-apply-submit-bar {
     position: sticky;
