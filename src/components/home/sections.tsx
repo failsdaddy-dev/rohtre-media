@@ -430,13 +430,13 @@ export function Faq({ s }: { s: HomeContent["faq"] }) {
     <section id="faq" className={PAD}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        {/* Full-width strips in the Careers FAQ style: square white cards with the red hover glow (.rm-svc). */}
-        <ul className="mx-auto flex max-w-[900px] flex-col gap-3">
+        {/* Two per row (one on phones), square white cards with the red hover glow (.rm-svc). */}
+        <ul className="grid gap-4 md:grid-cols-2 md:items-start md:gap-5">
           {items.map((f, i) => (
-            <li key={f.q} {...reveal(i % 4)}>
+            <li key={f.q} {...reveal(i % 2)}>
               <details className="rm-faq rm-svc p-0!">
-                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-[17px] font-semibold sm:px-7">
-                  {f.q}
+                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-20 max-sm:text-base">
+                  <span className="line-clamp-2">{f.q}</span>
                   <span
                     aria-hidden="true"
                     className="rm-faq-plus grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand"

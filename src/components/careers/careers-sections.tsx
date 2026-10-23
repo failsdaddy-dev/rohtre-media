@@ -21,7 +21,7 @@ type Card = CareersContent["values"]["items"][number];
 function IconCard({ card, i, small }: { card: Card; i: number; small?: boolean }) {
   return (
     <li
-      className={`rm-svc flex flex-col items-start gap-4 ${small ? "lg:p-8!" : ""}`}
+      className={`rm-svc flex flex-col items-start gap-4 max-sm:gap-3 max-sm:p-6! ${small ? "lg:p-8!" : ""}`}
       {...reveal(i % 3)}
       style={{ ...reveal(i % 3).style, "--c": CARD_COLORS[card.color] } as CSSProperties}
     >
@@ -122,7 +122,7 @@ export function Strip({ s }: { s: CareersContent["strip"] }) {
     <section aria-label="Awards and partners" className="relative overflow-hidden bg-brand text-brand-fg">
       <ul className="rm-badges rm-careers-strip mx-auto max-w-[1600px]" data-group="many">
         {s.items.map((it, i) => (
-          <li key={i} className="flex flex-col items-center justify-center gap-4 px-5 py-9 text-center md:py-11" {...reveal(i, "fade")}>
+          <li key={i} className="flex flex-col items-center justify-center gap-4 px-5 py-7 text-center sm:py-9 md:py-11" {...reveal(i, "fade")}>
             <span className="grid h-16 place-items-center">
               {it.logo_public_id ? (
                 <Image
@@ -310,14 +310,15 @@ export function Perks({ s }: { s: CareersContent["perks"] }) {
 export function CareersFaq({ s }: { s: CareersContent["faq"] }) {
   return (
     <section id="faq" className={`bg-[#f4f8fd] ${PAD}`}>
-      <Container className="max-w-[900px]!">
+      <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} center />
-        <ul className="flex flex-col gap-3">
+        {/* Two per row (one on phones), like the home FAQ. */}
+        <ul className="grid gap-4 md:grid-cols-2 md:items-start md:gap-5">
           {s.items.map((f, i) => (
-            <li key={i} {...reveal(i % 4)}>
+            <li key={i} {...reveal(i % 2)}>
               <details className="rm-svc group p-0!">
-                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-[17px] font-semibold sm:px-7 [&::-webkit-details-marker]:hidden">
-                  {f.q}
+                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-20 max-sm:text-base [&::-webkit-details-marker]:hidden">
+                  <span className="line-clamp-2">{f.q}</span>
                   <span
                     aria-hidden="true"
                     className="grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand transition-transform group-open:rotate-45"
