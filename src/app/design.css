@@ -1577,10 +1577,445 @@ html[data-motion] .rm-about-bar {
     opacity: 0.3;
   }
 }
-/* Application form dialog: square corners like the cards; no page scroll behind it. */
-.rm-apply {
-  border: 1px solid #e5e7eb;
-}
+/* ----------------------------------------------- careers application form
+   Liquid glass: a frosted, softly rounded panel over a blurred page, with
+   slow colour bubbles behind the content. Opens with a springy "bubble" pop
+   (a bottom sheet sliding up on phones) and closes with a quick shrink
+   ([data-closing], set by ApplyDialog). Transform/opacity only; reduced
+   motion shows and hides it without animation. */
 html:has(.rm-apply[open]) {
   overflow: hidden;
+}
+.rm-apply {
+  margin: auto;
+  width: min(700px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 30px;
+  color: #0a0a0a;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow:
+    0 50px 120px -30px rgba(20, 10, 40, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  scrollbar-width: thin;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rm-apply {
+    background: rgba(255, 255, 255, 0.97);
+  }
+}
+.rm-apply::backdrop {
+  background: rgba(12, 8, 22, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.rm-apply-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.rm-apply-blobs > span {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(48px);
+  opacity: 0.55;
+}
+.rm-apply-blobs > span:nth-child(1) {
+  top: -120px;
+  right: -90px;
+  width: 340px;
+  height: 340px;
+  background: rgba(229, 9, 20, 0.32);
+}
+.rm-apply-blobs > span:nth-child(2) {
+  bottom: -140px;
+  left: -110px;
+  width: 380px;
+  height: 380px;
+  background: rgba(124, 196, 255, 0.55);
+}
+.rm-apply-blobs > span:nth-child(3) {
+  top: 38%;
+  left: 40%;
+  width: 260px;
+  height: 260px;
+  background: rgba(255, 150, 175, 0.35);
+}
+.rm-apply-grabber {
+  display: none;
+}
+.rm-apply-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  color: #1f2430;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 14px -6px rgba(20, 30, 60, 0.3);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.rm-apply-close:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: rotate(90deg);
+}
+.rm-apply-badge {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff4d5a, var(--brand));
+  box-shadow: 0 12px 26px -10px rgba(229, 9, 20, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+/* Segmented Internship / Full-time switch with a sliding red thumb. */
+.rm-seg-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  background: rgba(15, 25, 50, 0.06);
+  box-shadow: inset 0 1px 3px rgba(15, 25, 50, 0.08);
+}
+.rm-seg-thumb {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4d5a, var(--brand));
+  box-shadow: 0 8px 20px -8px rgba(229, 9, 20, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition:
+    transform 0.5s cubic-bezier(0.32, 1.4, 0.5, 1),
+    opacity 0.2s ease;
+}
+.rm-seg-track:has(input:checked) .rm-seg-thumb {
+  opacity: 1;
+}
+.rm-seg-track:has(input[value="Full-time"]:checked) .rm-seg-thumb {
+  transform: translateX(100%);
+}
+.rm-seg-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  border-radius: 999px;
+  color: #3a4150;
+  font-size: 15px;
+  font-weight: 700;
+  transition: color 0.25s ease;
+}
+input:checked + .rm-seg-label {
+  color: #ffffff;
+}
+input:focus-visible + .rm-seg-label {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+/* Glass fields with a soft red glow on focus. */
+.rm-apply-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 1px 2px rgba(15, 25, 50, 0.06),
+    0 1px 2px rgba(15, 25, 50, 0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+.rm-apply-field:focus-within {
+  border-color: color-mix(in srgb, var(--brand) 55%, #ffffff);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--brand) 14%, transparent),
+    inset 0 1px 2px rgba(15, 25, 50, 0.04);
+}
+.rm-apply-field:has([aria-invalid="true"]) {
+  border-color: color-mix(in srgb, var(--danger) 70%, #ffffff);
+}
+.rm-apply-field select {
+  cursor: pointer;
+}
+.rm-apply-drop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px dashed rgba(60, 70, 90, 0.28);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.rm-apply-drop:hover,
+.rm-apply-drop:focus-within {
+  border-color: color-mix(in srgb, var(--brand) 55%, #ffffff);
+  background: rgba(255, 255, 255, 0.8);
+}
+.rm-apply-drop.is-filled {
+  border-style: solid;
+  border-color: rgba(31, 157, 76, 0.45);
+}
+.rm-apply-drop-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, #ffffff);
+}
+.rm-apply-drop.is-filled .rm-apply-drop-icon {
+  color: #1f9d4c;
+  background: rgba(31, 157, 76, 0.12);
+}
+.rm-apply-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  color: #4b5563;
+  background: rgba(255, 255, 255, 0.45);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.rm-apply-submit {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff4d5a, var(--brand) 55%, #b80710);
+  box-shadow: 0 16px 34px -14px rgba(229, 9, 20, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  font-size: 17px;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.rm-apply-submit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.rm-apply-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 40px -14px rgba(229, 9, 20, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.rm-apply-submit:active {
+  transform: scale(0.98);
+}
+.rm-apply-submit:disabled {
+  opacity: 0.75;
+}
+.rm-apply-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 999px;
+}
+.rm-apply-ghost {
+  height: 48px;
+  padding: 0 28px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+}
+.rm-apply-check {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #34c76a, #1f9d4c);
+  box-shadow: 0 18px 40px -14px rgba(31, 157, 76, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.rm-apply-check::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(31, 157, 76, 0.45);
+}
+/* Phones: a bottom sheet with a grabber. */
+@media (max-width: 639.98px) {
+  .rm-apply {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin: auto 0 0;
+    border-bottom: 0;
+    border-radius: 28px 28px 0 0;
+  }
+  .rm-apply-grabber {
+    display: block;
+    width: 44px;
+    height: 5px;
+    margin: -8px auto 14px;
+    border-radius: 999px;
+    background: rgba(30, 40, 60, 0.22);
+  }
+  .rm-apply-close {
+    top: 14px;
+    right: 14px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-apply[open] {
+    animation: rm-apply-in 0.62s cubic-bezier(0.32, 1.35, 0.5, 1) both;
+  }
+  .rm-apply[open]::backdrop {
+    animation: rm-apply-fade 0.35s ease both;
+  }
+  .rm-apply[data-closing] {
+    animation: rm-apply-out 0.26s ease-in both;
+  }
+  .rm-apply[data-closing]::backdrop {
+    animation: rm-apply-fade 0.26s ease reverse both;
+  }
+  .rm-apply-blobs > span {
+    animation: rm-apply-blob 16s ease-in-out infinite alternate;
+  }
+  .rm-apply-blobs > span:nth-child(2) {
+    animation-duration: 19s;
+    animation-delay: -6s;
+  }
+  .rm-apply-blobs > span:nth-child(3) {
+    animation-duration: 13s;
+    animation-delay: -3s;
+  }
+  .rm-apply-submit:hover::after {
+    transform: translateX(120%);
+    transition: transform 0.9s ease;
+  }
+  .rm-apply-spinner {
+    animation: rm-apply-spin 0.8s linear infinite;
+  }
+  .rm-apply-check {
+    animation: rm-apply-pop 0.6s cubic-bezier(0.32, 1.6, 0.5, 1) both;
+  }
+  .rm-apply-check::before {
+    animation: rm-apply-ring 1.2s ease-out 0.25s both;
+  }
+  @media (max-width: 639.98px) {
+    .rm-apply[open] {
+      animation: rm-apply-sheet 0.55s cubic-bezier(0.32, 1.2, 0.5, 1) both;
+    }
+    .rm-apply[data-closing] {
+      animation: rm-apply-sheet-out 0.26s ease-in both;
+    }
+  }
+}
+@keyframes rm-apply-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.86);
+  }
+  45% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rm-apply-out {
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+}
+@keyframes rm-apply-sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes rm-apply-sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes rm-apply-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rm-apply-blob {
+  to {
+    transform: translate3d(-40px, 30px, 0) scale(1.15);
+  }
+}
+@keyframes rm-apply-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rm-apply-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rm-apply-ring {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
 }
