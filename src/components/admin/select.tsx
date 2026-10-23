@@ -393,7 +393,11 @@ export function Select({
         data-index={i}
         data-active={i === active || undefined}
         onPointerMove={() => !o.disabled && i !== active && setActive(i)}
-        onClick={() => choose(i)}
+        onClick={(e) => {
+          // Inside a <label>, a click would also "click" the trigger again and reopen the list.
+          e.preventDefault();
+          choose(i);
+        }}
         className={`flex min-h-11 items-center gap-3 rounded-[10px] px-3 py-2 text-[15px] ${
           o.disabled
             ? "cursor-not-allowed opacity-50"

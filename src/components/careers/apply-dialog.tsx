@@ -311,7 +311,7 @@ export function ApplyDialog({
                 </div>
                 {err("phone")}
               </div>
-              <label className={LABEL}>
+              <div className={LABEL}>
                 Role you’re applying for
                 <span className="rm-apply-select">
                   <Select
@@ -327,8 +327,8 @@ export function ApplyDialog({
                   />
                 </span>
                 {err("role")}
-              </label>
-              <label className={LABEL}>
+              </div>
+              <div className={LABEL}>
                 Experience in this role
                 <span className="rm-apply-select">
                   <Select
@@ -344,7 +344,7 @@ export function ApplyDialog({
                   />
                 </span>
                 {err("experience")}
-              </label>
+              </div>
               {role === OTHER_ROLE && (
                 <label className={`${LABEL} sm:col-span-2`}>
                   Which role?
