@@ -216,12 +216,14 @@ export function Process({ s }: { s: HomeContent["process"] }) {
 function Quote({ t }: { t: Testimonial }) {
   return (
     <figure
-      className={`flex h-full w-[min(380px,84vw)] shrink-0 flex-col gap-5 rounded-[2rem] border bg-white p-7 shadow-[0_14px_40px_-26px_rgba(0,0,0,0.35)] ${
+      className={`flex h-full w-[min(380px,84vw)] shrink-0 flex-col gap-5 rounded-[6px] border bg-white p-7 shadow-[0_14px_40px_-26px_rgba(0,0,0,0.35)] max-sm:w-[74vw] max-sm:gap-3.5 max-sm:p-5 ${
         isLiveProof(t) ? "border-line" : "border-dashed border-brand"
       }`}
     >
       {!isLiveProof(t) && <NotLiveTag>{t.is_placeholder ? "Placeholder" : "Needs client’s permission"}</NotLiveTag>}
-      <blockquote className="flex-1 text-[15px] italic leading-relaxed text-[#2b2b2b]">“{t.quote}”</blockquote>
+      <blockquote className="flex-1 text-[15px] italic leading-relaxed text-[#2b2b2b] max-sm:text-[13.5px] max-sm:leading-[1.6]">
+        “{t.quote}”
+      </blockquote>
       <figcaption className="flex items-center gap-3 border-t border-line pt-4">
         {t.photo_public_id ? (
           <Image
