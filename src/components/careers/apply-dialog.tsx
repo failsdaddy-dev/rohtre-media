@@ -13,14 +13,14 @@ import {
 } from "@/lib/career-application";
 import { ArrowRightIcon, ServiceIcon } from "../icons";
 
-// The careers application form, in a modal dialog with a liquid-glass look
-// (design.css, .rm-apply*): frosted panel, softly drifting colour bubbles
-// behind it, a springy "bubble" opening (a bottom sheet that slides up on
-// phones) and a matching close. Any link to "#apply" on the page opens it
-// (hero button, block links, the closing card). The native <dialog>
-// (showModal) keeps keyboard focus inside and returns it to the opener;
-// Escape and a click outside close it. Checks run here for instant errors
-// and again on the server. No tracking event is fired.
+// The careers application form, in a modal dialog: a clean white panel
+// with red accents and slightly rounded corners (design.css, .rm-apply*),
+// a short pop-in (a bottom sheet that slides up on phones) and a matching
+// close. It scrolls inside itself with the scrollbar hidden. Any link to
+// "#apply" on the page opens it (hero button, block links, the closing
+// card). The native <dialog> (showModal) keeps keyboard focus inside and
+// returns it to the opener; Escape and a click outside close it. Checks run
+// here for instant errors and again on the server. No tracking event is fired.
 
 const LABEL = "flex flex-col gap-2 text-[13px] font-semibold tracking-[0.01em] text-[#2a2f3a]";
 const INPUT = "h-[52px] w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-[#8a93a3]";
@@ -78,9 +78,10 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
       const a = (e.target as Element | null)?.closest?.('a[href="#apply"]');
       if (!a) return;
       e.preventDefault();
+      e.stopPropagation(); // the smooth-scroll script would look for an #apply target
       open();
     };
-    document.addEventListener("click", onClick);
+    document.addEventListener("click", onClick, true);
     if (location.hash === "#apply") open();
     const d = dialog.current;
     const onClose = () => opener.current?.focus?.();
@@ -92,7 +93,7 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
     d?.addEventListener("close", onClose);
     d?.addEventListener("cancel", onCancel);
     return () => {
-      document.removeEventListener("click", onClick);
+      document.removeEventListener("click", onClick, true);
       d?.removeEventListener("close", onClose);
       d?.removeEventListener("cancel", onCancel);
     };
@@ -162,14 +163,10 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
       aria-labelledby="apply-title"
       onClick={(e) => e.target === dialog.current && close()}
       className="rm-apply"
+      // The smooth-scroll script must let the form scroll on its own.
+      data-lenis-prevent=""
     >
-      {/* Liquid colour bubbles behind the glass (decorative). */}
-      <span aria-hidden="true" className="rm-apply-blobs">
-        <span />
-        <span />
-        <span />
-      </span>
-      <div className="rm-apply-body relative z-[1] p-6 sm:p-9">
+      <div className="relative p-6 sm:p-9">
         <span aria-hidden="true" className="rm-apply-grabber" />
         <button type="button" onClick={close} aria-label="Close" className="rm-apply-close">
           <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
