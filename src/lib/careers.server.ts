@@ -53,7 +53,12 @@ async function hrEmails(): Promise<string[]> {
     if (list.length) return list;
   }
   const fallback = process.env.CAREERS_NOTIFY_FALLBACK || process.env.SMTP_USER;
-  return fallback ? fallback.split(",").map((e) => e.trim()).filter(Boolean) : [];
+  return fallback
+    ? fallback
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean)
+    : [];
 }
 
 export const mailConfigured = () => Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
@@ -70,30 +75,54 @@ export async function emailHr(a: Application, resume: Resume | null): Promise<vo
     secure: port === 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
+  const when = new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(new Date());
+  const rule = "────────────────────────────";
   const lines = [
-    `New ${a.category} application from the Careers page.`,
+    "Hello HR team,",
     "",
-    `Name: ${a.fullName}`,
-    `Email: ${a.email}`,
-    `Phone/WhatsApp: ${fullPhone(a)}`,
-    `Role: ${roleOf(a)}`,
-    `Experience: ${a.experience}`,
-    `Portfolio/LinkedIn: ${a.portfolio || "-"}`,
+    `A new ${a.category.toLowerCase()} application has arrived from the RohTre Media Careers page. 🎉`,
     "",
-    "Message:",
-    a.message || "-",
+    "👤 CANDIDATE",
+    rule,
+    `Name:        ${a.fullName}`,
+    `📧 Email:     ${a.email}`,
+    `📱 Phone:     ${fullPhone(a)} (WhatsApp)`,
+    `🔗 Portfolio: ${a.portfolio || "Not provided"}`,
     "",
-    resume ? `Resume attached: ${resume.name}` : "No resume attached.",
+    "💼 POSITION",
+    rule,
+    `Role:        ${roleOf(a)}`,
+    `Type:        ${a.category}`,
+    `Experience:  ${a.experience}`,
     "",
-    "All applications: Admin → Applications.",
+    "💬 MESSAGE",
+    rule,
+    a.message || "No message provided.",
+    "",
+    "📎 RESUME",
+    rule,
+    resume ? `Attached: ${resume.name}` : "No resume was attached.",
+    "",
+    rule,
+    `🕒 Received: ${when} (IST)`,
+    "↩️ Reply to this email to contact the candidate directly.",
+    "🗂️ All applications: Admin → Applications",
+    "",
+    "RohTre Media Careers",
   ];
   await transport.sendMail({
     from: `"RohTre Media Careers" <${process.env.SMTP_USER}>`,
     to,
     replyTo: a.email,
-    subject: `Job application: ${roleOf(a)} (${a.category}) – ${a.fullName}`,
+    subject: `📩 New application: ${roleOf(a)} (${a.category}) – ${a.fullName}`,
     text: lines.join("\n"),
-    attachments: resume ? [{ filename: resume.name, content: Buffer.from(resume.bytes), contentType: resume.type }] : [],
+    attachments: resume
+      ? [{ filename: resume.name, content: Buffer.from(resume.bytes), contentType: resume.type }]
+      : [],
   });
 }
 
