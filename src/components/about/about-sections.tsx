@@ -94,7 +94,11 @@ export function AboutHero({ s }: { s: AboutContent["hero"] }) {
               {s.intro}
             </p>
           )}
-          <div className="rm-hero-in mt-9 flex flex-wrap gap-3" style={{ "--i": 3 } as CSSProperties}>
+          {/* Phones: the two buttons stack at the same full width and a smaller height; the second one gets a visible outline. */}
+          <div
+            className="rm-hero-in mt-9 flex flex-wrap gap-3 max-sm:mt-7 max-sm:w-full max-sm:flex-col max-sm:[&>a]:h-12 max-sm:[&>a]:justify-center max-sm:[&>a]:px-6 max-sm:[&>a]:text-base max-sm:[&>a:nth-child(2)]:border max-sm:[&>a:nth-child(2)]:border-white/45 max-sm:[&>a:nth-child(2)]:bg-white/15"
+            style={{ "--i": 3 } as CSSProperties}
+          >
             <Cta href={s.primaryHref} label={s.primaryLabel} />
             {s.secondaryLabel && <Cta href={s.secondaryHref} label={s.secondaryLabel} variant="plain" />}
           </div>
