@@ -39,7 +39,15 @@ function Field({ icon, children, className = "" }: { icon?: string; children: Re
   );
 }
 
-export function ApplyDialog({ roles, experience, success }: { roles: string[]; experience: string[]; success: string }) {
+export function ApplyDialog({
+  roles,
+  experience,
+  success,
+}: {
+  roles: string[];
+  experience: string[];
+  success: string;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
   const [errors, setErrors] = useState<Errors>({});
@@ -146,7 +154,8 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
       else if (body.error === "invalid") {
         setErrors(body.fields ?? {});
         setError("Please check the highlighted fields.");
-      } else if (body.error === "too_many") setError("Too many applications from this connection. Please try again in a few minutes.");
+      } else if (body.error === "too_many")
+        setError("Too many applications from this connection. Please try again in a few minutes.");
       else setError("Something went wrong and your application was not sent. Please try again, or use Chat with HR.");
     } catch {
       setError("You seem to be offline. Please check your connection and try again.");
@@ -164,18 +173,37 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
       // The smooth-scroll script must let the form scroll on its own.
       data-lenis-prevent=""
     >
-      <div className="relative p-6 sm:p-9">
+      <div className="relative p-5 pt-6 sm:p-9">
         <span aria-hidden="true" className="rm-apply-grabber" />
-        <button type="button" onClick={close} aria-label="Close" className="rm-apply-close">
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </svg>
-        </button>
+        {/* Zero-height sticky bar: the close button stays in view while the form scrolls. */}
+        <div className="sticky top-0 z-20 h-0">
+          <button type="button" onClick={close} aria-label="Close" className="rm-apply-close">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="size-[18px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
 
         {done ? (
           <div role="status" className="flex flex-col items-center gap-4 px-2 py-10 text-center">
             <span className="rm-apply-check" aria-hidden="true">
-              <svg viewBox="0 0 24 24" className="size-9" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                className="size-9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="m5 12.5 4.5 4.5L19 7.5" />
               </svg>
             </span>
@@ -194,7 +222,10 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 <ServiceIcon name="briefcase" size={22} />
               </span>
               <div className="min-w-0">
-                <h2 id="apply-title" className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.85rem]">
+                <h2
+                  id="apply-title"
+                  className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.85rem]"
+                >
                   Apply to RohTre Media
                 </h2>
                 <p className="mt-1 text-sm text-[#5b6472]">Tell us about you. It takes about 2 minutes.</p>
@@ -207,7 +238,13 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 <span aria-hidden="true" className="rm-seg-thumb" />
                 {CAREER_CATEGORIES.map((c, i) => (
                   <label key={c} className="relative z-[1] cursor-pointer">
-                    <input type="radio" name="category" value={c} className="peer sr-only" {...(i === 0 ? aria("category") : {})} />
+                    <input
+                      type="radio"
+                      name="category"
+                      value={c}
+                      className="peer sr-only"
+                      {...(i === 0 ? aria("category") : {})}
+                    />
                     <span className="rm-seg-label">{c}</span>
                   </label>
                 ))}
@@ -219,14 +256,29 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
               <label className={LABEL}>
                 Full name
                 <Field icon="users">
-                  <input name="fullName" autoComplete="name" placeholder="Your full name" required className={INPUT} {...aria("fullName")} />
+                  <input
+                    name="fullName"
+                    autoComplete="name"
+                    placeholder="Your full name"
+                    required
+                    className={INPUT}
+                    {...aria("fullName")}
+                  />
                 </Field>
                 {err("fullName")}
               </label>
               <label className={LABEL}>
                 Email
                 <Field icon="globe">
-                  <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required className={INPUT} {...aria("email")} />
+                  <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    required
+                    className={INPUT}
+                    {...aria("email")}
+                  />
                 </Field>
                 {err("email")}
               </label>
@@ -235,6 +287,7 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 <div className="flex gap-2.5">
                   <span className="rm-apply-select w-[7.6rem] shrink-0">
                     <Select
+                      inline
                       name="dialCode"
                       value={dialCode}
                       onChange={setDialCode}
@@ -262,6 +315,7 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 Role you’re applying for
                 <span className="rm-apply-select">
                   <Select
+                    inline
                     name="role"
                     value={role}
                     onChange={setRole}
@@ -278,6 +332,7 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 Experience in this role
                 <span className="rm-apply-select">
                   <Select
+                    inline
                     name="experience"
                     value={exp}
                     onChange={setExp}
@@ -294,7 +349,13 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                 <label className={`${LABEL} sm:col-span-2`}>
                   Which role?
                   <Field>
-                    <input name="otherRole" maxLength={60} placeholder="e.g. Copywriter" className={INPUT} {...aria("otherRole")} />
+                    <input
+                      name="otherRole"
+                      maxLength={60}
+                      placeholder="e.g. Copywriter"
+                      className={INPUT}
+                      {...aria("otherRole")}
+                    />
                   </Field>
                   {err("otherRole")}
                 </label>
@@ -304,7 +365,14 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                   Portfolio or LinkedIn <span className="font-normal text-[#8a93a3]">(optional)</span>
                 </span>
                 <Field icon="network">
-                  <input name="portfolio" type="url" inputMode="url" placeholder="https://" className={INPUT} {...aria("portfolio")} />
+                  <input
+                    name="portfolio"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://"
+                    className={INPUT}
+                    {...aria("portfolio")}
+                  />
                 </Field>
                 {err("portfolio")}
               </label>
@@ -336,8 +404,20 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
                     {...aria("resume")}
                   />
                   <span aria-hidden="true" className="rm-apply-drop-icon">
-                    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      {fileName ? <path d="m5 12.5 4.5 4.5L19 7.5" /> : <path d="M12 16V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />}
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {fileName ? (
+                        <path d="m5 12.5 4.5 4.5L19 7.5" />
+                      ) : (
+                        <path d="M12 16V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" />
+                      )}
                     </svg>
                   </span>
                   <span className="min-w-0">
@@ -362,7 +442,13 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
             </div>
 
             <label className="rm-apply-consent">
-              <input name="consent" type="checkbox" required className="mt-0.5 size-5 shrink-0 accent-[var(--brand)]" {...aria("consent")} />
+              <input
+                name="consent"
+                type="checkbox"
+                required
+                className="mt-0.5 size-5 shrink-0 accent-[var(--brand)]"
+                {...aria("consent")}
+              />
               <span>
                 {CONSENT_TEXT}{" "}
                 <Link href="/privacy" className="font-semibold text-[#1f2430] underline underline-offset-2">
@@ -373,22 +459,28 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
             {err("consent")}
 
             {error && (
-              <p role="alert" className="rounded-2xl bg-[color-mix(in_srgb,var(--danger)_12%,white)] px-4 py-3 text-sm font-medium text-[#8a1018]">
+              <p
+                role="alert"
+                className="rounded-2xl bg-[color-mix(in_srgb,var(--danger)_12%,white)] px-4 py-3 text-sm font-medium text-[#8a1018]"
+              >
                 {error}
               </p>
             )}
 
-            <button type="submit" disabled={sending} className="rm-apply-submit">
-              {sending ? (
-                <>
-                  <span aria-hidden="true" className="rm-apply-spinner" /> Sending…
-                </>
-              ) : (
-                <>
-                  Submit application <ArrowRightIcon size={20} />
-                </>
-              )}
-            </button>
+            {/* Phones: the button stays at the bottom of the sheet while scrolling. */}
+            <div className="rm-apply-submit-bar">
+              <button type="submit" disabled={sending} className="rm-apply-submit w-full">
+                {sending ? (
+                  <>
+                    <span aria-hidden="true" className="rm-apply-spinner" /> Sending…
+                  </>
+                ) : (
+                  <>
+                    Submit application <ArrowRightIcon size={20} />
+                  </>
+                )}
+              </button>
+            </div>
           </form>
         )}
       </div>

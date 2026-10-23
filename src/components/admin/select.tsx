@@ -30,13 +30,13 @@ import { createPortal } from "react-dom";
 //   open:   Up/Down, Home/End, PageUp/PageDown (10), type-ahead (a string
 //           typed quickly; a repeated character cycles), Enter / Space /
 //           Alt+Up choose and close, Tab chooses and moves on, Escape closes
-// The popup is portalled to <body> (or to the open <dialog> it sits in, so
-// it shows above the modal), never clipped by a parent, fixed under
+// The popup is portalled to <body> (never clipped by a parent), fixed under
 // the trigger or flipped above it when there is no room, at least as wide
 // as the trigger, at most min(320px, 50svh) tall, above the sticky header
 // and save bar; it follows scrolling and resizing and closes on an outside
 // click. Coarse pointers (phones, tablets) get a native <select> with the
-// same look, so they keep the system picker.
+// same look, so they keep the system picker. `inline` instead opens the list
+// right under the box in the page flow, on every device (used in modals).
 
 export type SelectOption = {
   value: string;
@@ -68,6 +68,12 @@ export type SelectProps = {
   className?: string;
   /** Shown when the value matches no option. */
   placeholder?: string;
+  /**
+   * The list opens right under the box, inside the page flow (not portalled,
+   * not fixed), and touch screens get the same list instead of the system
+   * picker. For dropdowns inside a modal or a scrolling panel (the careers form).
+   */
+  inline?: boolean;
 };
 
 const POPUP_MAX_PX = 320;
@@ -201,6 +207,7 @@ export function Select({
   size = "md",
   className = "",
   placeholder = "Choose…",
+  inline = false,
 }: SelectProps) {
   const coarse = useCoarsePointer();
   const auto = useId();
@@ -218,7 +225,7 @@ export function Select({
   const current = options[index];
 
   const show = (at: number) => {
-    setHost(button.current?.closest("dialog") ?? document.body);
+    if (!inline) setHost(document.body);
     setActive(at);
     setOpen(true);
   };
@@ -234,7 +241,7 @@ export function Select({
 
   // Position: on open, then on every scroll (any scroller) and resize.
   useLayoutEffect(() => {
-    if (!open) return;
+    if (!open || inline) return;
     const update = () => {
       const r = button.current?.getBoundingClientRect();
       if (!r) return;
@@ -248,7 +255,7 @@ export function Select({
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     };
-  }, [open]);
+  }, [open, inline]);
 
   // Close on a click anywhere else.
   useEffect(() => {
@@ -330,7 +337,7 @@ export function Select({
     </>
   );
 
-  if (coarse) {
+  if (coarse && !inline) {
     // Touch: the system picker, in the same styled box.
     return (
       <span className={`relative flex ${size === "md" ? "w-full" : "w-auto"} ${className}`}>
@@ -423,6 +430,51 @@ export function Select({
     );
   });
 
+  if (inline) {
+    return (
+      <span className={`relative block ${size === "md" ? "w-full" : "w-auto"}`}>
+        <button
+          ref={button}
+          type="button"
+          id={id}
+          role="combobox"
+          aria-controls={listId}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-activedescendant={open && active >= 0 ? optId(active) : undefined}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledby}
+          aria-required={required || undefined}
+          aria-invalid={invalid || undefined}
+          disabled={disabled}
+          onClick={() => (open ? close() : show(index >= 0 ? index : (moveActive(options, -1, "Home") ?? -1)))}
+          onKeyDown={onKeyDown}
+          onBlur={(e) => {
+            if (!popup.current?.contains(e.relatedTarget as Node)) close();
+          }}
+          className={`${trigger(size)} ${className}`}
+        >
+          {label(current)}
+          <Chevron open={open} />
+        </button>
+        {name && <input type="hidden" name={name} value={value} />}
+        {open && (
+          <div
+            ref={popup}
+            id={listId}
+            role="listbox"
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabel ? undefined : (ariaLabelledby ?? id)}
+            onPointerDown={(e) => e.preventDefault()}
+            className="rm-select-pop absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
+          >
+            {rows}
+          </div>
+        )}
+      </span>
+    );
+  }
+
   return (
     <>
       <button
@@ -476,7 +528,6 @@ export function Select({
           >
             {rows}
           </div>,
-          // Inside a modal <dialog> (top layer) the popup must live in the dialog, or it would sit behind it.
           host,
         )}
     </>
