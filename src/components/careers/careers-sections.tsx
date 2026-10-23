@@ -101,7 +101,11 @@ export function CareersHero({ s, hrHref }: { s: CareersContent["hero"]; hrHref: 
               {s.intro}
             </p>
           )}
-          <div className="rm-hero-in mt-9 flex flex-wrap gap-3" style={{ "--i": 3 } as CSSProperties}>
+          {/* Phones: the two buttons stack at the same full width and a smaller height. */}
+          <div
+            className="rm-hero-in mt-9 flex flex-wrap gap-3 max-sm:mt-7 max-sm:w-full max-sm:flex-col max-sm:[&>a]:h-12 max-sm:[&>a]:justify-center max-sm:[&>a]:px-6 max-sm:[&>a]:text-base"
+            style={{ "--i": 3 } as CSSProperties}
+          >
             <ButtonLink href={s.primaryHref} size="lg">
               {s.primaryLabel} <ArrowRightIcon size={20} />
             </ButtonLink>
@@ -110,7 +114,7 @@ export function CareersHero({ s, hrHref }: { s: CareersContent["hero"]; hrHref: 
                 href={hrHref}
                 target="_blank"
                 rel="noopener"
-                className="rm-press inline-flex h-14 items-center gap-2.5 rounded-full border border-white/25 bg-white/10 px-8 text-lg font-semibold text-white transition-colors hover:bg-white/15"
+                className="rm-press inline-flex h-14 items-center gap-2.5 rounded-full border border-white/25 bg-white/10 px-8 text-lg font-semibold text-white transition-colors hover:bg-white/15 max-sm:border-white/45 max-sm:bg-white/15"
               >
                 <ChatIcon size={20} /> {s.hrLabel}
               </a>
