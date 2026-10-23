@@ -21,7 +21,7 @@ type Card = CareersContent["values"]["items"][number];
 function IconCard({ card, i, small }: { card: Card; i: number; small?: boolean }) {
   return (
     <li
-      className={`rm-svc flex flex-col items-start gap-4 ${small ? "max-sm:gap-2 max-sm:p-3.5! lg:p-8!" : "max-sm:gap-3 max-sm:p-6!"}`}
+      className={`rm-svc flex flex-col items-start gap-4 ${small ? "max-sm:gap-2 max-sm:p-3.5! max-sm:odd:last:col-span-2 lg:p-8!" : "max-sm:gap-3 max-sm:p-6!"}`}
       {...reveal(i % 3)}
       style={{ ...reveal(i % 3).style, "--c": CARD_COLORS[card.color] } as CSSProperties}
     >
