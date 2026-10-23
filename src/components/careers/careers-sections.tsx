@@ -257,14 +257,14 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
               </div>
               <div className="flex flex-col gap-2 px-1 pb-2 max-sm:gap-1.5 max-sm:px-0.5 max-sm:pb-1">
                 {m.headline && (
-                  <p className="text-[15px] font-bold leading-snug text-[#12305A] max-sm:text-[12.5px]">{m.headline}</p>
+                  <p className="text-[15px] font-bold leading-snug text-[#12305A] max-sm:line-clamp-2 max-sm:text-[12px]">{m.headline}</p>
                 )}
-                <p className="text-lg font-bold leading-tight max-sm:text-[15px]">{m.name}</p>
+                <p className="text-lg font-bold leading-tight max-sm:text-[14px]">{m.name}</p>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand max-sm:text-[10px] max-sm:tracking-[0.1em]">
                   {m.role}
                 </p>
                 {m.story && (
-                  <p className="mt-1 text-[15px] leading-relaxed text-fg-2 max-sm:text-[12.5px] max-sm:leading-snug">
+                  <p className="mt-1 text-[15px] leading-relaxed text-fg-2 max-sm:mt-0.5 max-sm:line-clamp-4 max-sm:text-[12px] max-sm:leading-snug">
                     {m.story}
                   </p>
                 )}
