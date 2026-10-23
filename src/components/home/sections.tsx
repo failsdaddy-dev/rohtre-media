@@ -187,22 +187,22 @@ export function Process({ s }: { s: HomeContent["process"] }) {
         </div>
         <ol className="flex flex-col">
           {s.steps.map((step, i) => (
-            <li key={step.title} className="relative flex gap-6 pb-14 last:pb-0" {...reveal(i)}>
+            <li key={step.title} className="relative flex gap-6 pb-14 last:pb-0 max-sm:gap-4 max-sm:pb-9" {...reveal(i)}>
               {i < s.steps.length - 1 && (
                 <span
                   aria-hidden="true"
-                  className="absolute bottom-0 left-7 top-16 border-l-2 border-dashed border-line"
+                  className="absolute bottom-0 left-7 top-16 border-l-2 border-dashed border-line max-sm:left-[21px] max-sm:top-12"
                 />
               )}
-              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line bg-white text-brand shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]">
-                <StepIcon index={i} size={22} />
+              <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line bg-white text-brand shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)] max-sm:size-11 max-sm:rounded-xl">
+                <StepIcon index={i} size={22} className="max-sm:size-[18px]" />
               </span>
-              <div className="flex flex-col gap-2.5 pt-1">
-                <span className="w-fit rounded-md bg-[color-mix(in_srgb,var(--brand)_12%,transparent)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-brand">
+              <div className="flex flex-col gap-2.5 pt-1 max-sm:gap-1.5 max-sm:pt-0">
+                <span className="w-fit rounded-md bg-[color-mix(in_srgb,var(--brand)_12%,transparent)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-brand max-sm:px-2 max-sm:py-0.5 max-sm:text-[10px]">
                   Step {i + 1}
                 </span>
-                <h3 className="text-2xl font-bold tracking-[-0.02em]">{step.title}</h3>
-                <p className="max-w-md leading-relaxed text-fg-2">{step.text}</p>
+                <h3 className="text-2xl font-bold tracking-[-0.02em] max-sm:text-lg">{step.title}</h3>
+                <p className="max-w-md leading-relaxed text-fg-2 max-sm:text-[14.5px]">{step.text}</p>
               </div>
             </li>
           ))}
