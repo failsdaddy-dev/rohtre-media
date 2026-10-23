@@ -235,17 +235,22 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
     <section id="spotlights" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow="Our people" title={s.title} intro={s.intro} center />
-        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+        {/* Phones: one card per row, photo on the left and the full text on the right. */}
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {s.items.map((m, i) => (
-            <li key={i} className="rm-svc group flex flex-col gap-4 p-4! max-sm:gap-2.5 max-sm:p-2.5!" {...reveal(i % 4)}>
-              <div className="overflow-hidden">
+            <li
+              key={i}
+              className="rm-svc group flex flex-col gap-4 p-4! max-sm:flex-row max-sm:items-start max-sm:gap-3.5 max-sm:p-3!"
+              {...reveal(i % 4)}
+            >
+              <div className="overflow-hidden max-sm:w-[34%] max-sm:shrink-0">
                 {m.photo ? (
                   <Image
                     src={m.photo.publicId}
                     alt={m.name}
                     width={m.photo.width}
                     height={m.photo.height}
-                    sizes="(max-width: 1024px) 46vw, 280px"
+                    sizes="(max-width: 640px) 34vw, (max-width: 1024px) 46vw, 280px"
                     loading="lazy"
                     className="aspect-square w-full object-cover object-[50%_25%] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                   />
@@ -257,14 +262,14 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
               </div>
               <div className="flex flex-col gap-2 px-1 pb-2 max-sm:gap-1.5 max-sm:px-0.5 max-sm:pb-1">
                 {m.headline && (
-                  <p className="text-[15px] font-bold leading-snug text-[#12305A] max-sm:line-clamp-2 max-sm:text-[12px]">{m.headline}</p>
+                  <p className="text-[15px] font-bold leading-snug text-[#12305A] max-sm:text-[13px]">{m.headline}</p>
                 )}
-                <p className="text-lg font-bold leading-tight max-sm:text-[14px]">{m.name}</p>
+                <p className="text-lg font-bold leading-tight max-sm:text-[15px]">{m.name}</p>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand max-sm:text-[10px] max-sm:tracking-[0.1em]">
                   {m.role}
                 </p>
                 {m.story && (
-                  <p className="mt-1 text-[15px] leading-relaxed text-fg-2 max-sm:mt-0.5 max-sm:line-clamp-4 max-sm:text-[12px] max-sm:leading-snug">
+                  <p className="mt-1 text-[15px] leading-relaxed text-fg-2 max-sm:mt-0.5 max-sm:text-[13px] max-sm:leading-snug">
                     {m.story}
                   </p>
                 )}
