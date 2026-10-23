@@ -350,21 +350,21 @@ export const isEmptySlide = (sl: Slide) => !sl.brand.trim() && !isFilled(sl.post
 function MetricCell({ m, currency }: { m: Metric & { value: number }; currency: string }) {
   const final = metricText(m);
   return (
-    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center max-md:gap-2 max-md:py-4 md:px-4 md:py-8">
-      <dt className="order-last text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-2 md:text-xs">
+    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center max-md:gap-2 max-md:py-4 max-sm:gap-1.5 max-sm:py-3 md:px-4 md:py-8">
+      <dt className="order-last text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-2 max-sm:text-[9.5px] max-sm:tracking-[0.14em] md:text-xs">
         {m.label}
       </dt>
-      <dd aria-label={final} className="flex flex-col items-center gap-3 max-md:gap-2">
-        <span aria-hidden="true" className={`${DISC} size-10 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
+      <dd aria-label={final} className="flex flex-col items-center gap-3 max-md:gap-2 max-sm:gap-1.5">
+        <span aria-hidden="true" className={`${DISC} size-10 max-sm:size-8 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
           {m.icon === "currency" ? (
-            <span className="text-lg font-bold leading-none md:text-[26px]">{currency}</span>
+            <span className="text-lg font-bold leading-none max-sm:text-base md:text-[26px]">{currency}</span>
           ) : (
-            <ServiceIcon name={m.icon} size={26} className="size-5 md:size-[26px]" />
+            <ServiceIcon name={m.icon} size={26} className="size-5 max-sm:size-4 md:size-[26px]" />
           )}
         </span>
         <span
           aria-hidden="true"
-          className="relative whitespace-nowrap text-[clamp(1.9rem,3vw,2.75rem)] font-bold leading-none tracking-[-0.03em] tabular-nums max-md:text-[1.6rem]"
+          className="relative whitespace-nowrap text-[clamp(1.9rem,3vw,2.75rem)] font-bold leading-none tracking-[-0.03em] tabular-nums max-md:text-[1.6rem] max-sm:text-[1.3rem]"
         >
           <span className="invisible">{final}</span>
           <span
