@@ -254,7 +254,31 @@ export function Values({ s }: { s: CareersContent["values"] }) {
   return (
     <section className={`rm-hero-sky overflow-hidden ${PAD}`}>
       <Container>
-        <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.subtitle} intro={s.intro} center />
+        {/* The red line is a smaller subheading on one line (balanced wrapping on phones), not a second giant line. */}
+        <div className="mx-auto mb-12 flex max-w-5xl flex-col items-center gap-5 text-center md:mb-16">
+          <p className="rm-label" {...reveal(0)}>
+            {s.eyebrow}
+          </p>
+          <h2
+            className="text-[clamp(2.1rem,5vw,3.75rem)] font-bold leading-[1.05] tracking-[-0.045em] max-md:text-[clamp(1.75rem,8vw,2.1rem)]"
+            {...reveal(1)}
+          >
+            {s.title}
+          </h2>
+          {s.subtitle && (
+            <p
+              className="rm-text-grad text-balance pb-1 text-[clamp(1.3rem,2.6vw,2rem)] font-bold leading-tight tracking-[-0.03em]"
+              {...reveal(2)}
+            >
+              {s.subtitle}
+            </p>
+          )}
+          {s.intro && (
+            <p className="max-w-3xl text-lg leading-relaxed text-fg-2" {...reveal(3)}>
+              {s.intro}
+            </p>
+          )}
+        </div>
         <ul className="grid gap-4 sm:gap-6 md:grid-cols-3">
           {s.items.map((c, i) => (
             <IconCard key={i} card={c} i={i} />
