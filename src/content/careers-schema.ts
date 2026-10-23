@@ -80,9 +80,6 @@ const spotlight = z.object({
   photo: mediaSchema.nullable(),
 });
 
-const ENGINEER_STORY = (name: string) =>
-  `${name} is an AI automation and AI full-stack developer who builds AI agents, bots, workflows and websites.`;
-
 export const careersSchema = z.object({
   seo: z
     .object({ title: line(70).min(1), description: line(170).min(1) })
@@ -229,26 +226,28 @@ export const careersSchema = z.object({
           photo: { publicId: "rohtre-media/images/team/kartikay-singh-rawal", width: 400, height: 400 },
         },
         {
+          headline: "Turning repetitive work into AI automations",
+          name: "Mrunal Patel",
+          role: "Back-End Engineer",
+          story:
+            "Mrunal is an AI automation and AI full-stack developer who designs AI agents and automated workflows that connect our tools and take repetitive tasks off the team's plate.",
+          photo: { publicId: "rohtre-media/images/team/mrunal", width: 400, height: 400 },
+        },
+        {
+          headline: "Building AI chatbots and full-stack websites",
+          name: "Harshil Makwana",
+          role: "Back-End Engineer",
+          story:
+            "Harshil is an AI full-stack developer who builds AI chatbots, the back-end systems behind them, and fast, modern websites for our clients and our own team.",
+          photo: { publicId: "rohtre-media/images/team/harshil", width: 800, height: 800 },
+        },
+        {
           headline: "Graphics Design Intern to Leading the Creative Output",
           name: "Nitish",
           role: "Graphic Design",
           story:
             "Started as a Graphics Designer intern. Nitish began as a junior video editor intern and is now one of our top designers, steering the creative engine.",
           photo: { publicId: "rohtre-media/images/team/nitish", width: 400, height: 400 },
-        },
-        {
-          headline: "Building AI agents, bots and workflows",
-          name: "Mrunal Patel",
-          role: "Back-End Engineer",
-          story: ENGINEER_STORY("Mrunal"),
-          photo: { publicId: "rohtre-media/images/team/mrunal", width: 400, height: 400 },
-        },
-        {
-          headline: "Building AI agents, bots and websites",
-          name: "Harshil Makwana",
-          role: "Back-End Engineer",
-          story: ENGINEER_STORY("Harshil"),
-          photo: { publicId: "rohtre-media/images/team/harshil", width: 800, height: 800 },
         },
       ],
     }),
