@@ -437,16 +437,16 @@ export function Faq({ s }: { s: HomeContent["faq"] }) {
           {items.map((f, i) => (
             <li key={f.q} {...reveal(i % 2)}>
               <details className="rm-faq rm-svc p-0!">
-                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-20 max-sm:text-base">
+                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-auto max-sm:min-h-14 max-sm:gap-3 max-sm:px-4 max-sm:py-3 max-sm:text-[14.5px]">
                   <span className="line-clamp-2">{f.q}</span>
                   <span
                     aria-hidden="true"
-                    className="rm-faq-plus grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand"
+                    className="rm-faq-plus grid size-8 shrink-0 max-sm:size-7 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand"
                   >
                     +
                   </span>
                 </summary>
-                <p className="px-5 pb-6 leading-relaxed text-fg-2 sm:px-7">{f.a}</p>
+                <p className="px-5 pb-6 leading-relaxed text-fg-2 sm:px-7 max-sm:px-4 max-sm:pb-4 max-sm:text-[14px]">{f.a}</p>
               </details>
             </li>
           ))}

@@ -21,15 +21,23 @@ type Card = CareersContent["values"]["items"][number];
 function IconCard({ card, i, small }: { card: Card; i: number; small?: boolean }) {
   return (
     <li
-      className={`rm-svc flex flex-col items-start gap-4 max-sm:gap-3 max-sm:p-6! ${small ? "lg:p-8!" : ""}`}
+      className={`rm-svc flex flex-col items-start gap-4 ${small ? "max-sm:gap-2 max-sm:p-3.5! lg:p-8!" : "max-sm:gap-3 max-sm:p-6!"}`}
       {...reveal(i % 3)}
       style={{ ...reveal(i % 3).style, "--c": CARD_COLORS[card.color] } as CSSProperties}
     >
       <span className="rm-about-icon">
         <ServiceIcon name={card.icon} size={26} />
       </span>
-      <h3 className={`${small ? "text-xl" : "text-2xl"} font-bold tracking-[-0.03em] max-sm:text-lg`}>{card.title}</h3>
-      <p className="leading-relaxed text-[#5B6472] max-sm:text-[15px]">{card.text}</p>
+      <h3
+        className={`${small ? "text-xl max-sm:text-[15px] max-sm:leading-snug" : "text-2xl max-sm:text-lg"} font-bold tracking-[-0.03em]`}
+      >
+        {card.title}
+      </h3>
+      <p
+        className={`leading-relaxed text-[#5B6472] ${small ? "max-sm:text-[13px] max-sm:leading-snug" : "max-sm:text-[15px]"}`}
+      >
+        {card.text}
+      </p>
     </li>
   );
 }
@@ -223,9 +231,9 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
     <section id="spotlights" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow="Our people" title={s.title} intro={s.intro} center />
-        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {s.items.map((m, i) => (
-            <li key={i} className="rm-svc group flex flex-col gap-4 p-4!" {...reveal(i % 4)}>
+            <li key={i} className="rm-svc group flex flex-col gap-4 p-4! max-sm:gap-2.5 max-sm:p-2.5!" {...reveal(i % 4)}>
               <div className="overflow-hidden">
                 {m.photo ? (
                   <Image
@@ -233,7 +241,7 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
                     alt={m.name}
                     width={m.photo.width}
                     height={m.photo.height}
-                    sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 280px"
+                    sizes="(max-width: 1024px) 46vw, 280px"
                     loading="lazy"
                     className="aspect-square w-full object-cover object-[50%_25%] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                   />
@@ -243,11 +251,19 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col gap-2 px-1 pb-2">
-                {m.headline && <p className="text-[15px] font-bold leading-snug text-[#12305A]">{m.headline}</p>}
-                <p className="text-lg font-bold leading-tight">{m.name}</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">{m.role}</p>
-                {m.story && <p className="mt-1 text-[15px] leading-relaxed text-fg-2">{m.story}</p>}
+              <div className="flex flex-col gap-2 px-1 pb-2 max-sm:gap-1.5 max-sm:px-0.5 max-sm:pb-1">
+                {m.headline && (
+                  <p className="text-[15px] font-bold leading-snug text-[#12305A] max-sm:text-[12.5px]">{m.headline}</p>
+                )}
+                <p className="text-lg font-bold leading-tight max-sm:text-[15px]">{m.name}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand max-sm:text-[10px] max-sm:tracking-[0.1em]">
+                  {m.role}
+                </p>
+                {m.story && (
+                  <p className="mt-1 text-[15px] leading-relaxed text-fg-2 max-sm:text-[12.5px] max-sm:leading-snug">
+                    {m.story}
+                  </p>
+                )}
               </div>
             </li>
           ))}
@@ -303,7 +319,7 @@ export function Perks({ s }: { s: CareersContent["perks"] }) {
     <section id="all-benefits" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
-        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
           {s.items.map((c, i) => (
             <IconCard key={i} card={c} i={i} small />
           ))}
@@ -325,16 +341,16 @@ export function CareersFaq({ s }: { s: CareersContent["faq"] }) {
           {s.items.map((f, i) => (
             <li key={i} {...reveal(i % 2)}>
               <details className="rm-svc group p-0!">
-                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-20 max-sm:text-base [&::-webkit-details-marker]:hidden">
+                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 px-5 text-left text-[17px] font-semibold sm:px-7 max-sm:h-auto max-sm:min-h-14 max-sm:gap-3 max-sm:px-4 max-sm:py-3 max-sm:text-[14.5px] [&::-webkit-details-marker]:hidden">
                   <span className="line-clamp-2">{f.q}</span>
                   <span
                     aria-hidden="true"
-                    className="grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand transition-transform group-open:rotate-45"
+                    className="grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand transition-transform group-open:rotate-45 max-sm:size-7"
                   >
                     +
                   </span>
                 </summary>
-                <p className="whitespace-pre-line px-5 pb-6 leading-relaxed text-fg-2 sm:px-7">{f.a}</p>
+                <p className="whitespace-pre-line px-5 pb-6 leading-relaxed text-fg-2 sm:px-7 max-sm:px-4 max-sm:pb-4 max-sm:text-[14px]">{f.a}</p>
               </details>
             </li>
           ))}
