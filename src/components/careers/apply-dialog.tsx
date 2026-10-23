@@ -217,18 +217,18 @@ export function ApplyDialog({
           </div>
         ) : (
           <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-            <header className="flex items-center gap-4 pr-12">
-              <span aria-hidden="true" className="rm-apply-badge">
-                <ServiceIcon name="briefcase" size={22} />
+            <header className="flex items-center gap-4 pr-12 max-sm:gap-3">
+              <span aria-hidden="true" className="rm-apply-badge max-sm:size-10! max-sm:rounded-[10px]!">
+                <ServiceIcon name="briefcase" size={22} className="max-sm:size-[18px]" />
               </span>
               <div className="min-w-0">
                 <h2
                   id="apply-title"
-                  className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.85rem]"
+                  className="whitespace-nowrap text-[1.6rem] font-bold leading-tight tracking-[-0.03em] max-sm:text-[1.2rem] sm:text-[1.85rem]"
                 >
                   Apply to RohTre Media
                 </h2>
-                <p className="mt-1 text-sm text-[#5b6472]">Tell us about you. It takes about 2 minutes.</p>
+                <p className="mt-1 text-sm text-[#5b6472] max-sm:mt-0.5 max-sm:text-[12.5px]">Tell us about you. It takes about 2 minutes.</p>
               </div>
             </header>
 
