@@ -276,13 +276,18 @@ export const careersSchema = z.object({
   perks: z
     .object({
       enabled: z.boolean(),
+      /** Added 2026-10-23 (defaults keep older saved copies valid). */
+      eyebrow: line(40).default("LIFE AT ROHTRE MEDIA"),
       title: line(80).min(1),
+      accent: line(80).default(""),
       intro: line(800),
       items: z.array(card).max(12),
     })
     .default({
       enabled: true,
-      title: "Benefits",
+      eyebrow: "LIFE AT ROHTRE MEDIA",
+      title: "Benefits that put",
+      accent: "our people first.",
       intro:
         "Every organization is unique. Instead of assuming which benefits matter most to our team, we ask directly through employee surveys. That way, this list can evolve to ensure RohtreMedia remains one of the best places to work. Please note, benefits may also vary by country.",
       items: [

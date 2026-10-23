@@ -100,7 +100,11 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     subtitle: { label: "Second line (shown in red)" },
     items: { label: "Value cards", noun: ["card", "cards"] },
   },
-  perks: { title: { label: "Heading" }, items: { label: "Benefit cards", noun: ["card", "cards"] } },
+  perks: {
+    title: { label: "Heading" },
+    accent: { label: "Heading, second line (shown in red, optional)" },
+    items: { label: "Benefit cards", noun: ["card", "cards"] },
+  },
   faq: {
     title: { label: "Heading" },
     items: { label: "Questions", noun: ["question", "questions"] },

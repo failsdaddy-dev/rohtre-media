@@ -294,7 +294,7 @@ export function Perks({ s }: { s: CareersContent["perks"] }) {
   return (
     <section id="all-benefits" className={`bg-white ${PAD}`}>
       <Container>
-        <SectionHead eyebrow="Benefits" title={s.title} intro={s.intro} center />
+        <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} center />
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {s.items.map((c, i) => (
             <IconCard key={i} card={c} i={i} small />
