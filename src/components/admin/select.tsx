@@ -264,8 +264,14 @@ export function Select({
   // Keep the active option in view.
   useEffect(() => {
     if (!open || active < 0) return;
-    const el = popup.current?.querySelector<HTMLElement>(`[data-index="${active}"]`);
-    el?.scrollIntoView?.({ block: "nearest" });
+    const list = popup.current;
+    const el = list?.querySelector<HTMLElement>(`[data-index="${active}"]`);
+    if (!list || !el) return;
+    // Scroll only the list itself: scrollIntoView would also scroll every
+    // scrolling ancestor (e.g. the dialog the popup sits in), shifting the page.
+    if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop;
+    else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight)
+      list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight;
   }, [open, active, place]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
