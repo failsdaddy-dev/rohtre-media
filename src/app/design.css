@@ -35,9 +35,11 @@ html.lenis body {
 
 /* ---------------------------------------------------------------- header */
 /* Glass panel (the open mobile menu): same glass as the scrolled header. */
+/* Used by the mobile menu panel only: nearly solid white, so the links stay
+   readable over dark sections (the blur alone let them show through). */
 .rm-glass {
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.97);
   box-shadow: 0 8px 32px rgba(30, 70, 130, 0.12);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   backdrop-filter: blur(16px) saturate(180%);
