@@ -6,9 +6,9 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { LogoutIcon } from "../icons";
 import { ADMIN_TABS, type AdminTab } from "./ui";
 
-// The admin's top navigation. From 1100 px: the primary items in a row, a
+// The admin's top navigation. From 1360 px: the primary items in a row, a
 // "More" menu (Redirects & ads, Settings, Users, Audit log) and the account
-// menu (Password, View website, Sign out). Below 1100 px everything sits in
+// menu (Password, View website, Sign out). Below 1360 px everything sits in
 // one "Menu" button, so nothing is ever clipped. Routes and role rules are
 // the same as before (ADMIN_TABS). Menus close with Escape, an outside
 // click, or a navigation.
