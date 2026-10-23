@@ -430,20 +430,21 @@ export function Faq({ s }: { s: HomeContent["faq"] }) {
     <section id="faq" className={PAD}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
-        <ul className="grid gap-5 md:grid-cols-2 md:items-start">
+        {/* Full-width strips in the Careers FAQ style: square white cards with the red hover glow (.rm-svc). */}
+        <ul className="mx-auto flex max-w-[900px] flex-col gap-3">
           {items.map((f, i) => (
-            <li key={f.q} {...reveal(i % 2)}>
-              <details className="rm-faq rounded-[1.75rem] border border-line bg-white px-6 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.3)] md:px-7">
-                <summary className="flex h-24 cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-bold">
-                  <span className="line-clamp-2">{f.q}</span>
+            <li key={f.q} {...reveal(i % 4)}>
+              <details className="rm-faq rm-svc p-0!">
+                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-[17px] font-semibold sm:px-7">
+                  {f.q}
                   <span
                     aria-hidden="true"
-                    className="rm-faq-plus grid size-8 shrink-0 place-items-center rounded-full bg-chip text-lg"
+                    className="rm-faq-plus grid size-8 shrink-0 place-items-center bg-[color-mix(in_srgb,var(--brand)_10%,#fff)] text-xl leading-none text-brand"
                   >
                     +
                   </span>
                 </summary>
-                <p className="pb-6 leading-relaxed text-fg-2">{f.a}</p>
+                <p className="px-5 pb-6 leading-relaxed text-fg-2 sm:px-7">{f.a}</p>
               </details>
             </li>
           ))}
