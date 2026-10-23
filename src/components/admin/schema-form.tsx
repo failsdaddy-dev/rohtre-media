@@ -527,7 +527,31 @@ function ListField({
       {list.length === 0 && <p className="text-sm text-fg-2">Nothing here yet.</p>}
       {simple ? (
         <ul className="flex flex-col gap-2">
-          {list.map((x, i) => (
+          {list.map((x, i) =>
+            nonNull(schema.items!).schema.type === "string" && !nonNull(schema.items!).schema.enum ? (
+              // A plain text item: one row with its number, the text box and the buttons (no label line).
+              <li key={i} className="flex flex-col gap-1">
+                <div className="flex items-center gap-2.5 rounded-2xl border border-line bg-bg py-1.5 pl-2 pr-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="grid size-8 shrink-0 place-items-center rounded-full bg-chip text-xs font-bold text-fg-2"
+                  >
+                    {i + 1}
+                  </span>
+                  <input
+                    className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
+                    aria-label={`${one.charAt(0).toUpperCase()}${one.slice(1)} ${i + 1}`}
+                    maxLength={nonNull(schema.items!).schema.maxLength}
+                    value={(x as string) ?? ""}
+                    onChange={(e) => set(list.map((y, j) => (j === i ? e.target.value : y)))}
+                  />
+                  {controls(i, x)}
+                </div>
+                {errors[`${path}.${i}`] && (
+                  <span className="pl-12 text-xs font-medium text-danger">{errors[`${path}.${i}`]}</span>
+                )}
+              </li>
+            ) : (
             <li key={i} className="flex items-end gap-2">
               <div className="min-w-0 flex-1">
                 <Field
@@ -542,7 +566,8 @@ function ListField({
               </div>
               <span className="pb-1">{controls(i, x)}</span>
             </li>
-          ))}
+            ),
+          )}
         </ul>
       ) : (
         <ul className="flex flex-col gap-2">

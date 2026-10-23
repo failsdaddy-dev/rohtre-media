@@ -30,7 +30,8 @@ import { createPortal } from "react-dom";
 //   open:   Up/Down, Home/End, PageUp/PageDown (10), type-ahead (a string
 //           typed quickly; a repeated character cycles), Enter / Space /
 //           Alt+Up choose and close, Tab chooses and moves on, Escape closes
-// The popup is portalled to <body> (never clipped by a parent), fixed under
+// The popup is portalled to <body> (or to the open <dialog> it sits in, so
+// it shows above the modal), never clipped by a parent, fixed under
 // the trigger or flipped above it when there is no room, at least as wide
 // as the trigger, at most min(320px, 50svh) tall, above the sticky header
 // and save bar; it follows scrolling and resizing and closes on an outside
@@ -211,10 +212,13 @@ export function Select({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [place, setPlace] = useState<ReturnType<typeof placePopup> | null>(null);
+  /** Where the popup is portalled: the open <dialog> around the trigger (top layer), else <body>. */
+  const [host, setHost] = useState<Element | null>(null);
   const index = options.findIndex((o) => o.value === value);
   const current = options[index];
 
   const show = (at: number) => {
+    setHost(button.current?.closest("dialog") ?? document.body);
     setActive(at);
     setOpen(true);
   };
@@ -441,6 +445,7 @@ export function Select({
       </button>
       {name && <input type="hidden" name={name} value={value} />}
       {open &&
+        host &&
         createPortal(
           <div
             ref={popup}
@@ -465,7 +470,8 @@ export function Select({
           >
             {rows}
           </div>,
-          document.body,
+          // Inside a modal <dialog> (top layer) the popup must live in the dialog, or it would sit behind it.
+          host,
         )}
     </>
   );

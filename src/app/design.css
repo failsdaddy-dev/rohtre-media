@@ -1705,12 +1705,26 @@ input:focus-visible + .rm-seg-label {
 .rm-apply-field:has([aria-invalid="true"]) {
   border-color: var(--danger);
 }
-.rm-apply-field select {
-  cursor: pointer;
-}
-.rm-apply-field input,
-.rm-apply-field select {
+.rm-apply-field input {
   height: 48px !important;
+}
+/* The shared dropdown (Select) in the form: same height, border and focus ring as the fields. */
+.rm-apply-select > * {
+  width: 100%;
+}
+.rm-apply-select .rm-select {
+  min-height: 50px;
+  border: 1px solid #d9dde3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+.rm-apply-select .rm-select:focus-visible,
+.rm-apply-select .rm-select[aria-expanded="true"] {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+.rm-apply-select .rm-select[aria-invalid="true"] {
+  border-color: var(--danger);
 }
 .rm-apply-drop {
   display: flex;

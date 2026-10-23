@@ -354,8 +354,6 @@ export const careersSchema = z.object({
     .default({
       roles: [
         "Social Media Management",
-        "Meta Ads",
-        "Google Ads",
         "Video Editing",
         "AI Automation Engineering",
         "Graphic Design",

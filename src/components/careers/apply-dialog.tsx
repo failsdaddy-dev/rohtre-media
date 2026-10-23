@@ -11,6 +11,7 @@ import {
   RESUME_MAX_BYTES,
   RESUME_TYPES,
 } from "@/lib/career-application";
+import { Select } from "../admin/select";
 import { ArrowRightIcon, ServiceIcon } from "../icons";
 
 // The careers application form, in a modal dialog: a clean white panel
@@ -28,17 +29,12 @@ const CLOSE_MS = 260;
 
 type Errors = Record<string, string>;
 
-/** A glass field: optional leading icon, the control, optional trailing chevron for selects. */
-function Field({ icon, select, children, className = "" }: { icon?: string; select?: boolean; children: ReactNode; className?: string }) {
+/** A field box: optional leading icon, then the control. Dropdowns use the site's shared Select. */
+function Field({ icon, children, className = "" }: { icon?: string; children: ReactNode; className?: string }) {
   return (
     <span className={`rm-apply-field ${className}`}>
       {icon && <ServiceIcon name={icon} size={18} className="shrink-0 text-[#8a93a3]" />}
       {children}
-      {select && (
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="pointer-events-none size-4 shrink-0 text-[#6b7280]" fill="none" stroke="currentColor" strokeWidth={2.2}>
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      )}
     </span>
   );
 }
@@ -51,6 +47,8 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [role, setRole] = useState("");
+  const [dialCode, setDialCode] = useState("+91");
+  const [exp, setExp] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
 
   const open = () => {
@@ -235,15 +233,15 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
               <div className={`${LABEL} sm:col-span-2`}>
                 <label htmlFor="apply-phone">Phone / WhatsApp number</label>
                 <div className="flex gap-2.5">
-                  <Field select className="w-[7.4rem] shrink-0 pr-3">
-                    <select name="dialCode" defaultValue="+91" aria-label="Country code" className={`${INPUT} appearance-none`}>
-                      {DIAL_CODES.map((d) => (
-                        <option key={d.code} value={d.code}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                  <span className="rm-apply-select w-[7.6rem] shrink-0">
+                    <Select
+                      name="dialCode"
+                      value={dialCode}
+                      onChange={setDialCode}
+                      aria-label="Country code"
+                      options={DIAL_CODES.map((d) => ({ value: d.code, label: d.label }))}
+                    />
+                  </span>
                   <Field className="min-w-0 flex-1">
                     <input
                       id="apply-phone"
@@ -262,42 +260,34 @@ export function ApplyDialog({ roles, experience, success }: { roles: string[]; e
               </div>
               <label className={LABEL}>
                 Role you’re applying for
-                <Field select icon="briefcase">
-                  <select
+                <span className="rm-apply-select">
+                  <Select
                     name="role"
                     value={role}
-                    onChange={(e) => setRole(e.target.value)}
+                    onChange={setRole}
                     required
-                    className={`${INPUT} appearance-none ${role ? "" : "text-[#8a93a3]"}`}
-                    {...aria("role")}
-                  >
-                    <option value="" disabled>
-                      Choose a role
-                    </option>
-                    {roles.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                    <option value={OTHER_ROLE}>Other</option>
-                  </select>
-                </Field>
+                    invalid={Boolean(errors.role)}
+                    placeholder="Choose a role"
+                    aria-label="Role you’re applying for"
+                    options={[...roles, OTHER_ROLE].map((r) => ({ value: r, label: r }))}
+                  />
+                </span>
                 {err("role")}
               </label>
               <label className={LABEL}>
                 Experience in this role
-                <Field select icon="clock">
-                  <select name="experience" defaultValue="" required className={`${INPUT} appearance-none`} {...aria("experience")}>
-                    <option value="" disabled>
-                      Choose
-                    </option>
-                    {experience.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
+                <span className="rm-apply-select">
+                  <Select
+                    name="experience"
+                    value={exp}
+                    onChange={setExp}
+                    required
+                    invalid={Boolean(errors.experience)}
+                    placeholder="Choose"
+                    aria-label="Experience in this role"
+                    options={experience.map((x) => ({ value: x, label: x }))}
+                  />
+                </span>
                 {err("experience")}
               </label>
               {role === OTHER_ROLE && (
