@@ -1517,14 +1517,9 @@ html[data-motion] .rm-about-bar {
     position: absolute;
   }
 }
-/* About red strip: the home partner strip (.rm-badges) with 1 / 2 / 4 columns. */
+/* About red strip: the home partner strip (.rm-badges) with 2 / 4 columns. */
 .rm-badges.rm-about-strip > li {
-  flex: 0 0 100%;
-}
-@media (min-width: 640px) {
-  .rm-badges.rm-about-strip > li {
-    flex-basis: 50%;
-  }
+  flex: 0 0 50%;
 }
 @media (min-width: 1024px) {
   .rm-badges.rm-about-strip > li {
@@ -1548,13 +1543,14 @@ html[data-motion] .rm-about-bar {
 }
 
 /* ---------------------------------------------------------- careers page
-   Red strip: the home partner strip (.rm-badges) with 1 / 2 / 5 columns. */
+   Red strip: the home partner strip (.rm-badges) with 2 / 5 columns; with an
+   odd number of items the last one spans the row below 1024 px (2 + 2 + 1). */
 .rm-badges.rm-careers-strip > li {
-  flex: 0 0 100%;
+  flex: 0 0 50%;
 }
-@media (min-width: 640px) {
-  .rm-badges.rm-careers-strip > li {
-    flex-basis: 50%;
+@media (max-width: 1023.98px) {
+  .rm-badges.rm-careers-strip > li:last-child:nth-child(odd) {
+    flex-basis: 100%;
   }
 }
 @media (min-width: 1024px) {

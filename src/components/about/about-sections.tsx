@@ -119,16 +119,16 @@ export function Highlights({ s }: { s: AboutContent["highlights"] }) {
         {s.items.map((h, i) => (
           <li
             key={i}
-            className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center md:py-12"
+            className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center max-sm:gap-2 max-sm:px-3 max-sm:py-7 md:py-12"
             {...reveal(i, "fade")}
           >
             <span
               data-about-count={h.value}
-              className="whitespace-nowrap text-[clamp(2.2rem,3.4vw,3.25rem)] font-bold leading-none tracking-[-0.04em] text-white tabular-nums"
+              className="whitespace-nowrap text-[clamp(2.2rem,3.4vw,3.25rem)] font-bold leading-none tracking-[-0.04em] text-white tabular-nums max-sm:text-[1.55rem]"
             >
               {h.value}
             </span>
-            <p className="max-w-xs text-[15px] leading-relaxed text-white">{h.text}</p>
+            <p className="max-w-xs text-[15px] leading-relaxed text-white max-sm:text-[12.5px] max-sm:leading-snug">{h.text}</p>
           </li>
         ))}
       </ul>

@@ -122,8 +122,12 @@ export function Strip({ s }: { s: CareersContent["strip"] }) {
     <section aria-label="Awards and partners" className="relative overflow-hidden bg-brand text-brand-fg">
       <ul className="rm-badges rm-careers-strip mx-auto max-w-[1600px]" data-group="many">
         {s.items.map((it, i) => (
-          <li key={i} className="flex flex-col items-center justify-center gap-4 px-5 py-7 text-center sm:py-9 md:py-11" {...reveal(i, "fade")}>
-            <span className="grid h-16 place-items-center">
+          <li
+            key={i}
+            className="flex flex-col items-center justify-center gap-4 px-5 py-9 text-center max-sm:gap-2.5 max-sm:px-3 max-sm:py-6 md:py-11"
+            {...reveal(i, "fade")}
+          >
+            <span className="grid h-16 place-items-center max-sm:h-11">
               {it.logo_public_id ? (
                 <Image
                   src={it.logo_public_id}
@@ -131,15 +135,19 @@ export function Strip({ s }: { s: CareersContent["strip"] }) {
                   width={240}
                   height={96}
                   sizes="200px"
-                  className="h-16 w-auto max-w-[180px] object-contain"
+                  className="h-16 w-auto max-w-[180px] object-contain max-sm:h-11 max-sm:max-w-[130px]"
                 />
               ) : (
-                <span className="whitespace-nowrap text-[clamp(2rem,3vw,2.6rem)] font-bold leading-none tracking-[-0.04em] text-white">
+                <span className="whitespace-nowrap text-[clamp(2rem,3vw,2.6rem)] font-bold leading-none tracking-[-0.04em] text-white max-sm:text-[1.6rem]">
                   {it.value}
                 </span>
               )}
             </span>
-            {it.label && <span className="text-sm font-bold uppercase tracking-[0.14em] text-white">{it.label}</span>}
+            {it.label && (
+              <span className="text-sm font-bold uppercase tracking-[0.14em] text-white max-sm:text-[11px] max-sm:tracking-[0.1em]">
+                {it.label}
+              </span>
+            )}
           </li>
         ))}
       </ul>
