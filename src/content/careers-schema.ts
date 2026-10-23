@@ -109,14 +109,15 @@ export const careersSchema = z.object({
       primaryLabel: "View open positions",
       primaryHref: "#apply",
       hrLabel: "Chat with HR",
+      // Supplied by the founder (2026-10-23): a video shoot in front of a green screen.
       image: {
         ...emptySlot("12:5", "image"),
-        publicId: "rohtre-media/images/about/rohan-trehan-youtube-stage",
+        publicId: "rohtre-media/images/careers/careers-studio-shoot",
         format: "webp",
-        alt: "Rohan Trehan, founder of RohTre Media, on a YouTube stage holding a Social Media Summit & Awards bag",
+        alt: "A presenter recording a video in front of a green screen, seen past the camera and lights",
       },
-      focusX: 66,
-      focusXMobile: 66,
+      focusX: 62,
+      focusXMobile: 62,
     }),
   strip: z
     .object({

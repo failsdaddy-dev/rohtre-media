@@ -6,6 +6,7 @@
 //   lbs-digital-icon-award.webp       → rohtre-media/images/careers/lbs-digital-icon-award
 //   indian-government-award.webp      → rohtre-media/images/careers/indian-government-award
 //   google-logo-white.webp            → rohtre-media/images/careers/google-logo-white
+//   careers-studio-shoot.webp         → rohtre-media/images/careers/careers-studio-shoot (hero, from the founder)
 // Existing files are kept (overwrite=false). Nothing is written to the
 // database: the Careers page uses these ids until it is saved in the admin.
 // Safe to run again. Reads NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -29,6 +30,7 @@ const FILES: [file: string, folder: string, name: string][] = [
   ["lbs-digital-icon-award.webp", "rohtre-media/images/careers", "lbs-digital-icon-award"],
   ["indian-government-award.webp", "rohtre-media/images/careers", "indian-government-award"],
   ["google-logo-white.webp", "rohtre-media/images/careers", "google-logo-white"],
+  ["careers-studio-shoot.webp", "rohtre-media/images/careers", "careers-studio-shoot"],
 ];
 
 async function main() {
