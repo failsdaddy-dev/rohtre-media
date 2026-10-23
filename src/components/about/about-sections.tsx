@@ -175,12 +175,13 @@ export function Counters({ s }: { s: AboutContent["numbers"] }) {
   if (s.items.length === 0) return null;
   return (
     <section id="counters" aria-label="RohTre Media in numbers" className={`bg-[#f4f8fd] ${PAD}`}>
-      <Container>
-        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+      {/* Wider than the usual container on desktop so the four cards are wider and shorter; 2 per row on phones. */}
+      <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6">
+        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-5">
           {s.items.map((n, i) => (
             <li
               key={i}
-              className="rm-svc flex flex-col items-start gap-4 max-sm:p-6!"
+              className="rm-svc flex flex-col items-start gap-4 max-sm:gap-2.5 lg:p-8!"
               {...reveal(i)}
               style={{ ...reveal(i).style, "--c": COUNTER_COLORS[n.color] } as CSSProperties}
             >
@@ -189,16 +190,18 @@ export function Counters({ s }: { s: AboutContent["numbers"] }) {
               </span>
               <span
                 data-about-count={n.value}
-                className="text-[clamp(2.4rem,4vw,3.25rem)] font-bold leading-none tracking-[-0.05em] text-[#12305A] tabular-nums"
+                className="text-[clamp(2.4rem,4vw,3.25rem)] font-bold leading-none tracking-[-0.05em] text-[#12305A] tabular-nums max-sm:text-[1.75rem]"
               >
                 {n.value}
               </span>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand">{n.label}</p>
-              <p className="leading-relaxed text-[#5B6472]">{n.text}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand max-sm:text-[10px] max-sm:tracking-[0.12em]">
+                {n.label}
+              </p>
+              <p className="leading-relaxed text-[#5B6472] max-sm:text-[13px] max-sm:leading-snug lg:text-[15px]">{n.text}</p>
             </li>
           ))}
         </ul>
-      </Container>
+      </div>
     </section>
   );
 }

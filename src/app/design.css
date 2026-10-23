@@ -1538,3 +1538,9 @@ html[data-motion] .rm-about-bar {
   background: color-mix(in srgb, var(--c) 13%, #ffffff);
   color: var(--c);
 }
+@media (max-width: 639.98px) {
+  .rm-about-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
