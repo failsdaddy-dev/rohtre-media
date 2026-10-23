@@ -17,11 +17,11 @@ import { saveAbout } from "./actions";
 type Key = keyof AboutContent;
 
 const SECTIONS: { key: Key; name: string; icon: string; anchor: string; about: string }[] = [
-  { key: "hero", name: "Hero", icon: "sparkles", anchor: "", about: "Headline, intro line, two buttons and the wide founder photo." },
-  { key: "highlights", name: "Highlight numbers", icon: "trend", anchor: "highlights", about: "The four numbers under the hero. They count up when scrolled into view." },
+  { key: "hero", name: "Hero", icon: "sparkles", anchor: "", about: "Headline, intro line and two buttons over the founder photo." },
+  { key: "highlights", name: "Red stats strip", icon: "trend", anchor: "highlights", about: "The red strip under the hero (number + line). The numbers count up when scrolled into view." },
   { key: "intro", name: "Who we are", icon: "pen", anchor: "who-we-are", about: "Heading and paragraph above the three values." },
   { key: "values", name: "Values", icon: "megaphone", anchor: "who-we-are", about: "The three value cards (icon, title, text)." },
-  { key: "numbers", name: "Counters", icon: "eye", anchor: "counters", about: "Dark band with four counters (awards, clients, hours, teams)." },
+  { key: "numbers", name: "Counter cards", icon: "eye", anchor: "counters", about: "Four white cards (awards, clients, hours, teams), each icon in its own colour." },
   { key: "diversity", name: "Diversity & inclusion", icon: "users", anchor: "diversity", about: "Text, the hiring button and the progress bars." },
   { key: "review", name: "Year in review", icon: "play", anchor: "year-in-review", about: "Heading, the 19:10 video and the paragraph under it." },
   { key: "team", name: "Team", icon: "network", anchor: "team", about: "Leadership card and the team members (add, edit, delete, reorder)." },
@@ -57,15 +57,29 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
     primaryHref: { label: "First button link (starts with /, # or https://)" },
     secondaryLabel: { label: "Second button text (empty = hidden)" },
     secondaryHref: { label: "Second button link" },
-    image: { label: "Founder / story photo (wide, about 2400×1000)" },
+    image: {
+      label: "Background photo (wide, about 2400×1000)",
+      help: "Fills the hero behind the text and stays still while the page scrolls over it. A dark shade is added for the text.",
+    },
     focusX: {
-      label: "Where the person stands (0 = left, 100 = right)",
-      help: "Phones crop the photo narrower; this keeps that point in view. 67 keeps Rohan in the frame.",
+      label: "Where the person stands, desktop (0 = left, 100 = right)",
+      help: "The photo is cropped to the screen; this point stays in view. 66 keeps Rohan in the frame.",
+    },
+    focusXMobile: {
+      label: "Where the person stands, phones (0 = left, 100 = right)",
+      help: "Phones show a narrow slice of the photo. Same idea, set separately.",
     },
   },
   highlights: { items: { label: "Numbers", noun: ["number", "numbers"] } },
   values: { items: { label: "Value cards", noun: ["card", "cards"] }, title: { label: "Title" } },
-  numbers: { items: { label: "Counters", noun: ["counter", "counters"] }, label: { label: "Label (capitals)" } },
+  numbers: {
+    items: { label: "Counter cards", noun: ["card", "cards"] },
+    label: { label: "Label (capitals)" },
+    color: {
+      label: "Icon colour",
+      optionLabels: { amber: "Amber", blue: "Blue", violet: "Violet", teal: "Teal", green: "Green", pink: "Pink" },
+    },
+  },
   diversity: {
     body: { label: "First paragraph" },
     highlight: { label: "Bold sentence (starts the second paragraph)" },
@@ -89,7 +103,7 @@ const TAB_HINTS: Partial<Record<Key, Hints>> = {
   team: {
     intro: { label: "Intro paragraph" },
     leadershipTitle: { label: "Leadership heading" },
-    leader: { label: "Leader" },
+    leader: { label: "Leader (bio: 4-5 lines on desktop, up to 420 characters)" },
     membersTitle: { label: "Team heading" },
     members: {
       label: "Team members",

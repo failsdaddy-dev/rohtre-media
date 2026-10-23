@@ -1476,3 +1476,65 @@ a.rm-social:focus-visible {
 html[data-motion] .rm-about-bar {
   transform: scaleX(0);
 }
+
+/* About hero: the photo stays fixed while the page scrolls over it. The
+   layer is position: fixed inside a section clipped with clip-path, so it
+   only shows inside the hero (iOS and Android; no background-attachment).
+   Reduced motion: a normal photo that scrolls with the section. */
+.rm-about-hero {
+  clip-path: inset(0);
+}
+.rm-about-hero-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.rm-about-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--fx-m, 66%) 50%;
+}
+.rm-about-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 0, 0, 0.72) 0%, rgba(10, 0, 0, 0.58) 100%);
+}
+@media (min-width: 768px) {
+  .rm-about-hero-img {
+    object-position: var(--fx, 66%) 50%;
+  }
+  .rm-about-hero-shade {
+    background: linear-gradient(90deg, rgba(10, 0, 0, 0.75) 0%, rgba(10, 0, 0, 0.6) 45%, rgba(10, 0, 0, 0.25) 100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-about-hero-layer {
+    position: absolute;
+  }
+}
+/* About red strip: the home partner strip (.rm-badges) with 1 / 2 / 4 columns. */
+.rm-badges.rm-about-strip > li {
+  flex: 0 0 100%;
+}
+@media (min-width: 640px) {
+  .rm-badges.rm-about-strip > li {
+    flex-basis: 50%;
+  }
+}
+@media (min-width: 1024px) {
+  .rm-badges.rm-about-strip > li {
+    flex-basis: 25%;
+  }
+}
+/* About counter cards: each icon in its own colour (--c) on a 13% tint tile. */
+.rm-about-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: color-mix(in srgb, var(--c) 13%, #ffffff);
+  color: var(--c);
+}

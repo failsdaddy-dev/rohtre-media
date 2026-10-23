@@ -15,8 +15,66 @@ const icon = z.enum(AD_ICONS);
 /** Same as BOOK_CALL_HREF in the site header. */
 const BOOK_CALL_HREF = "/contact#enquiry";
 
-/** The wide founder photo: one image, cropped per screen around `focusX` (0 = left edge, 100 = right edge). */
+/** The wide founder photo behind the hero: one image, cropped per screen around `focusX` / `focusXMobile` (0 = left edge, 100 = right edge). */
 const storyImage = slotSchema(["12:5"]);
+
+/** Icon colours for the counter cards (a fixed palette; not red, so each card reads differently). */
+export const COUNTER_COLORS = {
+  amber: "#F59E0B",
+  blue: "#2563EB",
+  violet: "#7C3AED",
+  teal: "#0D9488",
+  green: "#16A34A",
+  pink: "#DB2777",
+} as const;
+export type CounterColor = keyof typeof COUNTER_COLORS;
+const COUNTER_COLOR_KEYS = Object.keys(COUNTER_COLORS) as [CounterColor, ...CounterColor[]];
+/** The four counters' colours in order (sparkle, people, eye, play). */
+const COUNTER_DEFAULT_COLORS: CounterColor[] = ["amber", "blue", "violet", "teal"];
+
+const member = z.object({
+  name: line(60).min(1),
+  role: line(60),
+  photo: mediaSchema.nullable(),
+  bio: line(280),
+});
+/** The team as first built on 2026-10-23 (three members); upgraded to the five below on read. */
+const OLD_TEAM = "Himesh Chaurasia|Mrunal|Harshil";
+const TEAM_MEMBERS: z.infer<typeof member>[] = [
+  {
+    name: "Himesh Chaurasia",
+    role: "Human Resource Manager",
+    photo: { publicId: "rohtre-media/images/team/himesh-chaurasia", width: 1024, height: 1024 },
+    bio: "",
+  },
+  {
+    name: "Mrunal",
+    role: "Back-End Engineer",
+    photo: { publicId: "rohtre-media/images/team/mrunal", width: 400, height: 400 },
+    bio: "",
+  },
+  {
+    name: "Harshil Makwana",
+    role: "Back-End Engineer",
+    photo: { publicId: "rohtre-media/images/team/harshil", width: 800, height: 800 },
+    bio: "",
+  },
+  {
+    name: "Kartikay Singh Rawal",
+    role: "Video Production",
+    photo: { publicId: "rohtre-media/images/team/kartikay-singh-rawal", width: 400, height: 400 },
+    bio: "",
+  },
+  {
+    name: "Nitish",
+    role: "Graphic Design",
+    photo: { publicId: "rohtre-media/images/team/nitish", width: 400, height: 400 },
+    bio: "",
+  },
+];
+/** Founder bio: the owner-supplied draft (2026-10-23), to approve. */
+const LEADER_BIO =
+  "Rohan Trehan is the CEO and Consultant of RohTre Media, a digital growth agency working with YouTube creators and brands. He leads the company's strategy across YouTube growth, performance marketing, Shopify development and automation. Under his leadership, RohTre Media has generated 2B+ views and 5M+ subscribers for client channels, with 25Cr+ in combined revenue impact.";
 
 export const aboutSchema = z.object({
   seo: z
@@ -37,7 +95,8 @@ export const aboutSchema = z.object({
       secondaryLabel: line(30),
       secondaryHref: href,
       image: storyImage,
-      focusX: z.number().int().min(0).max(100).default(67),
+      focusX: z.number().int().min(0).max(100).default(66),
+      focusXMobile: z.number().int().min(0).max(100).default(66),
     })
     .default({
       eyebrow: "About us",
@@ -54,7 +113,8 @@ export const aboutSchema = z.object({
         format: "webp",
         alt: "Rohan Trehan, founder of RohTre Media, on a YouTube stage holding a Social Media Summit & Awards bag",
       },
-      focusX: 67,
+      focusX: 66,
+      focusXMobile: 66,
     }),
   highlights: z
     .object({
@@ -111,7 +171,15 @@ export const aboutSchema = z.object({
     .object({
       enabled: z.boolean(),
       items: z
-        .array(z.object({ icon, value: line(16).min(1), label: line(40).min(1), text: line(200) }))
+        .array(
+          z.object({
+            icon,
+            color: z.enum(COUNTER_COLOR_KEYS).default("amber"),
+            value: line(16).min(1),
+            label: line(40).min(1),
+            text: line(200),
+          }),
+        )
         .max(6),
     })
     .default({
@@ -119,24 +187,28 @@ export const aboutSchema = z.object({
       items: [
         {
           icon: "sparkles",
+          color: "amber",
           value: "+15",
           label: "INDUSTRY AWARDS",
           text: "Recognized for breakthrough content strategies, high-performing campaigns, and creative excellence across platforms.",
         },
         {
           icon: "users",
+          color: "blue",
           value: "+200",
           label: "CLIENTS SERVED",
           text: "From YouTube creators to global brands—long-term partnerships built on trust, results, and innovation.",
         },
         {
           icon: "eye",
+          color: "violet",
           value: "+80M",
           label: "HOURS WATCHED",
           text: "Driving massive audience engagement with content that hooks, entertains, and converts.",
         },
         {
           icon: "play",
+          color: "teal",
           value: "5",
           label: "GLOBAL TEAMS",
           text: "Remote-first, performance-driven teams delivering results across multiple time zones.",
@@ -195,18 +267,15 @@ export const aboutSchema = z.object({
       title: line(140).min(1),
       intro: line(600),
       leadershipTitle: line(60),
-      leader: z.object({ name: line(60).min(1), role: line(60), photo: mediaSchema.nullable() }),
+      leader: z.object({
+        name: line(60).min(1),
+        role: line(60),
+        photo: mediaSchema.nullable(),
+        /** 4-5 lines on desktop at most (about 400 characters). */
+        bio: line(420).default(LEADER_BIO),
+      }),
       membersTitle: line(60),
-      members: z
-        .array(
-          z.object({
-            name: line(60).min(1),
-            role: line(60),
-            photo: mediaSchema.nullable(),
-            bio: line(280),
-          }),
-        )
-        .max(24),
+      members: z.array(member).max(24),
     })
     .default({
       eyebrow: "TEAM",
@@ -218,28 +287,10 @@ export const aboutSchema = z.object({
         name: "Rohan Trehan",
         role: "CEO & Consultant",
         photo: { publicId: "rohtre-media/images/team/rohan-trehan", width: 400, height: 400 },
+        bio: LEADER_BIO,
       },
       membersTitle: "Meet Our Team",
-      members: [
-        {
-          name: "Himesh Chaurasia",
-          role: "Human Resource Department",
-          photo: { publicId: "rohtre-media/images/team/himesh-chaurasia", width: 1024, height: 1024 },
-          bio: "",
-        },
-        {
-          name: "Mrunal",
-          role: "Back-End Engineer",
-          photo: { publicId: "rohtre-media/images/team/mrunal", width: 400, height: 400 },
-          bio: "",
-        },
-        {
-          name: "Harshil",
-          role: "Back-End Engineer",
-          photo: { publicId: "rohtre-media/images/team/harshil", width: 800, height: 800 },
-          bio: "",
-        },
-      ],
+      members: TEAM_MEMBERS,
     }),
   cta: z
     .object({ eyebrow: line(40), title: line(80).min(1), accent: line(80), text: line(200), label: line(40).min(1) })
@@ -250,9 +301,36 @@ export type AboutContent = z.infer<typeof aboutSchema>;
 
 export const DEFAULT_ABOUT: AboutContent = aboutSchema.parse({});
 
+type Json = Record<string, unknown>;
+const isObj = (v: unknown): v is Json => Boolean(v && typeof v === "object" && !Array.isArray(v));
+
+/**
+ * Brings copies saved before 2026-10-23's second round up to date (no SQL):
+ * counters without a colour get the default colour for their position, and
+ * the first three-member team becomes the five-member team.
+ */
+function upgrade(input: Json): Json {
+  const out = { ...input };
+  const numbers = out.numbers;
+  if (isObj(numbers) && Array.isArray(numbers.items)) {
+    out.numbers = {
+      ...numbers,
+      items: numbers.items.map((it, i) =>
+        isObj(it) && !it.color ? { ...it, color: COUNTER_DEFAULT_COLORS[i % COUNTER_DEFAULT_COLORS.length] } : it,
+      ),
+    };
+  }
+  const team = out.team;
+  if (isObj(team) && Array.isArray(team.members)) {
+    const names = team.members.map((m) => (isObj(m) ? m.name : "")).join("|");
+    if (names === OLD_TEAM) out.team = { ...team, members: TEAM_MEMBERS };
+  }
+  return out;
+}
+
 /** Parse stored JSON section by section, so one bad section never wipes the others. */
 export function parseAbout(raw: unknown): AboutContent {
-  const input = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const input = upgrade(isObj(raw) ? raw : {});
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(aboutSchema.shape) as (keyof AboutContent)[]) {
     const parsed = aboutSchema.shape[key].safeParse(input[key]);

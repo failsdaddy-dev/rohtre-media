@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import type { AboutContent } from "@/content/about-schema";
+import { COUNTER_COLORS, type AboutContent } from "@/content/about-schema";
 import type { Tint } from "@/content/home-schema";
 import { reveal, SectionHead } from "../home/parts";
 import { ArrowRightIcon, ServiceIcon } from "../icons";
@@ -8,8 +8,8 @@ import { MediaSlot, stillFor, stillSrcSet } from "../media/media-slot";
 import { ButtonLink, Container } from "../page-parts";
 
 // The About page sections, drawn with the home page's design system: the
-// sky-blue hero, white bands with square-cornered cards (.rm-svc), a dark
-// band with the grid background, the red stripe band, section labels and
+// photo hero, the red strip (home partner strip styles), white bands with
+// square-cornered cards (.rm-svc), the sky gradient, section labels and
 // two-tone headings, the reveal-on-scroll motion. Numbers count up and the
 // progress bars fill once in view (AboutMotion). All text comes from the
 // admin (escaped by React, never raw HTML).
@@ -34,81 +34,104 @@ function Cta({ href, label, variant }: { href: string; label: string; variant?: 
 }
 
 // --------------------------------------------------------------------- hero
-/** Headline, intro and two buttons on the sky gradient, then the wide founder photo. */
+/**
+ * The founder photo fills the hero, behind the text, and stays put while the
+ * page scrolls over it: the photo layer is position: fixed inside a section
+ * with clip-path: inset(0), so it only shows within the hero and lets go at
+ * its end (works on iOS and Android; no scroll listeners). Reduced motion:
+ * a normal static photo. The section starts below the header, so the
+ * header's dark text never sits on the dark photo. A dark left-to-right
+ * shade (top-to-bottom on phones) keeps the white text readable.
+ */
 export function AboutHero({ s }: { s: AboutContent["hero"] }) {
   const img = s.image;
   return (
-    <section aria-label="Introduction" className="rm-hero-dark rm-hero-sky overflow-hidden">
-      <Container className="flex flex-col items-center pb-16 pt-14 text-center md:pb-24 md:pt-20">
-        {s.eyebrow && (
-          <p className="rm-label rm-hero-in mb-5" style={{ "--i": 0 } as CSSProperties}>
-            {s.eyebrow}
-          </p>
-        )}
-        <h1
-          className="rm-hero-in max-w-4xl text-[clamp(2.4rem,6.4vw,4.75rem)] font-bold leading-[1.02] tracking-[-0.05em] max-md:text-[clamp(2rem,9vw,2.6rem)]"
-          style={{ "--i": 1 } as CSSProperties}
+    <section
+      aria-label="Introduction"
+      className="rm-dark rm-about-hero relative flex min-h-[min(88svh,860px)] items-center bg-[#140405] text-white"
+    >
+      {img.publicId && (
+        <div
+          className="rm-about-hero-layer"
+          style={{ "--fx": `${s.focusX}%`, "--fx-m": `${s.focusXMobile}%` } as CSSProperties}
         >
-          {s.title} {s.accent && <span className="rm-text-grad">{s.accent}</span>}
-        </h1>
-        {s.intro && (
-          <p
-            className="rm-hero-in mt-6 max-w-2xl text-lg leading-relaxed text-[#2b3a4d] md:text-xl"
-            style={{ "--i": 2 } as CSSProperties}
-          >
-            {s.intro}
-          </p>
-        )}
-        <div className="rm-hero-in mt-9 flex flex-wrap justify-center gap-3" style={{ "--i": 3 } as CSSProperties}>
-          <Cta href={s.primaryHref} label={s.primaryLabel} />
-          {s.secondaryLabel && <Cta href={s.secondaryHref} label={s.secondaryLabel} variant="plain" />}
+          {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary does the resizing (same URLs as the next/image loader) */}
+          <img
+            src={stillFor(img, 1280) ?? undefined}
+            srcSet={stillSrcSet(img)}
+            sizes="100vw"
+            alt={img.alt}
+            fetchPriority="high"
+            decoding="async"
+            className="rm-about-hero-img"
+          />
         </div>
-
-        {img.publicId && (
-          <figure
-            className="rm-hero-in rm-about-photo relative mt-14 w-full max-w-6xl overflow-hidden rounded-[28px] border border-black/10 shadow-[0_40px_120px_-40px_rgba(10,40,80,0.45)] md:mt-16"
-            style={{ "--i": 4 } as CSSProperties}
+      )}
+      <div aria-hidden="true" className="rm-about-hero-shade" />
+      <Container className="relative py-20 md:py-28">
+        <div className="flex max-w-3xl flex-col items-start">
+          {s.eyebrow && (
+            <p className="rm-label rm-hero-in mb-5" style={{ "--i": 0 } as CSSProperties}>
+              {s.eyebrow}
+            </p>
+          )}
+          <h1
+            className="rm-hero-in text-[clamp(2.4rem,6vw,4.5rem)] font-bold leading-[1.04] tracking-[-0.05em] max-md:text-[clamp(2rem,9vw,2.6rem)]"
+            style={{ "--i": 1 } as CSSProperties}
           >
-            {/* One file, two crops: 4:3 on phones, 12:5 from 768 px, centred on the person (focusX). */}
-            {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary does the resizing (same URLs as the next/image loader) */}
-            <img
-              src={stillFor(img, 1280) ?? undefined}
-              srcSet={stillSrcSet(img)}
-              sizes="(max-width: 1200px) 100vw, 1152px"
-              alt={img.alt}
-              fetchPriority="high"
-              decoding="async"
-              className="absolute inset-0 size-full object-cover"
-              style={{ objectPosition: `${s.focusX}% 50%` }}
-            />
-          </figure>
-        )}
+            {s.title} {s.accent && <span className="rm-text-grad">{s.accent}</span>}
+          </h1>
+          <span
+            aria-hidden="true"
+            className="rm-hero-in mt-7 block h-1 w-28 bg-brand"
+            style={{ "--i": 2 } as CSSProperties}
+          />
+          {s.intro && (
+            <p
+              className="rm-hero-in mt-7 max-w-2xl text-lg leading-relaxed text-white md:text-xl"
+              style={{ "--i": 2 } as CSSProperties}
+            >
+              {s.intro}
+            </p>
+          )}
+          <div className="rm-hero-in mt-9 flex flex-wrap gap-3" style={{ "--i": 3 } as CSSProperties}>
+            <Cta href={s.primaryHref} label={s.primaryLabel} />
+            {s.secondaryLabel && <Cta href={s.secondaryHref} label={s.secondaryLabel} variant="plain" />}
+          </div>
+        </div>
       </Container>
     </section>
   );
 }
 
 // --------------------------------------------------------------- highlights
-/** The four headline numbers, as white cards that overlap the hero's lower edge. */
+/**
+ * The four headline numbers in a full-width red strip, using the home
+ * partner strip's band and cell styles (.rm-badges: brand red, lighter-red
+ * dividers, square edges). 4 across from 1024 px, 2x2 from 640 px, 1 column
+ * on phones (.rm-about-strip in design.css).
+ */
 export function Highlights({ s }: { s: AboutContent["highlights"] }) {
   if (s.items.length === 0) return null;
   return (
-    <section id="highlights" aria-label="Highlights" className="bg-white pb-6 pt-14 md:pt-20">
-      <Container>
-        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-          {s.items.map((h, i) => (
-            <li key={i} className="rm-svc flex flex-col gap-3" {...reveal(i)}>
-              <span
-                data-about-count={h.value}
-                className="text-[clamp(1.9rem,4vw,2.9rem)] font-bold leading-none tracking-[-0.04em] text-brand tabular-nums"
-              >
-                {h.value}
-              </span>
-              <p className="text-sm leading-relaxed text-fg-2 md:text-base">{h.text}</p>
-            </li>
-          ))}
-        </ul>
-      </Container>
+    <section id="highlights" aria-label="Highlights" className="relative overflow-hidden bg-brand text-brand-fg">
+      <ul className="rm-badges rm-about-strip mx-auto max-w-[1600px]" data-group="four">
+        {s.items.map((h, i) => (
+          <li
+            key={i}
+            className="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center md:py-12"
+            {...reveal(i, "fade")}
+          >
+            <span
+              data-about-count={h.value}
+              className="whitespace-nowrap text-[clamp(2.2rem,3.4vw,3.25rem)] font-bold leading-none tracking-[-0.04em] text-white tabular-nums"
+            >
+              {h.value}
+            </span>
+            <p className="max-w-xs text-[15px] leading-relaxed text-white">{h.text}</p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -143,30 +166,35 @@ export function WhoWeAre({ intro, values }: { intro: AboutContent["intro"]; valu
 }
 
 // ------------------------------------------------------------------ counters
-/** Dark band: icon, counting number, label and a line, four across. */
+/**
+ * Four white cards in the home "Who We Serve" card style (.rm-svc): a
+ * coloured icon on a matching light tile (each card its own colour), the
+ * counting number in navy, the label in red capitals, the line in grey.
+ */
 export function Counters({ s }: { s: AboutContent["numbers"] }) {
   if (s.items.length === 0) return null;
   return (
-    <section id="counters" aria-label="RohTre Media in numbers" className={`rm-dark rm-grid-bg ${PAD}`}>
+    <section id="counters" aria-label="RohTre Media in numbers" className={`bg-[#f4f8fd] ${PAD}`}>
       <Container>
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-12 lg:grid-cols-4 lg:gap-0">
+        <ul className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {s.items.map((n, i) => (
             <li
               key={i}
-              className="flex flex-col items-start gap-3 lg:border-l lg:border-white/10 lg:px-8 lg:first:border-l-0 lg:first:pl-0"
+              className="rm-svc flex flex-col items-start gap-4 max-sm:p-6!"
               {...reveal(i)}
+              style={{ ...reveal(i).style, "--c": COUNTER_COLORS[n.color] } as CSSProperties}
             >
-              <span className="grid size-12 place-items-center rounded-full bg-[#e50914]/15 text-[#ff4d4d] ring-1 ring-[#e50914]/30">
-                <ServiceIcon name={n.icon} size={22} />
+              <span className="rm-about-icon">
+                <ServiceIcon name={n.icon} size={26} />
               </span>
               <span
                 data-about-count={n.value}
-                className="text-[clamp(2.4rem,5vw,3.75rem)] font-bold leading-none tracking-[-0.05em] tabular-nums"
+                className="text-[clamp(2.4rem,4vw,3.25rem)] font-bold leading-none tracking-[-0.05em] text-[#12305A] tabular-nums"
               >
                 {n.value}
               </span>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ff4d4d]">{n.label}</p>
-              <p className="text-sm leading-relaxed text-white/65 md:text-base">{n.text}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand">{n.label}</p>
+              <p className="leading-relaxed text-[#5B6472]">{n.text}</p>
             </li>
           ))}
         </ul>
@@ -179,7 +207,7 @@ export function Counters({ s }: { s: AboutContent["numbers"] }) {
 /** Text and the hiring button on the left, the progress bars in a card on the right. */
 export function Diversity({ s }: { s: AboutContent["diversity"] }) {
   return (
-    <section id="diversity" className={`bg-[#f4f8fd] ${PAD}`}>
+    <section id="diversity" className={`bg-white ${PAD}`}>
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="flex flex-col items-start">
           <SectionHead eyebrow={s.eyebrow} title={s.title} className="mb-6!" />
@@ -230,7 +258,7 @@ export function Diversity({ s }: { s: AboutContent["diversity"] }) {
 /** Heading, the 19:10 video frame (same card look as the home hero video), then the paragraph. */
 export function YearInReview({ s }: { s: AboutContent["review"] }) {
   return (
-    <section id="year-in-review" className={`rm-hero-sky ${PAD}`}>
+    <section id="year-in-review" className={`rm-hero-sky overflow-hidden ${PAD}`}>
       <Container className="flex flex-col items-center">
         <SectionHead eyebrow={s.eyebrow} title={s.title} center className="mb-10! md:mb-14!" />
         <div className="w-full max-w-[1100px]" {...reveal(0, "up-lg")}>
@@ -275,7 +303,7 @@ function Photo({ photo, name, sizes }: { photo: { publicId: string; width: numbe
       height={photo.height}
       sizes={sizes}
       loading="lazy"
-      className="aspect-square w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+      className="aspect-square w-full object-cover object-[50%_25%] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
     />
   );
 }
@@ -291,13 +319,20 @@ export function Team({ s }: { s: AboutContent["team"] }) {
             {s.leadershipTitle}
           </h3>
         )}
-        <div className="rm-svc group mb-16 grid items-center gap-6 p-5! sm:grid-cols-[220px_1fr] sm:gap-10 sm:p-8! md:mb-20" {...reveal(0)}>
+        <div
+          className="rm-svc group mb-16 grid items-center gap-6 p-5! sm:grid-cols-[220px_1fr] sm:gap-10 sm:p-8! md:mb-20"
+          {...reveal(0)}
+        >
           <div className="overflow-hidden max-sm:mx-auto max-sm:w-[60%]">
             <Photo photo={s.leader.photo} name={s.leader.name} sizes="(max-width: 640px) 60vw, 220px" />
           </div>
           <div className="flex flex-col gap-2 max-sm:items-center max-sm:text-center">
             <p className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-bold leading-none tracking-[-0.04em]">{s.leader.name}</p>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand">{s.leader.role}</p>
+            {/* Kept to 4-5 lines on desktop (clamped at 5). */}
+            {s.leader.bio && (
+              <p className="mt-2 max-w-2xl leading-relaxed text-fg-2 md:line-clamp-5 md:text-[17px]">{s.leader.bio}</p>
+            )}
           </div>
         </div>
 
@@ -308,11 +343,20 @@ export function Team({ s }: { s: AboutContent["team"] }) {
                 {s.membersTitle}
               </h3>
             )}
-            <ul className="grid grid-cols-3 gap-3 sm:gap-6">
+            {/* 5 across from 1024 px, 3 + 2 (centred) from 768 px, 2 per row on phones. */}
+            <ul className="flex flex-wrap justify-center gap-3 sm:gap-6">
               {s.members.map((m, i) => (
-                <li key={i} className="rm-svc group flex flex-col gap-3 p-2.5! sm:gap-4 sm:p-4!" {...reveal(i)}>
+                <li
+                  key={i}
+                  className="rm-svc group flex w-[calc(50%-6px)] flex-col gap-3 p-2.5! sm:w-[calc(50%-12px)] sm:gap-4 sm:p-4! md:w-[calc((100%-48px)/3)] lg:w-[calc((100%-96px)/5)]"
+                  {...reveal(i % 5)}
+                >
                   <div className="overflow-hidden">
-                    <Photo photo={m.photo} name={m.name} sizes="(max-width: 640px) 31vw, (max-width: 1280px) 30vw, 380px" />
+                    <Photo
+                      photo={m.photo}
+                      name={m.name}
+                      sizes="(max-width: 768px) 48vw, (max-width: 1024px) 31vw, 240px"
+                    />
                   </div>
                   <div className="px-0.5 pb-1">
                     <p className="text-sm font-bold leading-tight sm:text-lg">{m.name}</p>

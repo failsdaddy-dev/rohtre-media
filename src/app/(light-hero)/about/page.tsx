@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AboutMotion } from "@/components/about/about-motion";
 import { AboutHero, Counters, Diversity, Highlights, Team, WhoWeAre, YearInReview } from "@/components/about/about-sections";
-import { StripeBand } from "@/components/home/sections";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { CtaPanel } from "@/components/page-parts";
 import { getAboutContent } from "@/lib/about-data";
@@ -25,7 +24,6 @@ export default async function AboutPage() {
       <WhoWeAre intro={about.intro} values={about.values} />
       {about.numbers.enabled && <Counters s={about.numbers} />}
       {about.diversity.enabled && <Diversity s={about.diversity} />}
-      <StripeBand />
       {about.review.enabled && <YearInReview s={about.review} />}
       <Team s={about.team} />
       <CtaPanel id="lets-talk" {...about.cta} />
