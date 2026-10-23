@@ -15,7 +15,7 @@ import { ADMIN_TABS, type AdminTab } from "./ui";
 
 const isOn = (href: string, current: string) => (href === "/admin" ? current === "/admin" : current.startsWith(href));
 
-const ITEM = "flex min-h-11 items-center rounded-lg px-3 text-sm font-medium";
+const ITEM = "flex min-h-11 items-center whitespace-nowrap rounded-lg px-2.5 text-sm font-medium";
 const itemLook = (on: boolean) => (on ? "bg-chip-on-bg text-chip-on-fg" : "hover:bg-chip-hover");
 
 /** A button that opens a small panel; closes on Escape (focus back on the button) or a click outside. */
@@ -152,8 +152,8 @@ export function AdminNav({
 
   return (
     <>
-      {/* 1100 px and wider: the row. */}
-      <nav aria-label="Admin" className="hidden min-w-0 flex-1 items-center gap-1 min-[1100px]:flex">
+      {/* 1360 px and wider: the row. */}
+      <nav aria-label="Admin" className="hidden min-w-0 flex-1 items-center gap-1 min-[1360px]:flex">
         {primary.map((t) => (
           <NavLink key={t.href} tab={t} current={current} />
         ))}
@@ -175,7 +175,7 @@ export function AdminNav({
       <Menu
         label="Account"
         align="right"
-        className="hidden min-[1100px]:block"
+        className="hidden min-[1360px]:block"
         button={
           <>
             <span
@@ -184,7 +184,7 @@ export function AdminNav({
             >
               {initial}
             </span>
-            <span className="hidden max-w-[160px] truncate min-[1280px]:inline">{account.name}</span>
+            <span className="hidden max-w-[160px] truncate min-[1600px]:inline">{account.name}</span>
             <Caret />
           </>
         }
@@ -197,7 +197,7 @@ export function AdminNav({
       <Menu
         label="Menu"
         align="right"
-        className="min-[1100px]:hidden"
+        className="min-[1360px]:hidden"
         button={
           <>
             <svg

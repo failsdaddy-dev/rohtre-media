@@ -20,7 +20,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/careers", label: "Careers page", group: "primary" },
   { href: "/admin/pages", label: "Landing pages", group: "primary" },
   { href: "/admin/proof", label: "Proof & badges", group: "primary" },
-  { href: "/admin/media", label: "Media", group: "primary" },
+  { href: "/admin/media", label: "Media", group: "more" },
   { href: "/admin/leads", label: "Leads", group: "primary", manage: true },
   { href: "/admin/applications", label: "Applications", group: "primary", manage: true },
   { href: "/admin/routing", label: "Redirects & ads", group: "more" },
