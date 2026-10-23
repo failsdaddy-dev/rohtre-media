@@ -380,13 +380,14 @@ export function ApplyDialog({
                 <span>
                   Short message <span className="font-normal text-[#8a93a3]">(optional)</span>
                 </span>
-                <span className="rm-apply-field items-start py-3">
+                <span className="rm-apply-field items-stretch p-0!">
+                  {/* Same left inset and text size as the other fields; no corner resize handle. */}
                   <textarea
                     name="message"
                     rows={3}
                     maxLength={1500}
                     placeholder="Anything you’d like us to know"
-                    className="w-full resize-y bg-transparent text-[15px] outline-none placeholder:text-[#8a93a3]"
+                    className="min-h-[104px] w-full resize-none rounded-[10px] bg-transparent px-[14px] py-[13px] text-[15px] leading-[1.55] outline-none placeholder:text-[#8a93a3]"
                   />
                 </span>
               </label>
