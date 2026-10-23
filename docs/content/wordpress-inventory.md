@@ -13,7 +13,7 @@ This file sorts that content into: **use as is**, **use once proof is added**, a
 - Positioning: a video-first marketing agency.
 - Service groups (live menu): Data & Analytics, Organic Media, Paid Media, Creative, Technology, each with sub-services (`home.txt`).
 - About values: Disrupt the Norm / Execute Relentlessly / Play to Win. Careers values: Think Big / Own It / Have Fun.
-- Team: Himesh Chaurasia (HR), Avjit Mishra (R&D), Kartikay Singh Rawal (Video Production), Hassan Ahmad (Social Media), Nitish (Graphics Design).
+- Team: Himesh Chaurasia (HR), Kartikay Singh Rawal (Video Production), Nitish (Graphics Design).
 - Careers hiring FAQ (10 questions) and the hiring process (apply, task, submit, interview).
 - Blog posts (4): Business Model Canvas (2 posts), 4Ps to 7Ps, Loyalty Programs.
 

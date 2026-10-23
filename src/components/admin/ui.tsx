@@ -16,6 +16,7 @@ export type AdminTab = {
 export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin", label: "Overview", group: "primary" },
   { href: "/admin/home", label: "Home page", group: "primary" },
+  { href: "/admin/about", label: "About page", group: "primary" },
   { href: "/admin/pages", label: "Landing pages", group: "primary" },
   { href: "/admin/proof", label: "Proof & badges", group: "primary" },
   { href: "/admin/media", label: "Media", group: "primary" },

@@ -15,6 +15,7 @@
     "lp": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/landing.ts",
     "seed:logos": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-logos.ts",
     "seed:home": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-home.ts",
+    "seed:about": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-about.ts",
     "sb": "supabase"
   },
   "engines": {

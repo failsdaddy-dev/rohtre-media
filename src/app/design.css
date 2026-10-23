@@ -1455,3 +1455,24 @@ a.rm-social:focus-visible {
     translate: none;
   }
 }
+
+/* ------------------------------------------------------------ about page
+   The wide founder photo: 4:3 on phones (cropped around the person, see
+   focusX in the admin), 12:5 from 768 px. */
+.rm-about-photo {
+  aspect-ratio: 4 / 3;
+}
+@media (min-width: 768px) {
+  .rm-about-photo {
+    aspect-ratio: 12 / 5;
+  }
+}
+/* Diversity progress bars: brand gradient; they grow from the left once in
+   view (AboutMotion), so they start collapsed only when motion is allowed. */
+.rm-about-bar {
+  background: linear-gradient(90deg, #ff4d5a, var(--brand));
+  transform-origin: left center;
+}
+html[data-motion] .rm-about-bar {
+  transform: scaleX(0);
+}

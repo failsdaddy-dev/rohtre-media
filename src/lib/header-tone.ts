@@ -28,8 +28,8 @@ export function resolveHeaderTone(tone: unknown): HeaderTone {
 /**
  * Tone per public route group (src/app/(group)/layout.tsx). Measured on the
  * pages, not guessed:
- *   (dark-hero): About, Careers, Contact start with a dark hero (#050505).
- *   (light-hero): home starts with the light sky-blue hero.
+ *   (dark-hero): Careers, Contact start with a dark hero (#050505).
+ *   (light-hero): home and About start with the light sky-blue hero.
  *   (site):      Privacy, Terms (and any new page) start on the light page
  *                background (#f5f4f0); they use the safe default.
  * The root not-found page also uses the default.

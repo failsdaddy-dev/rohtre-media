@@ -19,6 +19,7 @@ export const ASPECTS = {
   "16:10": 16 / 10,
   "4:3": 4 / 3,
   "21:9": 21 / 9,
+  "19:10": 19 / 10,
   "12:5": 12 / 5,
   "4:5": 4 / 5,
   "1:1": 1,
@@ -54,7 +55,7 @@ export const isLandscapeAspect = (a: unknown): a is LandscapeAspect => LANDSCAPE
 export const SHAPE_FAMILIES = [
   { key: "phone", label: "Phone", aspects: PHONE_ASPECTS },
   { key: "landscape", label: "Landscape", aspects: LANDSCAPE_ASPECTS },
-  { key: "other", label: "Square and portrait", aspects: ["1:1", "4:5", "3:4", "12:5"] },
+  { key: "other", label: "Square and portrait", aspects: ["1:1", "4:5", "3:4", "12:5", "19:10"] },
 ] as const satisfies readonly { key: string; label: string; aspects: readonly Aspect[] }[];
 export type ShapeFamily = (typeof SHAPE_FAMILIES)[number]["key"];
 export const familyOf = (a: Aspect): ShapeFamily =>
@@ -69,6 +70,7 @@ export const ASPECT_LABELS: Partial<Record<Aspect, string>> = {
   "16:10": "Desktop 16:10",
   "4:3": "Classic 4:3",
   "21:9": "Ultrawide 21:9",
+  "19:10": "Wide 19:10",
 };
 /** Recommended upload size per shape, shown on empty slots and in the admin. */
 export const ASPECT_UPLOAD: Record<Aspect, string> = {
@@ -79,6 +81,7 @@ export const ASPECT_UPLOAD: Record<Aspect, string> = {
   "16:10": "1920×1200",
   "4:3": "1440×1080",
   "21:9": "2520×1080",
+  "19:10": "1900×1000",
   "12:5": "1920×800",
   "4:5": "1080×1350",
   "1:1": "1080×1080",
