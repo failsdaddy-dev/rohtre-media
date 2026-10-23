@@ -235,15 +235,15 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
     <section id="spotlights" className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow="Our people" title={s.title} intro={s.intro} center />
-        {/* Phones: one card per row, photo on the left and the full text on the right. */}
+        {/* Phones: one card per row, a photo strip down the left (as tall as the text) and the full text on the right. */}
         <ul className="grid gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {s.items.map((m, i) => (
             <li
               key={i}
-              className="rm-svc group flex flex-col gap-4 p-4! max-sm:flex-row max-sm:items-start max-sm:gap-3.5 max-sm:p-3!"
+              className="rm-svc group flex flex-col gap-4 p-4! max-sm:flex-row max-sm:items-stretch max-sm:gap-3.5 max-sm:p-3!"
               {...reveal(i % 4)}
             >
-              <div className="overflow-hidden max-sm:w-[34%] max-sm:shrink-0">
+              <div className="overflow-hidden max-sm:relative max-sm:w-[34%] max-sm:shrink-0 max-sm:self-stretch">
                 {m.photo ? (
                   <Image
                     src={m.photo.publicId}
@@ -252,7 +252,7 @@ export function Spotlights({ s }: { s: CareersContent["spotlights"] }) {
                     height={m.photo.height}
                     sizes="(max-width: 640px) 34vw, (max-width: 1024px) 46vw, 280px"
                     loading="lazy"
-                    className="aspect-square w-full object-cover object-[50%_25%] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                    className="aspect-square w-full object-cover object-[50%_25%] transition-transform duration-500 ease-out group-hover:scale-[1.04] max-sm:absolute max-sm:inset-0 max-sm:aspect-auto max-sm:h-full"
                   />
                 ) : (
                   <div aria-hidden="true" className="grid aspect-square place-items-center bg-[#eef3f9] text-3xl font-bold text-[#7f93ab]">
