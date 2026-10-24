@@ -6,8 +6,17 @@ import { MediaSlotField } from "@/components/admin/media-slot-field";
 import { SaveBar } from "@/components/admin/save-bar";
 import { Select } from "@/components/admin/select";
 import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
+import { LockIcon, ServiceIcon } from "@/components/icons";
 import { emptySlot } from "@/content/media-slot";
-import type { Block, BlockType, LegalPage, LegalSection, LegalSlug } from "@/content/legal-schema";
+import {
+  LEGAL_COLORS,
+  LEGAL_ICONS,
+  type Block,
+  type BlockType,
+  type LegalPage,
+  type LegalSection,
+  type LegalSlug,
+} from "@/content/legal-schema";
 import { saveLegal } from "./actions";
 
 // Legal page editor (Admin → Legal → a page), built from the admin's usual
@@ -45,7 +54,7 @@ const blankBlock = (type: BlockType): Block => {
       return { type, media: emptySlot("16:9", "image") };
   }
 };
-const blankSection = (): LegalSection => ({ label: "", heading: "", level: "h2", subtitle: "", blocks: [] });
+const blankSection = (): LegalSection => ({ label: "", heading: "", level: "h2", subtitle: "", blocks: [], icon: "", color: "" });
 
 /** Move item i by d (-1 up, 1 down). */
 function move<T>(list: T[], i: number, d: number): T[] {
@@ -429,6 +438,48 @@ export function LegalEditor({ slug, initial, saved: wasSaved }: { slug: LegalSlu
                           className={INPUT_CLASS}
                         />
                       </Field>
+                      {s.level === "h2" && s.heading && (
+                        <>
+                          <div className="flex flex-col gap-1.5 text-sm">
+                            <span className="font-semibold">Card icon</span>
+                            <Select
+                              aria-label="Card icon"
+                              value={s.icon}
+                              onChange={(v) => setSection(i, { ...s, icon: v as LegalSection["icon"] })}
+                              options={[
+                                { value: "", label: "Automatic (from the heading)" },
+                                ...LEGAL_ICONS.map((n) => ({
+                                  value: n,
+                                  label: n.charAt(0).toUpperCase() + n.slice(1),
+                                  icon: n === "lock" ? <LockIcon size={17} /> : <ServiceIcon name={n} size={17} />,
+                                })),
+                              ]}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5 text-sm">
+                            <span className="font-semibold">Card colour</span>
+                            <Select
+                              aria-label="Card colour"
+                              value={s.color}
+                              onChange={(v) => setSection(i, { ...s, color: v as LegalSection["color"] })}
+                              options={[
+                                { value: "", label: "Automatic (by position)" },
+                                ...(Object.keys(LEGAL_COLORS) as (keyof typeof LEGAL_COLORS)[]).map((c) => ({
+                                  value: c,
+                                  label: c.charAt(0).toUpperCase() + c.slice(1),
+                                  icon: (
+                                    <span
+                                      aria-hidden="true"
+                                      className="block size-4 rounded-full"
+                                      style={{ background: LEGAL_COLORS[c] }}
+                                    />
+                                  ),
+                                })),
+                              ]}
+                            />
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex flex-col gap-3">

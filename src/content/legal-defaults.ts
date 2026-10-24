@@ -12,7 +12,8 @@ import type { Block, LegalPage, LegalSection, LegalSlug } from "./legal-schema";
 // interactive parts (cookie switches and buttons, the opt-out form, the
 // fraud report form), which are not rebuilt: the two forms are replaced by an
 // "Email us" button; cookie switches come with the cookie banner (Phase 6). Links to the old domain's
-// pages point to the new routes. Card icons (emoji) are kept in the text.
+// pages point to the new routes. The live page's emoji icons are left out
+// (the design draws its own icons).
 // These are the defaults: once a page is saved in Admin → Legal, the
 // saved copy is shown instead (scripts/seed-legal.ts stores these).
 
@@ -30,6 +31,8 @@ const sec = (
   level: o.level ?? "h2",
   subtitle: o.subtitle ?? "",
   blocks,
+  icon: "",
+  color: "",
 });
 const h3 = (heading: string, blocks: Block[], o: { label?: string; subtitle?: string } = {}) =>
   sec(heading, blocks, { ...o, level: "h3" });
@@ -54,9 +57,9 @@ const terms: LegalPage = {
         ["**Lucknow**", "Governing jurisdiction — UP, India"],
       ),
       ul(
-        "📋 **Scope:** Covers all users of rohtremedia.com and all service clients",
-        "💳 **Payment:** 50% advance, balance on delivery or billing date",
-        "⚖ **Governing Law:** Laws of India, courts of Lucknow, Uttar Pradesh",
+        "**Scope:** Covers all users of rohtremedia.com and all service clients",
+        "**Payment:** 50% advance, balance on delivery or billing date",
+        "**Governing Law:** Laws of India, courts of Lucknow, Uttar Pradesh",
       ),
     ]),
     h3("At a Glance", [
@@ -80,7 +83,7 @@ const terms: LegalPage = {
           "These Terms apply to all visitors, clients, and anyone who accesses or uses our website or services in any capacity. If you do not agree, please do not use our website or services.",
         ),
         p(
-          "📌 Using our website or submitting an inquiry constitutes acceptance of these Terms — even if no formal contract has been signed yet.",
+          "Using our website or submitting an inquiry constitutes acceptance of these Terms — even if no formal contract has been signed yet.",
         ),
       ],
       { label: "01", subtitle: "Who these terms apply to" },
@@ -110,12 +113,12 @@ const terms: LegalPage = {
       [
         p("To allow us to deliver effectively, you agree to:"),
         ul(
-          "📂 **Provide materials on time**\nAccurate, complete info, assets, and approvals when required",
-          "✅ **Own what you share**\nEnsure you hold all rights to content and logos you give us",
-          "⚖ **Stay compliant**\nFollow all laws and platform policies governing your advertising",
-          "🔐 **Keep credentials secure**\nProtect any account access we set up for your business",
-          "🚫 **No unlawful use**\nDon't use our services for deceptive or harmful purposes",
-          "📣 **Own your claims**\nYou're responsible for accuracy of content we publish on your behalf",
+          "**Provide materials on time**\nAccurate, complete info, assets, and approvals when required",
+          "**Own what you share**\nEnsure you hold all rights to content and logos you give us",
+          "**Stay compliant**\nFollow all laws and platform policies governing your advertising",
+          "**Keep credentials secure**\nProtect any account access we set up for your business",
+          "**No unlawful use**\nDon't use our services for deceptive or harmful purposes",
+          "**Own your claims**\nYou're responsible for accuracy of content we publish on your behalf",
         ),
       ],
       { label: "03", subtitle: "What we need from you" },
@@ -156,7 +159,7 @@ const terms: LegalPage = {
         p("**We Retain**"),
         ul("Our proprietary tools & frameworks", "Internal processes & methodologies", "Templates not specific to your brand"),
         p(
-          "⚠ Ownership of deliverables does **not transfer** until all outstanding fees are fully settled. Work remains property of RohtreMedia until payment is complete.",
+          "Ownership of deliverables does **not transfer** until all outstanding fees are fully settled. Work remains property of RohtreMedia until payment is complete.",
         ),
         p(
           "Unless you request otherwise in writing, RohtreMedia reserves the right to showcase completed work in our portfolio, case studies, and marketing materials.",
@@ -171,7 +174,7 @@ const terms: LegalPage = {
           "Both parties agree to keep confidential any non-public business information, strategies, or data shared during the engagement. This obligation applies to both RohtreMedia and the Client.",
         ),
         p(
-          "🔒 Confidentiality obligations survive termination of the engagement for a period of **2 years**. They do not apply to information that is publicly available, independently developed, or required to be disclosed by law.",
+          "Confidentiality obligations survive termination of the engagement for a period of **2 years**. They do not apply to information that is publicly available, independently developed, or required to be disclosed by law.",
         ),
       ],
       { label: "06", subtitle: "Protecting each other's information" },
@@ -186,7 +189,7 @@ const terms: LegalPage = {
           '**Website Disclaimer:** Our website is provided "as is" without warranties. We do not warrant uninterrupted, error-free, or virus-free operation.',
         ),
         p(
-          "📊 **Liability Cap:** To the maximum extent permitted by law, RohtreMedia's total liability for any claim shall not exceed the total fees paid by the Client in the **3 months preceding the claim**. We are not liable for indirect, incidental, or consequential damages.",
+          "**Liability Cap:** To the maximum extent permitted by law, RohtreMedia's total liability for any claim shall not exceed the total fees paid by the Client in the **3 months preceding the claim**. We are not liable for indirect, incidental, or consequential damages.",
         ),
       ],
       { label: "07", subtitle: "What we can and can't guarantee" },
@@ -209,7 +212,7 @@ const terms: LegalPage = {
     sec(
       "Governing Law",
       [
-        p("⚖ **India · Lucknow Courts**"),
+        p("**India · Lucknow Courts**"),
         p(
           "These Terms are governed by the laws of **India**. Any disputes shall be subject to the exclusive jurisdiction of the courts of **Lucknow, Uttar Pradesh, India**. We encourage resolving issues informally before any formal proceedings.",
         ),
@@ -306,7 +309,7 @@ const privacy: LegalPage = {
           "Analyse traffic and site performance",
         ),
         p(
-          "🔒 We **never sell your personal data** to data brokers or third parties for their own marketing. We do not send unsolicited marketing without your consent.",
+          "We **never sell your personal data** to data brokers or third parties for their own marketing. We do not send unsolicited marketing without your consent.",
         ),
       ],
       { label: "03", subtitle: "Purposes for processing your data" },
@@ -354,14 +357,14 @@ const privacy: LegalPage = {
       "Your Rights",
       [
         ul(
-          "👁 **Access**\nRequest a copy of the data we hold about you",
-          "✏ **Correction**\nAsk us to fix inaccurate or incomplete data",
-          "🗑 **Deletion**\nRequest erasure of your personal data",
-          "🚫 **Restrict Processing**\nPause how we use your data in certain cases",
-          "📦 **Portability**\nReceive your data in a machine-readable format",
-          "✋ **Opt Out**\nOpt out of data sharing for advertising purposes",
+          "**Access**\nRequest a copy of the data we hold about you",
+          "**Correction**\nAsk us to fix inaccurate or incomplete data",
+          "**Deletion**\nRequest erasure of your personal data",
+          "**Restrict Processing**\nPause how we use your data in certain cases",
+          "**Portability**\nReceive your data in a machine-readable format",
+          "**Opt Out**\nOpt out of data sharing for advertising purposes",
         ),
-        p("📧 To exercise any right, email us at **sales@rohtremedia.com** with your request. We respond within **30 days**."),
+        p("To exercise any right, email us at **sales@rohtremedia.com** with your request. We respond within **30 days**."),
       ],
       { label: "07", subtitle: "What you can ask us to do" },
     ),
@@ -420,16 +423,16 @@ const fraud: LegalPage = {
   sections: [
     sec("", [
       p(
-        "⚠ Warning· Fraudulent accounts impersonating RohtreMedia have been reported· Always verify before engaging· Our only email is sales@rohtremedia.com· Our only phone is +91 96957 47475· We never charge job applicants any fees·",
+        "Warning· Fraudulent accounts impersonating RohtreMedia have been reported· Always verify before engaging· Our only email is sales@rohtremedia.com· Our only phone is +91 96957 47475· We never charge job applicants any fees·",
       ),
     ]),
     sec("Our Only Official Contacts", [
       table(
         [],
-        ["🌐 Website", "rohtremedia.com (https only)"],
-        ["✉ Email", "sales@rohtremedia.com"],
-        ["📞 Phone / WhatsApp", "+91 96957 47475"],
-        ["📍 Office", "Virat Khand, Gomti Nagar, Lucknow"],
+        ["Website", "rohtremedia.com (https only)"],
+        ["Email", "sales@rohtremedia.com"],
+        ["Phone / WhatsApp", "+91 96957 47475"],
+        ["Office", "Virat Khand, Gomti Nagar, Lucknow"],
       ),
     ]),
     sec(
@@ -563,22 +566,22 @@ const fraud: LegalPage = {
       ],
       { label: "Our Response" },
     ),
-    h3("🗑 Platform Takedowns", [
+    h3("Platform Takedowns", [
       p(
         "We actively report and request removal of fraudulent social media accounts on Instagram, Facebook, LinkedIn, and WhatsApp that impersonate our brand.",
       ),
     ]),
-    h3("⚖ Legal Action", [
+    h3("Legal Action", [
       p(
         "We work with legal counsel to pursue civil and criminal action against identified fraudsters under applicable Indian law including the IT Act and IPC.",
       ),
     ]),
-    h3("🚨 Cyber Crime Complaints", [
+    h3("Cyber Crime Complaints", [
       p(
         "We file complaints with the Cyber Crime Cell of Lucknow Police and the National Cyber Crime Reporting Portal at cybercrime.gov.in.",
       ),
     ]),
-    h3("🔍 Domain Monitoring", [
+    h3("Domain Monitoring", [
       p(
         "We continuously monitor domain registrations for lookalike domains and take immediate action to have them suspended or transferred.",
       ),
@@ -595,9 +598,9 @@ const fraud: LegalPage = {
       p("We respond to all fraud reports within 48 hours."),
       p("**Contact us directly**"),
       ul(
-        "✉ **sales@rohtremedia.com**\nFor urgent reports",
-        "📞 **+91 96957 47475**\nCall or WhatsApp",
-        "🌐 **cybercrime.gov.in**\nAlso file with National Cyber Crime Portal",
+        "**sales@rohtremedia.com**\nFor urgent reports",
+        "**+91 96957 47475**\nCall or WhatsApp",
+        "**cybercrime.gov.in**\nAlso file with National Cyber Crime Portal",
       ),
       // In place of the live fraud report form (owner's choice, 2026-10-24): email only.
       btn("Email us at sales@rohtremedia.com", "mailto:sales@rohtremedia.com?subject=Fraud%20Report"),
@@ -701,13 +704,13 @@ const cookies: LegalPage = {
     ),
     sec("", [
       p(
-        "**🔄 Changing Your Mind**\nYou can update your cookie preferences at any time by returning to this page. Changes take effect immediately on your next page load.",
+        "**Changing Your Mind**\nYou can update your cookie preferences at any time by returning to this page. Changes take effect immediately on your next page load.",
       ),
       p(
-        "**🌐 Browser Controls**\nYou can also manage cookies directly in your browser settings. Note that blocking all cookies may affect website functionality. See your browser's help docs for guidance.",
+        "**Browser Controls**\nYou can also manage cookies directly in your browser settings. Note that blocking all cookies may affect website functionality. See your browser's help docs for guidance.",
       ),
       p(
-        "**📄 More Information**\nFor full details on how we handle your data, read our [Privacy Notice](/privacy-notice). To opt out of ad platform data sharing, visit our [Do Not Sell My Info](/do-not-sell) page.",
+        "**More Information**\nFor full details on how we handle your data, read our [Privacy Notice](/privacy-notice). To opt out of ad platform data sharing, visit our [Do Not Sell My Info](/do-not-sell) page.",
       ),
     ]),
   ],
@@ -724,13 +727,13 @@ const doNotSell: LegalPage = {
   seoDescription:
     "RohtreMedia does not sell your personal data. This page explains what limited data sharing we do engage in — and gives you a simple way to opt out.",
   sections: [
-    h3("🚫 We Never Sell Data", [
+    h3("We Never Sell Data", [
       p("Your personal information is never sold to data brokers, advertisers, or any third party for their own use."),
     ]),
-    h3("🎯 Limited Ad Sharing Only", [
+    h3("Limited Ad Sharing Only", [
       p("We share anonymised signals with Meta and Google solely to measure and improve our own ad performance."),
     ]),
-    h3("✋ You're in Control", [
+    h3("You're in Control", [
       p("Submit a request below and we'll stop any data sharing within 15 business days. No questions asked."),
     ]),
     sec("Exactly What We Do — and Don't Do", [], { label: "Transparency" }),
