@@ -8,13 +8,15 @@ import { CONTACT_CONSENT_TEXT, DIAL_CODES, enquirySchema, MESSAGE_MAX } from "@/
 import { track } from "@/lib/track";
 import { Select } from "../admin/select";
 import { ArrowRightIcon, ChatIcon, ServiceIcon } from "../icons";
+import { MultiSelect } from "./multi-select";
 
 // The Contact page form, in a white sharp-cornered card (design.css,
 // .rm-contact-card). Same field look as the careers form (.rm-apply-field).
 // Checks run here for instant, plain-word errors and again on the server
 // (/api/contact). Errors sit in the gap under each field (absolute), so
 // nothing jumps. The existing lead conversion event (lead_submit) fires only after
-// the server confirms the enquiry was received. On phones the submit button
+// the server confirms the enquiry was received. Dropdowns are the careers
+// form's (inline Select); "Interested in" is a matching multi-choice dropdown. On phones the submit button
 // leaves room on the right for the floating WhatsApp button.
 
 const LABEL = "relative flex flex-col gap-2 text-[13px] font-semibold tracking-[0.01em] text-[#2a2f3a]";
@@ -204,6 +206,7 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
           <div className="flex gap-2">
             <span className="rm-apply-select w-[6.9rem] shrink-0">
               <Select
+                inline
                 name="dialCode"
                 value={dialCode}
                 onChange={setDialCode}
@@ -238,6 +241,7 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
           <span>Business type {OPTIONAL}</span>
           <span className="rm-apply-select">
             <Select
+              inline
               name="businessType"
               value={businessType}
               onChange={setBusinessType}
@@ -253,6 +257,7 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
           <span>Monthly ad spend {OPTIONAL}</span>
           <span className="rm-apply-select">
             <Select
+              inline
               name="adSpend"
               value={adSpend}
               onChange={setAdSpend}
@@ -265,33 +270,20 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
           {err("adSpend")}
         </div>
 
-        <fieldset className="relative flex flex-col sm:col-span-2" {...aria("interests")}>
-          <legend className="mb-2 text-[13px] font-semibold text-[#2a2f3a]">
-            Interested in {OPTIONAL}
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {form.interests.map((x) => {
-              const on = picked.includes(x);
-              return (
-                <label key={x} className="rm-contact-chip">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={on}
-                    onChange={() => setPicked(on ? picked.filter((p) => p !== x) : [...picked, x])}
-                  />
-                  <span>
-                    <svg aria-hidden="true" viewBox="0 0 24 24" className="rm-contact-chip-tick" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m5 12.5 4.5 4.5L19 7.5" />
-                    </svg>
-                    {x}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+        <div className={`${LABEL} sm:col-span-2`}>
+          <span>Interested in {OPTIONAL}</span>
+          <span className="rm-apply-select">
+            <MultiSelect
+              value={picked}
+              onChange={setPicked}
+              options={form.interests}
+              invalid={Boolean(errors.interests)}
+              placeholder="Choose one or more services"
+              aria-label="Interested in"
+            />
+          </span>
           {err("interests")}
-        </fieldset>
+        </div>
 
         <label className={`${LABEL} sm:col-span-2`}>
           <span className="flex items-baseline justify-between gap-3">

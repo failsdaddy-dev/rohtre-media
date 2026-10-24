@@ -1,5 +1,8 @@
 import "server-only";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import nodemailer from "nodemailer";
+import { SITE_URL } from "./env";
 import { CONTACT_CONSENT_VERSION, enquiryPhone, type Enquiry } from "./contact-enquiry";
 import { supabaseAdmin } from "./supabase/admin";
 import { whatsappLink } from "./whatsapp";
@@ -62,6 +65,21 @@ function salesEmails(): string[] {
     .filter(Boolean);
 }
 
+/**
+ * The white wordmark for the email's red header, attached inline (cid), so it
+ * shows in Gmail without loading anything from the web. From the local file
+ * when it's there, else from the live site.
+ */
+const LOGO_FILE = "brand/logo-wordmark-white.png";
+function logoAttachment() {
+  const local = path.join(process.cwd(), "public", LOGO_FILE);
+  return {
+    filename: "rohtre-media.png",
+    path: existsSync(local) ? local : `${SITE_URL}/${LOGO_FILE}`,
+    cid: "rohtre-logo",
+  };
+}
+
 const esc = (v: string) =>
   v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 /** Header text: one line, no control characters. */
@@ -105,8 +123,8 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
   const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif;color:#111827">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb">
 <tr><td style="padding:20px 24px;background:#e50914;color:#ffffff">
-<div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:.9">RohTre Media</div>
-<div style="font-size:20px;font-weight:bold;margin-top:4px">New sales enquiry</div>
+<img src="cid:rohtre-logo" width="150" height="40" alt="RohTre Media" style="display:block;border:0;width:150px;height:auto">
+<div style="font-size:20px;font-weight:bold;margin-top:14px">New sales enquiry</div>
 </td></tr>
 <tr><td style="padding:8px 10px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -143,6 +161,7 @@ Reply to this email to answer the client directly. All enquiries: Admin → Lead
     ).slice(0, 200),
     text,
     html,
+    attachments: [logoAttachment()],
   });
 }
 

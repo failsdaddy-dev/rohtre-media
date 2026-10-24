@@ -9,13 +9,12 @@ import { getSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/whatsapp";
 
 // Contact: one sky-blue section (the Home hero's gradient and soft diagonal
-// strips). Desktop: the heading, a full-width "What happens next" strip (3
-// steps in a row), then the form card (about 60%) beside the contact
-// details card, which stays in view while the form scrolls. Phones: heading,
-// form, steps, details, all compact. The background scene sits behind
-// everything (ContactScene). Words and form choices: Admin → Contact page;
-// enquiries: Admin → Leads. The id "enquiry" stays on the form card: Book a
-// Call links point to /contact#enquiry.
+// strips) with the heading, then the form card (about 55%) beside the "What
+// happens next" card and the contact details card; on desktop both columns
+// end level. Phones: heading, form, steps, details. The background scene
+// sits behind everything (ContactScene). Words and form choices: Admin →
+// Contact page; enquiries: Admin → Leads. The id "enquiry" stays on the
+// form card: Book a Call links point to /contact#enquiry.
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo } = await getContactContent();
@@ -60,82 +59,82 @@ export default async function ContactPage() {
           )}
         </div>
 
-        {/* DOM order is the phone order (form first); from 1024 px the steps strip moves above both columns. */}
-        <div className="mt-8 grid items-start gap-5 md:mt-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
+        {/* Desktop: form (55%) beside the steps and details cards; both columns end level
+            (the details card takes any spare height). Phones: form, steps, details. */}
+        <div className="mt-8 grid items-stretch gap-5 md:mt-12 lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-6">
           <div id="enquiry" className="rm-contact-card scroll-mt-24 p-5 sm:p-8">
             <ContactForm form={c.form} whatsappHref={wa} />
           </div>
 
-          <section
-            aria-labelledby="next-steps"
-            className="rm-contact-card flex flex-col gap-4 p-5 sm:p-6 lg:order-first lg:col-span-2 lg:flex-row lg:items-center lg:gap-8 lg:px-8"
-          >
-            <h2 id="next-steps" className="shrink-0 text-[1.15rem] font-bold leading-tight tracking-[-0.02em] lg:w-44">
-              {c.steps.title}
-            </h2>
-            <ol className="grid flex-1 gap-3 sm:grid-cols-3 sm:gap-4">
-              {c.steps.items.map((step, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span aria-hidden="true" className="rm-contact-num">
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0 self-center">
-                    <span className="block text-[15px] font-semibold leading-snug">{step.step}</span>
-                    {step.text && <span className="mt-0.5 block text-[13.5px] leading-relaxed text-[#4b5563]">{step.text}</span>}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          {c.details.enabled && (
-            <section aria-labelledby="reach-us" className="rm-contact-card flex flex-col gap-4 p-5 sm:p-8 lg:sticky lg:top-28">
-              <h2 id="reach-us" className="text-[1.15rem] font-bold leading-tight tracking-[-0.02em]">
-                {c.details.title}
+          <div className="flex flex-col gap-5 lg:gap-6">
+            <section aria-labelledby="next-steps" className="rm-contact-card p-5 sm:p-8">
+              <h2 id="next-steps" className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]">
+                {c.steps.title}
               </h2>
-              {wa && (
-                <a
-                  href={wa}
-                  target="_blank"
-                  rel="noopener"
-                  className="rm-press inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#25d366] px-6 font-semibold text-[#0b3d1f]"
-                >
-                  <ChatIcon size={18} /> WhatsApp us
-                </a>
-              )}
-              <ul className="flex flex-col divide-y divide-[#eef0f3]">
-                <li className="py-3 first:pt-1">
-                  <a href={`mailto:${s.email}`} className={`${row} break-all hover:text-brand`}>
-                    <MailIcon size={20} className="mt-0.5 shrink-0 text-brand" /> {s.email}
-                  </a>
-                </li>
-                {s.phones.map((p) => (
-                  <li key={p.tel} className="py-3">
-                    <a href={`tel:${p.tel}`} data-track="call_click" className={`${row} hover:text-brand`}>
-                      <PhoneIcon size={20} className="mt-0.5 shrink-0 text-brand" />
-                      <span>
-                        <span className="block text-[13px] text-[#5b6472]">{p.label}</span>
-                        {p.display}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-                {s.callbackCountries.map((cc) => (
-                  <li key={cc.country} className={`${row} py-3`}>
-                    <PhoneIcon size={20} className="mt-0.5 shrink-0 text-brand" />
-                    <span>
-                      <span className="block text-[13px] text-[#5b6472]">{cc.label}</span>
-                      Fill in the form and we’ll call you back.
+              <ol className="mt-5 flex flex-col gap-4 border-t border-[#eef0f3] pt-5">
+                {c.steps.items.map((step, i) => (
+                  <li key={i} className="flex items-center gap-4">
+                    <span aria-hidden="true" className="rm-contact-num">
+                      {i + 1}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[16px] font-semibold leading-snug">{step.step}</span>
+                      {step.text && <span className="mt-0.5 block text-[14px] leading-relaxed text-[#4b5563]">{step.text}</span>}
                     </span>
                   </li>
                 ))}
-                <li className={`${row} py-3 last:pb-0`}>
-                  <PinIcon size={20} className="mt-0.5 shrink-0 text-brand" />
-                  {s.address ?? s.location}
-                </li>
-              </ul>
+              </ol>
             </section>
-          )}
+
+            {c.details.enabled && (
+              <section aria-labelledby="reach-us" className="rm-contact-card flex flex-col p-5 sm:p-8 lg:flex-1">
+                <h2 id="reach-us" className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]">
+                  {c.details.title}
+                </h2>
+                <ul className="mt-5 flex flex-col divide-y divide-[#eef0f3] border-t border-[#eef0f3] lg:flex-1 lg:justify-evenly">
+                  <li className="py-3">
+                    <a href={`mailto:${s.email}`} className={`${row} break-all hover:text-brand`}>
+                      <MailIcon size={20} className="mt-0.5 shrink-0 text-brand" /> {s.email}
+                    </a>
+                  </li>
+                  {s.phones.map((p) => (
+                    <li key={p.tel} className="py-3">
+                      <a href={`tel:${p.tel}`} data-track="call_click" className={`${row} hover:text-brand`}>
+                        <PhoneIcon size={20} className="mt-0.5 shrink-0 text-brand" />
+                        <span>
+                          <span className="block text-[13px] text-[#5b6472]">{p.label}</span>
+                          {p.display}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                  {s.callbackCountries.map((cc) => (
+                    <li key={cc.country} className={`${row} py-3`}>
+                      <PhoneIcon size={20} className="mt-0.5 shrink-0 text-brand" />
+                      <span>
+                        <span className="block text-[13px] text-[#5b6472]">{cc.label}</span>
+                        Fill in the form and we’ll call you back.
+                      </span>
+                    </li>
+                  ))}
+                  <li className={`${row} py-3`}>
+                    <PinIcon size={20} className="mt-0.5 shrink-0 text-brand" />
+                    {s.address ?? s.location}
+                  </li>
+                </ul>
+                {wa && (
+                  <a
+                    href={wa}
+                    target="_blank"
+                    rel="noopener"
+                    className="rm-press mt-4 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#25d366] px-6 font-semibold text-[#0b3d1f]"
+                  >
+                    <ChatIcon size={18} /> WhatsApp us
+                  </a>
+                )}
+              </section>
+            )}
+          </div>
         </div>
       </Container>
     </section>

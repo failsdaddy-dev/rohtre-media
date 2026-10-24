@@ -1975,66 +1975,12 @@ input:focus-visible + .rm-seg-label {
     white-space: normal;
   }
 }
-.rm-contact-chip {
-  cursor: pointer;
-}
-.rm-contact-chip > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid #d9dde3;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #1f2430;
-  font-size: 13.5px;
-  font-weight: 600;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-.rm-contact-chip:hover > span {
-  border-color: color-mix(in srgb, var(--brand) 45%, #d9dde3);
-}
-.rm-contact-chip-tick {
-  width: 0;
-  height: 14px;
-  opacity: 0;
-  transition:
-    width 0.2s ease,
-    opacity 0.2s ease;
-}
-.rm-contact-chip input:checked + span {
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand) 8%, #ffffff);
-  color: #a3000b;
-}
-.rm-contact-chip input:checked + span .rm-contact-chip-tick {
-  width: 14px;
-  opacity: 1;
-}
-.rm-contact-chip input:focus-visible + span {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-fieldset[aria-invalid="true"] .rm-contact-chip > span {
-  border-color: var(--danger);
-}
-@media (max-width: 639.98px) {
-  .rm-contact-chip > span {
-    min-height: 34px;
-    padding: 0 12px;
-    font-size: 13px;
-  }
-}
 .rm-contact-num {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   background: var(--brand);
   color: #ffffff;
   font-weight: 700;
