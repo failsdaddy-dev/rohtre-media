@@ -46,7 +46,7 @@ const TILES: Tile[] = [
   {
     name: "browser",
     depth: "near",
-    at: { left: "80%", top: "9%" },
+    at: { left: "80%", top: "6%" },
     size: 92,
     float: [9, 0, -8],
     draw: (
@@ -60,7 +60,7 @@ const TILES: Tile[] = [
   {
     name: "bag",
     depth: "mid",
-    at: { left: "64%", top: "6%" },
+    at: { left: "62%", top: "8%" },
     m: "4%",
     size: 68,
     float: [7, 3, -7],
@@ -75,7 +75,7 @@ const TILES: Tile[] = [
   {
     name: "google ads",
     depth: "far",
-    at: { left: "70%", top: "22%" },
+    at: { left: "84%", top: "17%" },
     m: "40%",
     float: [10, -4, 6],
     pill: "Google Ads",
@@ -83,7 +83,7 @@ const TILES: Tile[] = [
   {
     name: "megaphone",
     depth: "mid",
-    at: { left: "1.5%", top: "34%" },
+    at: { left: "1.5%", top: "42%" },
     m: "86%",
     size: 64,
     float: [8, 4, 6],
@@ -147,7 +147,7 @@ const TILES: Tile[] = [
   {
     name: "meta ads",
     depth: "far",
-    at: { left: "56%", top: "24%" },
+    at: { left: "66%", top: "17%" },
     float: [8, 4, 5],
     pill: "Meta Ads",
   },

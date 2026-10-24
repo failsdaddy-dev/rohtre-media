@@ -1941,15 +1941,39 @@ input:focus-visible + .rm-seg-label {
 .rm-contact-card:focus-within::after {
   opacity: 1;
 }
-/* Error slot: always there, so an error never moves the fields below it. */
+/* Errors sit in the row gap under their field (absolute), so the layout never moves. */
 .rm-contact-err {
-  display: block;
-  min-height: 18px;
-  margin-top: -2px;
-  font-size: 12.5px;
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 18px;
+  line-height: 16px;
   color: var(--danger);
+  white-space: nowrap;
+}
+.rm-contact-err:empty {
+  display: none;
+}
+/* Compact fields on this form (the careers form keeps its own sizes). */
+.rm-contact-form .rm-apply-field,
+.rm-contact-form .rm-apply-select .rm-select {
+  min-height: 48px;
+}
+.rm-contact-form .rm-apply-field input {
+  height: 46px !important;
+}
+@media (max-width: 639.98px) {
+  .rm-contact-form .rm-apply-field,
+  .rm-contact-form .rm-apply-select .rm-select {
+    min-height: 46px;
+  }
+  .rm-contact-form .rm-apply-field input {
+    height: 44px !important;
+  }
+  .rm-contact-err {
+    white-space: normal;
+  }
 }
 .rm-contact-chip {
   cursor: pointer;
@@ -1958,13 +1982,13 @@ input:focus-visible + .rm-seg-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 38px;
   padding: 0 14px;
   border: 1px solid #d9dde3;
   border-radius: 999px;
   background: #ffffff;
   color: #1f2430;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   transition:
     border-color 0.2s ease,
@@ -1998,32 +2022,19 @@ input:focus-visible + .rm-seg-label {
 fieldset[aria-invalid="true"] .rm-contact-chip > span {
   border-color: var(--danger);
 }
-/* "What happens next": a thin red line joins the numbered squares. On
-   desktop the steps grow to fill the panel (so both columns end level),
-   and the line stretches with them. */
-.rm-contact-steps > li:not(:last-child) {
-  padding-bottom: 28px;
-}
-.rm-contact-steps > li:not(:last-child)::before {
-  content: "";
-  position: absolute;
-  top: 40px;
-  bottom: 0;
-  left: 19.5px;
-  width: 1px;
-  background: color-mix(in srgb, var(--brand) 30%, #e5e7eb);
-}
-@media (min-width: 1024px) {
-  .rm-contact-steps > li:not(:last-child) {
-    flex: 1 1 auto;
+@media (max-width: 639.98px) {
+  .rm-contact-chip > span {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 }
 .rm-contact-num {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: var(--brand);
   color: #ffffff;
   font-weight: 700;
