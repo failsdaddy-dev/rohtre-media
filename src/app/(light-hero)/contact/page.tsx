@@ -59,24 +59,25 @@ export default async function ContactPage() {
           )}
         </div>
 
-        <div className="mt-10 grid items-start gap-6 md:mt-14 lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-8">
-          <div id="enquiry" className="rm-contact-card scroll-mt-24 p-5 sm:p-8 lg:p-10">
+        {/* Desktop: both columns end on the same line; the steps panel takes the spare height. */}
+        <div className="mt-10 grid items-stretch gap-6 md:mt-14 lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)] lg:gap-8">
+          <div id="enquiry" className="rm-contact-card scroll-mt-24 p-5 sm:p-8">
             <ContactForm form={c.form} whatsappHref={wa} />
           </div>
 
           <div className="flex flex-col gap-6">
-            <section aria-labelledby="next-steps" className="rm-contact-card p-6 sm:p-8">
-              <h2 id="next-steps" className="text-[1.35rem] font-bold tracking-[-0.02em]">
+            <section aria-labelledby="next-steps" className="rm-contact-card flex flex-col p-5 sm:p-8 lg:flex-1">
+              <h2 id="next-steps" className="text-[1.55rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.8rem]">
                 {c.steps.title}
               </h2>
-              <ol className="mt-6 flex flex-col gap-5">
+              <ol className="rm-contact-steps mt-7 flex flex-col lg:flex-1">
                 {c.steps.items.map((step, i) => (
-                  <li key={i} className="flex items-start gap-4">
+                  <li key={i} className="relative flex items-start gap-4">
                     <span aria-hidden="true" className="rm-contact-num">
                       {i + 1}
                     </span>
                     <span className="min-w-0 pt-1.5">
-                      <span className="block text-[16px] font-semibold leading-snug">{step.step}</span>
+                      <span className="block text-[17px] font-semibold leading-snug">{step.step}</span>
                       {step.text && <span className="mt-1 block text-[14.5px] leading-relaxed text-[#4b5563]">{step.text}</span>}
                     </span>
                   </li>
@@ -85,8 +86,8 @@ export default async function ContactPage() {
             </section>
 
             {c.details.enabled && (
-              <section aria-labelledby="reach-us" className="rm-contact-card flex flex-col gap-4 p-6 sm:p-8">
-                <h2 id="reach-us" className="text-[1.15rem] font-bold tracking-[-0.02em]">
+              <section aria-labelledby="reach-us" className="rm-contact-card flex flex-col gap-4 p-5 sm:p-8">
+                <h2 id="reach-us" className="text-[1.25rem] font-bold leading-tight tracking-[-0.02em]">
                   {c.details.title}
                 </h2>
                 {wa && (

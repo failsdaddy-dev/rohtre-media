@@ -1944,10 +1944,11 @@ input:focus-visible + .rm-seg-label {
 /* Error slot: always there, so an error never moves the fields below it. */
 .rm-contact-err {
   display: block;
-  min-height: 20px;
+  min-height: 18px;
+  margin-top: -2px;
   font-size: 12.5px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 18px;
   color: var(--danger);
 }
 .rm-contact-chip {
@@ -1996,6 +1997,26 @@ input:focus-visible + .rm-seg-label {
 }
 fieldset[aria-invalid="true"] .rm-contact-chip > span {
   border-color: var(--danger);
+}
+/* "What happens next": a thin red line joins the numbered squares. On
+   desktop the steps grow to fill the panel (so both columns end level),
+   and the line stretches with them. */
+.rm-contact-steps > li:not(:last-child) {
+  padding-bottom: 28px;
+}
+.rm-contact-steps > li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  bottom: 0;
+  left: 19.5px;
+  width: 1px;
+  background: color-mix(in srgb, var(--brand) 30%, #e5e7eb);
+}
+@media (min-width: 1024px) {
+  .rm-contact-steps > li:not(:last-child) {
+    flex: 1 1 auto;
+  }
 }
 .rm-contact-num {
   display: grid;

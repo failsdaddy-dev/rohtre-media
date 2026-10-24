@@ -152,12 +152,12 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
 
   return (
     <form onSubmit={submit} noValidate className="relative flex flex-col gap-5" aria-labelledby="contact-form-title">
-      <header className="flex flex-col gap-2">
+      <header className="flex flex-col gap-2 border-b border-[#eef0f3] pb-5">
         <h2 id="contact-form-title" className="text-[1.55rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.8rem]">
           {form.title}
         </h2>
         {form.qualifier && (
-          <p className="text-sm text-[#5b6472]">
+          <p className="text-[14px] leading-relaxed text-[#5b6472]">
             {form.qualifier}{" "}
             {form.qualifierLinkLabel && (
               <Link href={form.qualifierHref} className="font-semibold text-brand underline underline-offset-2">
@@ -166,9 +166,7 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
             )}
           </p>
         )}
-        <p className="text-[12.5px] text-[#6b7280]">
-          Fields marked {REQUIRED} are required.
-        </p>
+        <p className="text-[13px] text-[#6b7280]">Fields marked {REQUIRED} are required.</p>
       </header>
 
       <div className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
