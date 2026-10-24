@@ -18,6 +18,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/home", label: "Home page", group: "primary" },
   { href: "/admin/about", label: "About page", group: "primary" },
   { href: "/admin/careers", label: "Careers page", group: "primary" },
+  { href: "/admin/contact", label: "Contact page", group: "primary" },
   { href: "/admin/pages", label: "Landing pages", group: "primary" },
   { href: "/admin/proof", label: "Proof & badges", group: "primary" },
   { href: "/admin/media", label: "Media", group: "more" },
