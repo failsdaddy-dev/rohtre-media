@@ -45,7 +45,7 @@
     "eslint-config-next": "^16.4.2",
     "jsdom": "^26.1.0",
     "prettier": "^3.9.10",
-    "supabase": "^2.121.0",
+    "supabase": "^2.122.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
