@@ -8,17 +8,22 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | Path | Kind | Visibility | Status |
 |---|---|---|---|
 | `/` | home page (R13), order since 2026-10-22: dark hero (composition: headline + 16:9 video left, magnet illustration right; or the old slider), full-width partner strip, Who We Serve (dark, replaced the 9 service cards), Product Showcase, Scroll. Engage. Convert (dark, phone frames), Video Ads & Reels, Results (stacking, untouched), Client showcase, stripe band, Process, Brands we've worked with (dark logo marquee), Testimonials (marquee, + company logos), Founder, FAQ, CTA panel | public | built (Phase 2, redesigned 2026-10-22) |
-| `/about` | founder, values, team (photos in Cloudinary `rohtre-media/images/team/*`) | public | built (Phase 1) |
-| `/careers` | values, spotlights, hiring steps, FAQ, Chat with HR | public | built (Phase 1) |
-| `/contact` | lead form `#enquiry` + contact details | public | built (Phase 1) |
-| `/privacy`, `/terms` | legal (DPDP-based); company name/type/address, privacy contact and jurisdiction city come from Settings → Legal details, shown as placeholders while empty | public | built (Phase 1, wired to settings Phase 4) |
+| `/about` | rebuilt 2026-10-23 from the live page in the Home style: fixed-photo hero, red strip, Who we are, coloured counter cards, diversity bars, Year in Review video (19:10), team of 5 + founder bio, animated closing card. Content `page_content` key `about` (`src/content/about-schema.ts`) | public | built |
+| `/careers` | rebuilt 2026-10-23 from the live page: studio-photo hero, awards strip, image+text blocks (photos owed), benefits, spotlights (Kartikay, Mrunal, Harshil, Nitish), values, 9 benefit cards, FAQ, closing card; "Apply" opens the application dialog (`#apply`). Key `careers` | public | built |
+| `/contact` | rebuilt 2026-10-24: sky-blue section with cursor-reactive frosted tiles (`ContactScene`), form card (55%) beside "What happens next" + contact details (columns end level). Contact-only form (`src/components/contact/contact-form.tsx`): name, WhatsApp/phone (+91 default), email, business type, website, ad spend, Interested in (multi-select dropdown), message (1000), consent. Key `contact` | public | built |
+| `/terms-of-service`, `/privacy-notice`, `/fraudulent-use`, `/cookie-settings`, `/do-not-sell` | legal pages copied word for word from the live site (2026-10-24), one template (`src/components/legal/legal-template.tsx`), keys `legal-<slug>`, defaults in `src/content/legal-defaults.ts`. Old `/privacy`, `/terms`, `/terms-of-services`, `/cookie-settings-2` 301 to them (`next.config.ts`) | public | built |
 | `/login`, `/no-access`, `/auth/signout` | sign-in in the main site's look (`src/components/auth-shell.tsx`: dark beams + grid + red glow, pill, two-tone headline, glow card, red button); no longer the vault's split stripe panel. With `ADMIN_LOGIN_PATH` set, the sign-in page is only at that secret address (rewrite in `next.config.ts`); `/login` and signed-out `/admin/*` answer 404 (`src/proxy.ts`, `src/lib/login-path.ts`). Unset = plain `/login` | private | built (Phase 1, secret address 2026-10-21) |
 | `/admin` | overview + latest 20 leads (owner/developer) | private | built (Phase 1) |
 | `/admin/pages`, `/admin/pages/[id]` | landing pages: create (service × niche × country), section editor (text, images, on/off, reorder, variants, custom HTML), save draft, publish check, publish/unpublish (developer, or owner if allowed), visibility, preview link (7 days), versions + restore, duplicate for another country | private (all staff; publish = developer) | built (Phase 4) |
+| `/admin/about`, `/admin/careers`, `/admin/contact` | page editors, same rail + section pattern as Home (generated forms). Careers also holds the private HR email list (`careers_private`) | private | built 2026-10-23/24 |
+| `/admin/legal/[slug]` | legal page editor (custom, `legal-editor.tsx`): page fields, sections (H2/H3, label, subtitle) and blocks (paragraph, bullets, numbered, table, link button, image/video), add/edit/delete/move; unknown slug = 404 | private | built 2026-10-24 |
+| `/admin/applications`, `/admin/applications/export` | careers inbox: filters, cards, status (new/contacted/rejected/hired), WhatsApp/Email, email-failure note, delete, CSV | owner/developer | built 2026-10-23 |
+| `/api/careers` | application form (multipart, resume ≤ 4 MB emailed, never stored) | private | built 2026-10-23 |
+| `/api/contact` | Contact page enquiries → `leads` + sales email | private | built 2026-10-24 |
 | `/admin/home` | home page editor (`page_content` key `home`): section rail in site order + one section at a time (see section 5c) | private | built (Phase 4, redesigned 2026-10-22) |
 | `/admin/proof` | results, testimonials, creatives, concept work, badges: edit, approve, tag to service/niche/country | private | built (Phase 4) |
 | `/admin/media` | Cloudinary library: upload, see where used, delete (only when unused; also deletes from Cloudinary) | private | built (Phase 4) |
-| `/admin/leads`, `/admin/leads/export` | lead list: search, status, delete on request (audited), purge older than retention, CSV export (formula-safe) | owner/developer | built (Phase 4) |
+| `/admin/leads`, `/admin/leads/export` | lead inbox (restyled 2026-10-24 like Applications): search, status + source-page filters, cards, WhatsApp this client, sales-email failure note, delete on request (audited), purge older than retention, CSV export (formula-safe, incl. `interested_in`) | owner/developer | built (Phase 4) |
 | `/admin/routing` | redirects (owner/developer) + ad-group → page reference table (all staff) | private | built (Phase 4) |
 | `/admin/settings` | global settings incl. legal details and AI-crawler block list (owner/developer) | private | built (Phase 1, extended Phase 4) |
 | `/admin/users` | staff: add (one-time password shown once), role, deactivate, reset password; always one active owner | owner | built (Phase 4) |
@@ -34,9 +39,10 @@ Contract: `docs/claude-build-prompt.md` (R1-R45). Gate 0 plan: `docs/gate-0-plan
 | `/sitemap.xml` | static pages + published *public* landing pages | public | built (Phase 3) |
 | `/case-studies`, `/blog` | content | public | Phase 6 |
 
-Public pages live in two route groups that both render `SiteChrome` (header, footer, WhatsApp button); the group sets the header tone (see section 5a):
-- `src/app/(dark-hero)/`: `/`, `/about`, `/careers`, `/contact` (first screen is a dark hero) → `transparent-light-text`.
-- `src/app/(site)/`: `/privacy`, `/terms` and **any new page by default** → `solid`. Root `not-found.tsx` → `solid`.
+Public pages live in route groups that render `SiteChrome` (header, footer, WhatsApp button); the group sets the header tone (see section 5a):
+- `src/app/(light-hero)/`: `/`, `/about`, `/careers`, `/contact` and the five legal pages (first screen is the sky-blue hero) → `transparent-dark-text`.
+- `src/app/(site)/`: no pages now; **any new page by default** → `solid`. Root `not-found.tsx` → `solid`. (`(dark-hero)` was removed with the old Contact page; its tone entry stays in `GROUP_TONES`.)
+Footer Legal column: Terms of Service, Privacy Notice, Fraudulent Use of Our Name, Cookie Settings, Do Not Sell My Info.
 Header menu: Home, About, Careers, Contact + Book a Call (`/contact#enquiry`). No theme toggle. Services/Work links are added once those pages exist.
 
 ## 2. Data model
@@ -80,7 +86,11 @@ Planned (Gate 0 section 2.2): dimension_types/values, country_settings, pages, p
   - `preview_tokens` (token_hash, page_id, version_id, expires_at): hidden from visitors; the preview page reads with the secret key.
   - `ad_mappings` (platform, campaign, ad_group, keyword_theme, page_id, notes): staff read/write, reference only (R5).
   - `page_content` delete revoked from signed-in users.
-- Settings JSON gained `legal` {companyName, companyType, registeredAddress, privacyContactName, privacyEmail, jurisdictionCity} and `aiBots` (Phase 4; no migration, Zod defaults).
+- Settings JSON gained `legal` {companyName, companyType, registeredAddress, privacyContactName, privacyEmail, jurisdictionCity} and `aiBots` (Phase 4; no migration, Zod defaults). Since the legal pages became live-site copies (2026-10-24) the `legal` settings are no longer shown anywhere.
+- `20261023120000_careers` (**applied** by the founder): `careers_applications` (category, full_name, email, phone, role, experience, portfolio_url, message, resume_name, consent_at, source_page, ip_hash, status new|contacted|rejected|hired, notify_error); `careers_private` (one row, `notify_emails[]` = HR addresses). RLS on, no public policies; managers read/update/delete; inserts only by `/api/careers` with the secret key.
+- `20261024120000_contact_enquiries` (written; founder applies with `npx supabase db push`, see section 11): `leads.interested_in text[]`, `leads.notify_error text`. Contact enquiries are `leads` rows with `page_path` `/contact` and `consent_text_version` `contact-2026-10-24`; the first chosen interest also goes to `interest`. The Leads screen and export still load without these columns.
+- `page_content` keys (JSON, Zod, section-by-section fallback): `home`, `about`, `careers`, `contact`, `legal-terms-of-service`, `legal-privacy-notice`, `legal-fraudulent-use`, `legal-cookie-settings`, `legal-do-not-sell`. A page with no saved row shows its code defaults. `npm run seed:legal` stores the five legal defaults (only rows not yet saved; optional).
+- Deleting a person's data: Admin → Leads (or Applications) → Delete; the copy in the Gmail inbox is deleted by hand.
 
 ## 3. Section library
 
@@ -184,7 +194,7 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 - `HeaderTone` = `"solid"` (default) | `"transparent-dark-text"` | `"transparent-light-text"`. In every tone the scrolled header is the same white bar with dark logo and links (unchanged).
 - Set on the server: the route-group layout passes `tone` (from `GROUP_TONES`) to `SiteChrome` → `SiteHeader`, which writes `data-tone` on `<header>`; CSS in `design.css` styles `html:not([data-scrolled]) .rm-header[data-tone=…]`. First paint is correct (no flash, no layout shift). `resolveHeaderTone()` turns anything missing/unknown into `solid`, so forgetting a tone is harmless.
 - Never style the header from other page content (`body:has(...)`): with Cache Components, pages you navigated away from stay in the DOM hidden (React Activity), which is what made the header white on Privacy/Terms (fixed 2026-10-21).
-- Where each page declares its tone: `(dark-hero)/layout.tsx` → `transparent-light-text` (home, About, Careers, Contact); `(site)/layout.tsx` → none → `solid` (Privacy, Terms, new pages); `not-found.tsx` → `solid`.
+- Where each page declares its tone: `(light-hero)/layout.tsx` → `transparent-dark-text` (home, About, Careers, Contact, the five legal pages); `(site)/layout.tsx` → none → `solid` (new pages); `not-found.tsx` → `solid`.
 - **Phase 3 hook:** every hero/section type in the future section registry declares the header tone it needs, and a page takes its header tone from its first enabled section; if none declares one the default is solid. The registry reuses the exported `HeaderTone` type.
 - Test: `tests/header-tone.test.ts` (every public page is in a group with a valid tone; dark-hero pages and only those get white text).
 
@@ -197,7 +207,8 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 
 ## 5c. Admin layout
 
-- Top navigation (`src/components/admin/admin-nav.tsx`): from 1100 px Overview, Home page, Landing pages, Proof & badges, Media, Leads + "More" (Redirects & ads, Settings, Users, Audit log) + account menu (name, role, Password, View website, Sign out); below 1100 px one "Menu" button with everything. Same routes and role rules (`ADMIN_TABS` with a `group`). Menus close on Escape, an outside click or navigation.
+- Top navigation (`src/components/admin/admin-nav.tsx`, since 2026-10-24): from 1360 px Overview, **Company** menu (Home, About, Careers, Contact page), **Legal** menu (the five legal pages), Landing pages, Proof & badges, Leads, Applications + "More" (Media, Redirects & ads, Settings, Users, Audit log) + account menu (name from 1600 px, role, Password, View website, Sign out); below 1360 px one "Menu" button with everything, grouped under Company / Legal headings. Same routes and role rules (`ADMIN_TABS` with a `group`: primary | company | legal | more | account). Menus close on Escape, an outside click or navigation.
+- Shared `Select` gained `inline` (list opens under the box in the page flow, also on touch; used in the careers dialog and the Contact form). Contact's "Interested in" uses `src/components/contact/multi-select.tsx` (same look, several choices).
 - Home page editor: left rail (240 px, from 1024 px) of every section in site order with icon, name, a green/grey shown dot and the count of empty slots/blockers; ↑/↓/Home/End move through it (`aria-current`). Below 1024 px a "Section" dropdown. Right: section name, one sentence (what and where), "Show this section" switch, "View on site ↗" (`/#anchor`: partners, services, products, engage, video-ads, results, client-results, process, brands, testimonials, founder, faq, lets-talk), then cards Words / Pictures & videos / Button / Advanced (closed). In the composition hero layout the slider fields move to Advanced, and the other way round.
 - Save bar (`save-bar.tsx`): sticky; Saved / Unsaved changes / Saving… / the error; Discard; leaving with unsaved edits asks first (the browser's prompt on close/reload, an in-bar "Leave without saving?" on admin links). Used on Home page, Landing page editor, Settings and Proof & badges. Save calls are unchanged.
 - **Dropdowns: one `Select`** (`src/components/admin/select.tsx`) replaces every native `<select>` in the admin (12 before, 0 after; the only `<select>` left is its touch fallback). Same props as a controlled select (value, onChange(value), options, disabled, name → hidden input for FormData, id, aria-label, required, invalid). WAI-ARIA APG "Select-Only Combobox" pattern (checked on w3.org, page updated 12 Aug 2025): combobox trigger (aria-expanded, aria-controls, aria-activedescendant), listbox/option (aria-selected), arrows, Home/End, PageUp/PageDown, Enter/Space/Alt+Up choose, Tab chooses and moves on, Escape closes, type-ahead. Popup portalled to body, fixed, flips up, ≥ trigger width, max min(320px, 50svh), z-index 1000 (above header z-30 and save bar z-20), follows scroll/resize, closes on outside click; options ≥ 44 px, red-tint highlight, check mark, optional hint/description/group heading/icon. 140 ms fade + slight scale, none for reduced motion. Coarse pointer → native select in the same box. Admin-only code (not in any public page's JS; checked in the build).
@@ -279,6 +290,13 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-22 | Hero video: landscape shapes; taller shapes are capped at today's 16:9 height on desktop so the headline and button never move | Brief Q2 |
 | 2026-10-22 | Dev dependency `jsdom` (tests only): the admin Select's keyboard/focus/portal tests need a DOM. Simple Icons copied as path data (not installed) | Brief Part 0.3 |
 | 2026-10-22 | Home first-load JS 187.7 → 188.0 KB gzip (round 4); the Select is admin-only | Brief Part 0.6 |
+| 2026-10-23 | **Phase 5 (AI) dropped.** Remaining: Phase 6 (case studies, GTM/GA4/Pixel/CAPI + consent, SEO/performance) and Phase 7 (WordPress redirects, domain switch, campaigns one at a time, uptime/backups), only on the founder's word | Founder |
+| 2026-10-23 | About and Careers rebuilt from the live pages in the Home style; a careers block photo showing another company's staff was not reused (placeholders until the founder uploads) | Founder brief |
+| 2026-10-23 | Careers applications: Supabase + email to HR through Gmail SMTP (nodemailer, free app password). Resume attached to the email only, never stored. WhatsApp-to-HR (Cloud API) prepared but off (`CAREERS_WHATSAPP_ENABLED`). No tracking event on the careers form | Founder ("free") |
+| 2026-10-24 | Contact: new contact-only form (landing pages keep `LeadForm`), saved in `leads`, sales email through the same Gmail SMTP with Reply-To = visitor, HTML (escaped) + text, inline logo (cid). `lead_submit` fires only after a confirmed save, unchanged | Founder |
+| 2026-10-24 | Legal pages: new slugs named after the pages; live text copied word for word (typos and outdated WordPress cookie names kept, editable); the live opt-out and fraud report forms replaced by "Email us" buttons; cookie switches wait for Phase 6's banner | Founder |
+| 2026-10-24 | Branches: briefs asked for feature branches; the two-branch rule (`dev` + `main`) won every time | Founder rule |
+| 2026-10-24 | Claude doesn't run lint, build, typecheck, tests or the dev server; the founder runs them | Founder |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
 
@@ -296,6 +314,10 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | ADMIN_LOGIN_PATH | server (build + proxy) | secret sign-in address, e.g. `/rohtre-…` (12-80 chars) |
 | LEAD_HASH_SALT | **server only** | optional salt for IP hashing (falls back to the secret key) |
 | SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD | terminal only | Supabase CLI (optional; the founder's CLI login is used) |
+| SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS | **server only** | Gmail SMTP (app password) for careers + contact emails |
+| CAREERS_NOTIFY_FALLBACK | server | HR address when Admin → Careers → HR emails is empty |
+| CONTACT_NOTIFY_EMAIL | server | sales address(es) for Contact enquiries; empty = CAREERS_NOTIFY_FALLBACK, then SMTP_USER |
+| CAREERS_WHATSAPP_ENABLED, WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_HR_NUMBER, WHATSAPP_TEMPLATE, WHATSAPP_TEMPLATE_LANG | **server only** | WhatsApp-to-HR (off) |
 
 ## 9. Phase checklist
 
@@ -306,14 +328,22 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 1 Global shell | done 2026-10-17 |
 | 2 Home page | done 2026-10-17 (redesigned, fixes 2026-10-21) |
 | 3 Landing system | done 2026-10-21 |
-| 4 Admin | **done 2026-10-21**, waiting for "go" |
-| 5 AI (needs `docs/design-guide.md`) · 6 Blog/growth · 7 Launch | not started |
+| 4 Admin | done 2026-10-21 |
+| Company pages: About, Careers (+ applications), Contact (+ sales email) | done 2026-10-23/24 |
+| Legal pages (5) + admin Company/Legal menus | done 2026-10-24 |
+| 5 AI | **dropped** (founder, 2026-10-23) |
+| 6 Case studies, tracking + consent, SEO/performance · 7 Launch | not started; wait for the founder |
 
 ## 9a. Launch blockers
 
 | Item | What's owed | Where |
 |---|---|---|
-| Legal details: company name, type, registered address, privacy contact name + email, jurisdiction city | founder | Admin → Settings → Legal details |
+| Legal pages: copied from the live site; review outdated text (WordPress cookie names, "form below" on Do Not Sell, "Your choices are saved" on Cookie Settings, IPC → BNS) and have them reviewed before launch | founder | Admin → Legal |
+| Careers: 3 block photos (4:3) | founder | Admin → Careers page → Image + text blocks |
+| Delete the old Avjit and Hassan photos in Cloudinary | founder | Cloudinary |
+| Real sales address for Contact enquiries (`CONTACT_NOTIFY_EMAIL`) | founder | `.env.local` / host |
+| Apply `20261024120000_contact_enquiries` (until then Contact enquiries fail to save; the email still goes out) | founder | `npx supabase db push` |
+| Host env: SMTP_* (+ CONTACT_NOTIFY_EMAIL) on the hosting | founder | Phase 7 |
 | "2B+" stat badge (disabled): exact number, unit (conversions / views / other), "as of" date, proof source. Conflict: live home says 2 Billion conversions, live About says 2B views, the brief says 2,000,000+ conversions (1,000x and metric differ) | founder | `badges` row `e474c465…` |
 | 5 live badges have no proof link (shown as a showcase by founder decision) | founder (optional) | `badges` |
 | Home placeholders (dev only, never in production): 2 hero slides, 3 result blocks, founder years of experience | founder | home |
@@ -330,7 +360,7 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Social links: all empty (the live footer shows no icons until a shown https link is saved) | founder | Admin → Settings → Social links |
 | Google Partner badge: Google asks for the official HTML snippet, unaltered, ≥ 100 px tall; the strip shows the file at 56-88 px. Decide: keep, swap for the snippet, or drop | founder | Proof & badges |
 
-Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` renders "[TO CONFIRM: …]" (legal pages); home uses `PlaceholderBox` / `NotLiveTag` (`src/components/home/parts.tsx`) behind `SHOW_PLACEHOLDERS` (dev only).
+Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` renders "[TO CONFIRM: …]" (no longer used by the legal pages); home uses `PlaceholderBox` / `NotLiveTag` (`src/components/home/parts.tsx`) behind `SHOW_PLACEHOLDERS` (dev only).
 
 ## 10. Open items
 
@@ -343,13 +373,15 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Restoring an old page version whose image was since deleted from the Media library shows a missing image until a new one is chosen | founder | no |
 | Live-site claims without proof (`docs/content/wordpress-inventory.md`) | founder | publishing |
 | Set up the Google Sheet link (`docs/setup/google-sheets-leads.md`) | founder | no (leads are safe in Supabase) |
-| Privacy/Terms placeholders: registered company name and type/address, grievance contact, jurisdiction city. Have both reviewed before launch | founder | launch |
+| Legal pages now carry the live site's own text (no placeholders); have them reviewed before launch | founder | launch |
 | Lead route end-to-end (HTTP) test and browser screenshots not run: the founder runs the site; the database part is covered by `check:rls` | developer | no |
 | 2026-10-21: the only login (founder) had no `profiles` row ("no access"); an active **owner** profile was added. Name is empty: set it on Admin → Users | founder | no |
 | Home inputs: 2 hero slides (desktop + mobile), which testimonials are real + approved, real results (client, metric, screenshot), FAQ approval, founder years of experience: all through the admin (Home page, Proof & badges) | founder | publishing |
 | Admin screens were checked by typecheck, lint, unit tests, RLS checks and a production build only; the founder runs the site, so nobody has clicked through them in a browser yet | founder | no |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
-| Keys were pasted in chat: rotate the Supabase secret key and Cloudinary API secret before launch | founder | before launch |
+| Keys were pasted in chat (also a full `.env.local` copy on 2026-10-23): rotate the Supabase secret key, Cloudinary API secret, Gmail app password and `ADMIN_LOGIN_PATH`; delete the uploaded copy | founder | before launch |
+| Gmail SMTP limit about 500 emails/day (consumer account); if the account is flagged both forms stop emailing (rows are still saved, failure shown in the inbox) | founder | no |
+| Not seen in a browser by Claude: About, Careers, Contact, legal pages and their admin editors (the founder checks manually) | founder | no |
 | "2B+" badge is switched ON in the database (seen 2026-10-22) although its number/unit is unconfirmed; it shows on the live strip | founder | that badge |
 | Client-logo use: big-brand logos (EA, DayZ, BetterHelp, italki, Sidemen, SPORTbible…) imply they were clients; confirm each, with permission where needed | founder | before launch |
 | Optional home sections from the live page not built: Paid media & PPC swipe carousel, One Growth System, News & Recognition | founder | no |
@@ -372,7 +404,8 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-**Home round 4 done on `dev` (2026-10-22), waiting for the founder's "go".** No new migration (round 4 is JSON with defaults). Founder: `npx supabase db push` if round 3's badge logo style isn't applied yet, then `npm run dev`: Video Ads & Reels, hero video Shape, Founder stat, footer, Admin → Settings → Social links, any admin dropdown.
-Then Phase 5 (AI page creation, R29-R32), which needs `docs/design-guide.md`; if it's missing, stop and ask.
+**All public pages are built on `dev` (2026-10-24): Home, About, Careers, Contact and the five legal pages.** Founder checks them by hand.
+Founder commands: `npx supabase migration list` → (if older dates are missing on Remote) `npx supabase migration repair --status applied <the 9 older versions>` → `npx supabase db push --dry-run` (must list only `20261024120000_contact_enquiries.sql`) → `npx supabase db push`; optional `npm run seed:legal`; after removed routes, delete `.next` before `npm run dev`.
+Next: Phase 6 or 7, only when the founder says so.
 
 Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.
