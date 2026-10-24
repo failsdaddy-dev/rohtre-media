@@ -10,7 +10,8 @@ import type { Block, LegalPage, LegalSection, LegalSlug } from "./legal-schema";
 // Not copied: the live layout, the "Contents" lists (the page builds its own
 // from the headings), the site-wide "Ready to unlock growth" banner, and the
 // interactive parts (cookie switches and buttons, the opt-out form, the
-// fraud report form), which are not rebuilt. Links to the old domain's
+// fraud report form), which are not rebuilt: the two forms are replaced by an
+// "Email us" button; cookie switches come with the cookie banner (Phase 6). Links to the old domain's
 // pages point to the new routes. Card icons (emoji) are kept in the text.
 // These are the defaults: once a page is saved in Admin → Legal, the
 // saved copy is shown instead (scripts/seed-legal.ts stores these).
@@ -598,6 +599,8 @@ const fraud: LegalPage = {
         "📞 **+91 96957 47475**\nCall or WhatsApp",
         "🌐 **cybercrime.gov.in**\nAlso file with National Cyber Crime Portal",
       ),
+      // In place of the live fraud report form (owner's choice, 2026-10-24): email only.
+      btn("Email us at sales@rohtremedia.com", "mailto:sales@rohtremedia.com?subject=Fraud%20Report"),
       p(
         "If you have suffered financial loss, we strongly recommend also filing a complaint at **cybercrime.gov.in** and your nearest police station as soon as possible.",
       ),
@@ -784,6 +787,8 @@ const doNotSell: LegalPage = {
         p(
           "Use the form below to opt out of data sharing. We'll process your request within 15 business days and confirm via email.",
         ),
+        // In place of the live opt-out form (owner's choice, 2026-10-24): email only.
+        btn("Email us at sales@rohtremedia.com", "mailto:sales@rohtremedia.com?subject=Privacy%20Opt-Out%20Request"),
       ],
       { label: "Opt Out" },
     ),
