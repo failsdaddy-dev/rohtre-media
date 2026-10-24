@@ -26,8 +26,11 @@ const COMPANY = [
   { href: "/contact", label: "Contact" },
 ];
 const LEGAL = [
-  { href: "/privacy", label: "Privacy Notice" },
-  { href: "/terms", label: "Terms of Service" },
+  { href: "/terms-of-service", label: "Terms of Service" },
+  { href: "/privacy-notice", label: "Privacy Notice" },
+  { href: "/fraudulent-use", label: "Fraudulent Use of Our Name" },
+  { href: "/cookie-settings", label: "Cookie Settings" },
+  { href: "/do-not-sell", label: "Do Not Sell My Info" },
 ];
 
 export async function SiteFooter({ settings }: { settings: SiteSettings }) {

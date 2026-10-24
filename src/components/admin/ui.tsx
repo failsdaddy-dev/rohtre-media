@@ -6,8 +6,11 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 export type AdminTab = {
   href: string;
   label: string;
-  /** primary = in the top row; more = the "More" menu; account = the account menu. */
-  group: "primary" | "more" | "account";
+  /**
+   * primary = in the top row; company / legal = the "Company" and "Legal"
+   * menus in the top row; more = the "More" menu; account = the account menu.
+   */
+  group: "primary" | "company" | "legal" | "more" | "account";
   manage?: boolean;
   owner?: boolean;
 };
@@ -15,10 +18,15 @@ export type AdminTab = {
 /** Every admin page, in menu order. Routes and role rules are unchanged. */
 export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin", label: "Overview", group: "primary" },
-  { href: "/admin/home", label: "Home page", group: "primary" },
-  { href: "/admin/about", label: "About page", group: "primary" },
-  { href: "/admin/careers", label: "Careers page", group: "primary" },
-  { href: "/admin/contact", label: "Contact page", group: "primary" },
+  { href: "/admin/home", label: "Home page", group: "company" },
+  { href: "/admin/about", label: "About page", group: "company" },
+  { href: "/admin/careers", label: "Careers page", group: "company" },
+  { href: "/admin/contact", label: "Contact page", group: "company" },
+  { href: "/admin/legal/terms-of-service", label: "Terms of Service", group: "legal" },
+  { href: "/admin/legal/privacy-notice", label: "Privacy Notice", group: "legal" },
+  { href: "/admin/legal/fraudulent-use", label: "Fraudulent Use", group: "legal" },
+  { href: "/admin/legal/cookie-settings", label: "Cookie Settings", group: "legal" },
+  { href: "/admin/legal/do-not-sell", label: "Do Not Sell", group: "legal" },
   { href: "/admin/pages", label: "Landing pages", group: "primary" },
   { href: "/admin/proof", label: "Proof & badges", group: "primary" },
   { href: "/admin/media", label: "Media", group: "more" },

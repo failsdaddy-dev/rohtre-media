@@ -30,9 +30,9 @@ export function resolveHeaderTone(tone: unknown): HeaderTone {
  * pages, not guessed:
  *   (dark-hero): for a page whose first screen is dark (none at the moment;
  *                Contact moved to the light hero).
- *   (light-hero): home, About, Careers and Contact start with the light sky-blue hero.
- *   (site):      Privacy, Terms (and any new page) start on the light page
- *                background (#f5f4f0); they use the safe default.
+ *   (light-hero): home, About, Careers, Contact and the legal pages start with the light sky-blue hero.
+ *   (site):      any new page starting on the light page background
+ *                (#f5f4f0); it uses the safe default.
  * The root not-found page also uses the default.
  */
 export const GROUP_TONES: Record<string, HeaderTone | undefined> = {

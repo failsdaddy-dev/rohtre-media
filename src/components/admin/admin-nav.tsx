@@ -6,8 +6,9 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { LogoutIcon } from "../icons";
 import { ADMIN_TABS, type AdminTab } from "./ui";
 
-// The admin's top navigation. From 1360 px: the primary items in a row, a
-// "More" menu (Redirects & ads, Settings, Users, Audit log) and the account
+// The admin's top navigation. From 1360 px: Overview, the "Company" menu
+// (Home, About, Careers, Contact page editors), the "Legal" menu (the five
+// legal page editors), the other primary items in a row, a "More" menu (Redirects & ads, Settings, Users, Audit log) and the account
 // menu (Password, View website, Sign out). Below 1360 px everything sits in
 // one "Menu" button, so nothing is ever clipped. Routes and role rules are
 // the same as before (ADMIN_TABS). Menus close with Escape, an outside
@@ -96,6 +97,28 @@ const Caret = () => (
   </svg>
 );
 
+const GROUP_HEAD = "px-2.5 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-fg-2";
+
+/** "Company" / "Legal": a menu in the row, styled like "More". */
+function GroupMenu({ name, tabs, current }: { name: string; tabs: AdminTab[]; current: string }) {
+  if (tabs.length === 0) return null;
+  const on = tabs.some((t) => isOn(t.href, current));
+  return (
+    <Menu
+      label={`${name} pages`}
+      button={
+        <span className={`flex items-center gap-1.5 ${on ? "text-brand" : ""}`}>
+          {name} <Caret />
+        </span>
+      }
+    >
+      {tabs.map((t) => (
+        <NavLink key={t.href} tab={t} current={current} />
+      ))}
+    </Menu>
+  );
+}
+
 function NavLink({ tab, current }: { tab: AdminTab; current: string }) {
   const on = isOn(tab.href, current);
   return (
@@ -127,6 +150,9 @@ export function AdminNav({
   const current = usePathname();
   const tabs = ADMIN_TABS.filter((t) => (!t.manage || canManage) && (!t.owner || isOwner));
   const primary = tabs.filter((t) => t.group === "primary");
+  const [overview, ...restPrimary] = primary;
+  const company = tabs.filter((t) => t.group === "company");
+  const legal = tabs.filter((t) => t.group === "legal");
   const more = tabs.filter((t) => t.group === "more");
   const mine = tabs.filter((t) => t.group === "account");
   const moreOn = more.some((t) => isOn(t.href, current));
@@ -154,7 +180,10 @@ export function AdminNav({
     <>
       {/* 1360 px and wider: the row. */}
       <nav aria-label="Admin" className="hidden min-w-0 flex-1 items-center gap-1 min-[1360px]:flex">
-        {primary.map((t) => (
+        {overview && <NavLink tab={overview} current={current} />}
+        <GroupMenu name="Company" tabs={company} current={current} />
+        <GroupMenu name="Legal" tabs={legal} current={current} />
+        {restPrimary.map((t) => (
           <NavLink key={t.href} tab={t} current={current} />
         ))}
         {more.length > 0 && (
@@ -215,10 +244,26 @@ export function AdminNav({
           </>
         }
       >
-        <nav aria-label="Admin" className="flex flex-col gap-1">
-          {[...primary, ...more].map((t) => (
-            <NavLink key={t.href} tab={t} current={current} />
+        <nav aria-label="Admin" className="flex max-h-[70dvh] flex-col gap-1 overflow-y-auto">
+          {overview && <NavLink tab={overview} current={current} />}
+          {(
+            [
+              ["Company", company],
+              ["Legal", legal],
+            ] as const
+          ).map(([name, list]) => (
+            <div key={name} className="flex flex-col gap-1 border-t border-line pt-1">
+              <p className={GROUP_HEAD}>{name}</p>
+              {list.map((t) => (
+                <NavLink key={t.href} tab={t} current={current} />
+              ))}
+            </div>
           ))}
+          <div className="flex flex-col gap-1 border-t border-line pt-1">
+            {[...restPrimary, ...more].map((t) => (
+              <NavLink key={t.href} tab={t} current={current} />
+            ))}
+          </div>
         </nav>
         <div className="mt-1 border-t border-line pt-2">
           {accountHead}

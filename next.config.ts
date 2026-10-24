@@ -37,6 +37,17 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/cloudinary/url.ts",
   },
+  // Legal pages: the old addresses (this site's first /privacy and /terms,
+  // and the WordPress slugs) go to the new pages, so links and search
+  // results keep working.
+  async redirects() {
+    return [
+      { source: "/privacy", destination: "/privacy-notice", permanent: true },
+      { source: "/terms", destination: "/terms-of-service", permanent: true },
+      { source: "/terms-of-services", destination: "/terms-of-service", permanent: true },
+      { source: "/cookie-settings-2", destination: "/cookie-settings", permanent: true },
+    ];
+  },
   // The sign-in page is served at the secret address (see src/lib/login-path.ts).
   async rewrites() {
     return loginPath ? { beforeFiles: [{ source: loginPath, destination: "/login" }] } : { beforeFiles: [] };
