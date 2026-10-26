@@ -49,7 +49,7 @@ export function Awards({ s }: { s: RecognitionContent["awards"] }) {
   return (
     <section aria-label="Awards" className="rm-work-band py-20 md:py-28">
       <Container>
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2 lg:gap-6">
           {s.items.map((a, i) => (
             <li key={i} className="flex" {...reveal(i % 4)}>
               <article tabIndex={0} className="rm-svc rm-rec-award flex w-full flex-col">
