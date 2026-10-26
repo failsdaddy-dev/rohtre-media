@@ -52,7 +52,7 @@ export function Awards({ s }: { s: RecognitionContent["awards"] }) {
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2 lg:gap-6">
           {s.items.map((a, i) => (
             <li key={i} className="flex" {...reveal(i % 4)}>
-              <article tabIndex={0} className="rm-svc rm-rec-award flex w-full flex-col">
+              <article className="rm-svc rm-rec-award flex w-full flex-col">
                 <div className="rm-work-logo">
                   <Pic pic={a.logo} sizes="(min-width: 1024px) 260px, (min-width: 640px) 45vw, 90vw" fit="contain" />
                 </div>
@@ -90,7 +90,7 @@ export function ClientQuotes({ s }: { s: RecognitionContent["clients"] }) {
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {s.items.map((q, i) => (
             <li key={i} className="flex" {...reveal(i % 3)}>
-              <figure tabIndex={0} className="rm-svc rm-rec-quote flex w-full flex-col">
+              <figure className="rm-svc rm-rec-quote flex w-full flex-col">
                 <blockquote className="text-[16px] leading-relaxed text-[#1f2a3a]">{q.quote}</blockquote>
                 <figcaption className="mt-auto flex items-center gap-3 pt-6">
                   {(q.photo.media.publicId || q.photo.src) && (

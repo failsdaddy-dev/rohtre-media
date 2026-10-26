@@ -3109,3 +3109,13 @@ html:not([data-scrolled]) .rm-header[data-tone] .rm-nav-link[aria-current="page"
     font-size: 15px;
   }
 }
+/* Brand cards are links: a mouse click doesn't leave the glow on (it shows on
+   hover, and on keyboard focus only). */
+.rm-svc.rm-work-card:focus:not(:focus-visible):not(:hover) {
+  transform: none;
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+.rm-svc.rm-work-card:focus:not(:focus-visible):not(:hover)::after {
+  opacity: 0;
+}
