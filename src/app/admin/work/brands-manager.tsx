@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { SaveBar } from "@/components/admin/save-bar";
 import { COMMON_HINTS, SchemaForm, type Hints, type JsonSchema } from "@/components/admin/schema-form";
 import { Button, Field, INPUT_CLASS } from "@/components/admin/ui";
 import { cloudinaryUrl } from "@/lib/cloudinary/url";
@@ -116,6 +117,14 @@ function Thumb({ b }: { b: Brand }) {
 export function BrandsManager({ initial, schema }: { initial: Brand[] | null; schema: JsonSchema }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft | null>(null);
+  /** The brand as it was opened or last saved (Discard goes back to it). */
+  const [opened, setOpened] = useState<Draft | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const open = (d: Draft | null) => {
+    setDraft(d);
+    setOpened(d);
+    setDirty(false);
+  };
   const [confirm, setConfirm] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -148,6 +157,7 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
     const sErr = draft.locked ? null : slugError(draft.slug, taken);
     const set = (patch: Partial<Draft>) => {
       setDraft({ ...draft, ...patch });
+      setDirty(true);
       setMessage(null);
     };
     const restSchema = Object.fromEntries(Object.entries(schema.properties ?? {}).filter(([k]) => k !== "name"));
@@ -157,7 +167,7 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
           <h3 className="text-lg font-bold">{draft.id ? `Edit ${draft.data.name || "brand"}` : "Add brand"}</h3>
           <Button
             onClick={() => {
-              setDraft(null);
+              open(null);
               setErrors({});
               setMessage(null);
             }}
@@ -224,14 +234,21 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
           />
         </div>
 
-        <div className="sticky bottom-3 z-10 flex flex-wrap items-center justify-between gap-3 rounded-full border border-line bg-bg-elev px-4 py-2 shadow-lg">
-          <p role="status" className={`text-sm ${message?.tone === "error" ? "text-danger" : "text-fg-2"}`}>
-            {message?.text ??
-              (draft.published ? "Saving makes this brand live at once." : "Unpublished: hidden on the site.")}
-          </p>
+        <SaveBar
+          dirty={dirty}
+          pending={pending}
+          message={message}
+          idle={draft.published ? `Saved. Live at /work/${draft.slug}.` : "Saved. Unpublished: hidden on the site."}
+          onDiscard={() => {
+            setDraft(opened);
+            setErrors({});
+            setDirty(false);
+            setMessage(null);
+          }}
+        >
           <Button
             variant="primary"
-            disabled={pending || Boolean(sErr) || !draft.data.name.trim()}
+            disabled={pending || !dirty || Boolean(sErr) || !draft.data.name.trim()}
             onClick={() =>
               start(async () => {
                 const res = await saveBrand({
@@ -242,7 +259,8 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
                 });
                 if (res.ok) {
                   setErrors({});
-                  setDraft({ ...draft, id: res.id ?? draft.id, locked: draft.published, slugTouched: true });
+                  const savedDraft = { ...draft, id: res.id ?? draft.id, locked: draft.published, slugTouched: true };
+                  open(savedDraft);
                   setMessage({
                     tone: "ok",
                     text: draft.published ? `Saved. Live at /work/${draft.slug}.` : "Saved (unpublished).",
@@ -257,7 +275,7 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
           >
             {pending ? "Saving…" : "Save brand"}
           </Button>
-        </div>
+        </SaveBar>
       </div>
     );
   }
@@ -283,7 +301,7 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
             onClick={() => {
               setErrors({});
               setMessage(null);
-              setDraft({ id: null, slug: "", published: false, data: blankBrand(), locked: false, slugTouched: false });
+              open({ id: null, slug: "", published: false, data: blankBrand(), locked: false, slugTouched: false });
             }}
           >
             + Add brand
@@ -332,7 +350,7 @@ export function BrandsManager({ initial, schema }: { initial: Brand[] | null; sc
                 onClick={() => {
                   setErrors({});
                   setMessage(null);
-                  setDraft(toDraft(b));
+                  open(toDraft(b));
                 }}
               >
                 Edit

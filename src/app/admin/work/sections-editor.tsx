@@ -176,40 +176,43 @@ export function SectionsEditor<T extends Record<string, unknown>>({
         </section>
       </div>
 
-      <SaveBar
-        dirty={dirty}
-        pending={pending}
-        message={message}
-        idle={`Saved. Changes go live on the ${pageName} when you save.`}
-        onDiscard={() => {
-          setData(saved);
-          setErrors({});
-          setDirty(false);
-          setMessage(null);
-        }}
-      >
-        <Button
-          variant="primary"
-          disabled={pending || !dirty}
-          onClick={() =>
-            start(async () => {
-              const res = await save(data);
-              if (res.ok) {
-                setErrors({});
-                setDirty(false);
-                setSaved(data);
-                setMessage({ tone: "ok", text: `Saved. The ${pageName} is updated.` });
-                router.refresh();
-              } else {
-                setErrors(res.fieldErrors);
-                setMessage({ tone: "error", text: res.error });
-              }
-            })
-          }
+      {/* On a custom panel (e.g. Brands, which has its own save bar) the page's bar shows only with unsaved page edits. */}
+      {(!current.panel || dirty) && (
+        <SaveBar
+          dirty={dirty}
+          pending={pending}
+          message={message}
+          idle={`Saved. Changes go live on the ${pageName} when you save.`}
+          onDiscard={() => {
+            setData(saved);
+            setErrors({});
+            setDirty(false);
+            setMessage(null);
+          }}
         >
-          Save {pageName}
-        </Button>
-      </SaveBar>
+          <Button
+            variant="primary"
+            disabled={pending || !dirty}
+            onClick={() =>
+              start(async () => {
+                const res = await save(data);
+                if (res.ok) {
+                  setErrors({});
+                  setDirty(false);
+                  setSaved(data);
+                  setMessage({ tone: "ok", text: `Saved. The ${pageName} is updated.` });
+                  router.refresh();
+                } else {
+                  setErrors(res.fieldErrors);
+                  setMessage({ tone: "error", text: res.error });
+                }
+              })
+            }
+          >
+            Save {pageName}
+          </Button>
+        </SaveBar>
+      )}
     </div>
   );
 }
