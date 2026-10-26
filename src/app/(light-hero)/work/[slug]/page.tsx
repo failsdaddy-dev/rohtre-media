@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AboutMotion } from "@/components/about/about-motion";
 import { ArrowRightIcon } from "@/components/icons";
 import { MediaPlayback } from "@/components/media/media-playback";
@@ -36,7 +37,20 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
   };
 }
 
-export default async function BrandPage({ params }: PageProps<"/work/[slug]">) {
+/**
+ * The slug comes from the URL, so the brand is read inside <Suspense>: a
+ * client navigation shows the sky hero shape at once and the brand streams
+ * in (Cache Components' instant navigation). Brand data itself is cached.
+ */
+export default function BrandPage({ params }: PageProps<"/work/[slug]">) {
+  return (
+    <Suspense fallback={<section aria-busy="true" className="rm-hero-sky rm-hero-dark min-h-[70svh]" />}>
+      <Brand params={params} />
+    </Suspense>
+  );
+}
+
+async function Brand({ params }: { params: PageProps<"/work/[slug]">["params"] }) {
   const { slug } = await params;
   const [b, all, work] = await Promise.all([getBrand(slug), getBrands(), getWorkContent()]);
   if (!b) notFound();
