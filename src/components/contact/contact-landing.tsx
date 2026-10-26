@@ -12,7 +12,13 @@ export function ContactLanding() {
   useEffect(() => {
     if (window.location.hash !== "#enquiry") return;
     window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
-    const top = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const top = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      // The router's jump to #enquiry (scrollIntoView) can also scroll a
+      // clipped box around the form; put that back too.
+      const box = document.querySelector<HTMLElement>(".rm-contact");
+      if (box) box.scrollTop = 0;
+    };
     top();
     const frame = requestAnimationFrame(top);
     return () => cancelAnimationFrame(frame);

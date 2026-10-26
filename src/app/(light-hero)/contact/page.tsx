@@ -16,7 +16,9 @@ import { whatsappLink } from "@/lib/whatsapp";
 // sits behind everything (ContactScene). Words and form choices: Admin →
 // Contact page; enquiries: Admin → Leads. The id "enquiry" stays on the
 // form card: Book a Call links point to /contact#enquiry, and arriving from
-// another page the Contact page opens at the top (ContactLanding).
+// another page the Contact page opens at the top (ContactLanding). The
+// section clips (overflow: clip) rather than hides: a hidden-overflow box can
+// be scrolled by the jump to #enquiry, which cut off the top of the page.
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo } = await getContactContent();
@@ -38,7 +40,7 @@ export default async function ContactPage() {
   const row = "flex items-start gap-3 text-[15px] text-[#1f2430]";
 
   return (
-    <section aria-label="Contact" className="rm-hero-dark rm-hero-sky rm-contact overflow-hidden">
+    <section aria-label="Contact" className="rm-hero-dark rm-hero-sky rm-contact overflow-clip">
       <ContactLanding />
       <ContactScene />
       <Container className="relative z-[1] pb-16 pt-8 md:pt-14 lg:pb-24">
