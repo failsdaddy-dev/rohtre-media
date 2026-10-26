@@ -98,12 +98,15 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
   // Autoplay: the next slide after AUTOPLAY_MS, unless paused or held.
   useEffect(() => {
     if (!motion || hold || n < 2) return;
-    const t = setTimeout(() => {
-      const idle = performance.now() - touchedAt.current > IDLE_AFTER_TOUCH_MS;
-      if (document.hidden || !idle)
-        setTick((v) => v + 1); // try again next round
-      else go(index + 1, GLIDE_MS);
-    }, Math.max(0, glideEnd.current - performance.now()) + AUTOPLAY_MS);
+    const t = setTimeout(
+      () => {
+        const idle = performance.now() - touchedAt.current > IDLE_AFTER_TOUCH_MS;
+        if (document.hidden || !idle)
+          setTick((v) => v + 1); // try again next round
+        else go(index + 1, GLIDE_MS);
+      },
+      Math.max(0, glideEnd.current - performance.now()) + AUTOPLAY_MS,
+    );
     return () => clearTimeout(t);
   }, [motion, hold, n, index, tick, go]);
 
@@ -192,8 +195,6 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
               </li>
             ))}
           </ul>
-            </button>
-          )}
           <button type="button" onClick={() => go(index + 1)} aria-label="Next slide" className="rm-rec-arrow">
             <svg
               aria-hidden="true"
