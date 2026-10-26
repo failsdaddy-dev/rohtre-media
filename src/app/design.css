@@ -2634,3 +2634,348 @@ html[data-motion] .rm-legal-card:active .rm-legal-icon {
     font-size: 11.5pt;
   }
 }
+
+/* ------------------------------------------- work, brand and recognition
+   /work, /work/[slug] and /recognition (src/components/work, recognition).
+   Light bands (no black sections), square white cards with the .rm-svc red
+   glow, sky bands (.rm-hero-sky) and the red strip (.rm-badges). */
+.rm-work-band {
+  background: #ffffff;
+}
+/* Hero buttons on phones: full width, stacked; the second one outlined. */
+@media (max-width: 639.98px) {
+  .rm-work-hero-btns {
+    width: 100%;
+    flex-direction: column;
+  }
+  .rm-work-hero-btns > a {
+    height: 3rem;
+    justify-content: center;
+    padding-inline: 1.5rem;
+    font-size: 1rem;
+  }
+}
+.rm-dark .rm-work-hero-btns > a:nth-child(2) {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Brand card: the whole card is one link. */
+.rm-svc.rm-work-card {
+  padding: 24px;
+  color: inherit;
+  text-decoration: none;
+}
+.rm-work-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+/* The logo on a clean white square tile (the live logos are white on black and are shown as they are). */
+.rm-work-logo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #eef0f3;
+  background: #ffffff;
+}
+.rm-work-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.rm-work-logo-hero {
+  max-width: 280px;
+  padding: 0;
+  box-shadow: 0 24px 50px -30px rgba(15, 40, 80, 0.45);
+}
+@media (max-width: 1023.98px) {
+  .rm-work-logo-hero {
+    max-width: 140px;
+  }
+}
+.rm-work-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.rm-work-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 700;
+}
+.rm-work-arrow {
+  transition: transform 250ms ease;
+}
+.rm-work-card:focus-visible .rm-work-arrow {
+  transform: translateX(5px);
+}
+@media (hover: hover) {
+  .rm-work-card:hover .rm-work-arrow,
+  .rm-work-back:hover .rm-work-arrow {
+    transform: translateX(5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-work-arrow {
+    transition: none;
+  }
+}
+/* "Back to all work" and other text links (44 px tap target). */
+.rm-work-back {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 700;
+}
+.rm-work-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Sharp white frame around an image or video. */
+.rm-work-frame {
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: 0 30px 60px -34px rgba(15, 40, 80, 0.45);
+  border: 1px solid #eef0f3;
+}
+@media (min-width: 768px) {
+  .rm-work-frame {
+    padding: 16px;
+  }
+}
+.rm-work-caption {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: #0a0a0a;
+}
+/* The two video frames: stacked on phones and tablets, offset and
+   overlapping on desktop (the second one sits higher, on top). */
+.rm-work-videos {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+@media (min-width: 1024px) {
+  .rm-work-videos {
+    position: relative;
+    display: block;
+  }
+  .rm-work-video.is-first {
+    width: 60%;
+    margin-top: 15%;
+  }
+  .rm-work-video.is-second {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 48%;
+  }
+}
+
+/* Brand story cards and lists. */
+.rm-svc.rm-work-story {
+  padding: 32px;
+}
+@media (max-width: 639.98px) {
+  .rm-svc.rm-work-card,
+  .rm-svc.rm-work-story,
+  .rm-svc.rm-rec-award,
+  .rm-svc.rm-rec-quote {
+    padding: 20px;
+  }
+  .rm-work-story .rm-svc-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+.rm-work-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #3a3a3a;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.rm-work-bullets li {
+  position: relative;
+  padding-left: 22px;
+}
+.rm-work-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 8px;
+  height: 8px;
+  background: var(--tint, var(--brand));
+}
+
+/* Recognition slider: a scroll-snap track, one slide per screen width. */
+.rm-rec-track {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.rm-rec-track::-webkit-scrollbar {
+  display: none;
+}
+.rm-rec-track:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: -3px;
+}
+html[data-motion] .rm-rec-track {
+  scroll-behavior: smooth;
+}
+.rm-rec-slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-height: min(82svh, 720px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+@media (max-width: 639.98px) {
+  .rm-rec-slide {
+    min-height: 560px;
+  }
+}
+.rm-rec-slide > * {
+  min-height: inherit;
+}
+.rm-rec-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 0, 0, 0.7) 0%, rgba(10, 0, 0, 0.62) 100%);
+}
+@media (min-width: 768px) {
+  .rm-rec-shade {
+    background: linear-gradient(90deg, rgba(10, 0, 0, 0.8) 0%, rgba(10, 0, 0, 0.62) 50%, rgba(10, 0, 0, 0.38) 100%);
+  }
+}
+.rm-rec-title {
+  font-size: clamp(2rem, 4.6vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639.98px) {
+  .rm-rec-title {
+    font-size: clamp(1.6rem, 7.4vw, 2.1rem);
+  }
+}
+/* Controls: bottom left, away from the WhatsApp button (bottom right). */
+.rm-rec-controls {
+  position: absolute;
+  left: max(16px, calc((100vw - 1200px) / 2 + 24px));
+  bottom: 24px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.75);
+}
+@media (max-width: 639.98px) {
+  .rm-rec-controls {
+    left: 16px;
+    right: 88px;
+    bottom: 16px;
+    flex-wrap: wrap;
+  }
+}
+.rm-rec-arrow {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(10, 10, 10, 0.35);
+  color: #ffffff;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+.rm-rec-arrow:hover {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+.rm-rec-count {
+  min-width: 64px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.rm-rec-dots {
+  display: flex;
+  align-items: center;
+}
+.rm-rec-dot {
+  display: grid;
+  width: 24px;
+  height: 44px;
+  place-items: center;
+}
+.rm-rec-dot > span {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  transition:
+    width 200ms ease,
+    background-color 200ms ease;
+}
+.rm-rec-dot[aria-current="true"] > span {
+  width: 18px;
+  background: var(--brand);
+}
+@media (max-width: 639.98px) {
+  .rm-rec-dot {
+    width: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-rec-arrow,
+  .rm-rec-dot > span {
+    transition: none;
+  }
+}
+/* Award and quote cards. */
+.rm-svc.rm-rec-award,
+.rm-svc.rm-rec-quote {
+  padding: 28px;
+}
+.rm-rec-award:focus-visible,
+.rm-rec-quote:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.rm-rec-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #eef0f3;
+}
+/* Header: the current page's link (Work stays current on its brand pages). */
+.rm-header .rm-nav-link[aria-current="page"],
+html:not([data-scrolled]) .rm-header[data-tone] .rm-nav-link[aria-current="page"] {
+  color: var(--brand);
+}

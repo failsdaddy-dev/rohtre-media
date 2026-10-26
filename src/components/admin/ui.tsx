@@ -20,6 +20,8 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin", label: "Overview", group: "primary" },
   { href: "/admin/home", label: "Home page", group: "company" },
   { href: "/admin/about", label: "About page", group: "company" },
+  { href: "/admin/work", label: "Work page", group: "company" },
+  { href: "/admin/recognition", label: "Recognition page", group: "company" },
   { href: "/admin/careers", label: "Careers page", group: "company" },
   { href: "/admin/contact", label: "Contact page", group: "company" },
   { href: "/admin/legal/terms-of-service", label: "Terms of Service", group: "legal" },

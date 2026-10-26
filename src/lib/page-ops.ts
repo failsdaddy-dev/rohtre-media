@@ -239,5 +239,8 @@ export async function mediaInUse(db: Db): Promise<Set<string>> {
   for (const table of ["badges", "testimonials", "results", "creatives", "concept_works"]) {
     collectMediaIds(await must(db.from(table).select("*")), used);
   }
+  // Work page brands (no error if the work_brands migration isn't applied yet).
+  const brands = await db.from("work_brands").select("data");
+  if (!brands.error) collectMediaIds(brands.data, used);
   return used;
 }

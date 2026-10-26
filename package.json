@@ -18,6 +18,7 @@
     "seed:about": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-about.ts",
     "seed:careers": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-careers.ts",
     "seed:legal": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-legal.ts",
+    "seed:work": "node --env-file=.env.local node_modules/vite-node/vite-node.mjs --config vitest.config.ts scripts/seed-work.ts",
     "sb": "supabase"
   },
   "engines": {

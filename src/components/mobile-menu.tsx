@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, MenuIcon } from "./icons";
+import { isCurrent } from "./nav-links";
 
 // Phone menu: a panel under the header. Closes on navigation, Escape, or a
 // tap outside; focus returns to the button.
@@ -32,7 +33,7 @@ export function MobileMenu({ items }: { items: { href: string; label: string }[]
   }, [open]);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         ref={button}
         type="button"
@@ -59,7 +60,7 @@ export function MobileMenu({ items }: { items: { href: string; label: string }[]
               <Link
                 key={item.href}
                 href={item.href}
-                aria-current={path === item.href ? "page" : undefined}
+                aria-current={isCurrent(path, item.href) ? "page" : undefined}
                 className="rounded-xl px-4 py-3 text-base font-medium hover:bg-hover aria-[current=page]:text-brand"
               >
                 {item.label}

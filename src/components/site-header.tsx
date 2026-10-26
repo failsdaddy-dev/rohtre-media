@@ -3,6 +3,7 @@ import { DEFAULT_HEADER_TONE, type HeaderTone } from "@/lib/header-tone";
 import { ArrowRightIcon } from "./icons";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
+import { NavLinks } from "./nav-links";
 
 // Header on every page, landing pages included (R8), with Book a Call always
 // visible (R13). Its look at the top of the page comes from `tone`, set on the
@@ -13,6 +14,8 @@ import { MobileMenu } from "./mobile-menu";
 export const NAV = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
+  { href: "/work", label: "Work" },
+  { href: "/recognition", label: "Recognition" },
   { href: "/careers", label: "Careers" },
   { href: "/contact", label: "Contact" },
 ];
@@ -32,16 +35,9 @@ export function SiteHeader({ tone = DEFAULT_HEADER_TONE }: { tone?: HeaderTone }
           </span>
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rm-nav-link rounded-full px-3.5 py-2 text-[15px] font-medium text-fg-2 transition-colors hover:text-brand"
-            >
-              {item.label}
-            </Link>
-          ))}
+        {/* Six links: shown from 1024 px (the phone menu below that). */}
+        <nav aria-label="Main" className="hidden items-center gap-0.5 lg:flex xl:gap-1">
+          <NavLinks items={NAV} />
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
