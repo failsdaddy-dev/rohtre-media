@@ -2979,3 +2979,75 @@ html[data-motion] .rm-rec-track {
 html:not([data-scrolled]) .rm-header[data-tone] .rm-nav-link[aria-current="page"] {
   color: var(--brand);
 }
+
+/* ------------------------------- work, brand and recognition: phones only
+   Below 640 px (desktop and tablet unchanged): compact brand cards (logo
+   beside the text), smaller logo tiles, tighter frames and story text, and
+   the slider's controls in one row (arrows + counter; the dots hide). */
+@media (max-width: 639.98px) {
+  .rm-svc.rm-work-card {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: start;
+    padding: 16px;
+  }
+  .rm-work-card > .rm-work-logo {
+    grid-row: 1 / span 2;
+    width: 88px;
+  }
+  .rm-work-card > :nth-child(2),
+  .rm-work-card > :nth-child(3) {
+    grid-column: 2;
+    margin-top: 0;
+  }
+  .rm-work-card > :nth-child(2) {
+    font-size: 17px;
+  }
+  .rm-work-card > :nth-child(3) {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+  .rm-work-card > .rm-work-more {
+    grid-column: 1 / -1;
+    min-height: 44px;
+    padding-top: 8px;
+  }
+  .rm-work-logo-hero {
+    max-width: 112px;
+  }
+  .rm-rec-award > .rm-work-logo {
+    max-width: 220px;
+    margin-inline: auto;
+  }
+  .rm-work-frame {
+    padding: 8px;
+  }
+  .rm-work-caption {
+    font-size: 16px;
+  }
+  .rm-work-videos {
+    gap: 32px;
+  }
+  .rm-work-story > p:first-of-type {
+    font-size: 18px;
+  }
+  .rm-work-story p,
+  .rm-work-bullets {
+    font-size: 15px;
+  }
+  .rm-rec-controls {
+    right: 92px;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .rm-rec-dots {
+    display: none;
+  }
+  .rm-rec-count {
+    min-width: 56px;
+  }
+  .rm-rec-quote blockquote {
+    font-size: 15px;
+  }
+}
