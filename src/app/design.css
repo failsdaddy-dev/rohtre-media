@@ -3119,3 +3119,18 @@ html:not([data-scrolled]) .rm-header[data-tone] .rm-nav-link[aria-current="page"
 .rm-svc.rm-work-card:focus:not(:focus-visible):not(:hover)::after {
   opacity: 0;
 }
+/* Legal page buttons on phones: full width, text centred on tidy lines (a long
+   label like "Email us at sales@rohtremedia.com" no longer breaks the pill). */
+@media (max-width: 639.98px) {
+  .rm-legal-button {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 15px;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+}
