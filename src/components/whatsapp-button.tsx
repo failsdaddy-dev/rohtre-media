@@ -99,9 +99,15 @@ export function WhatsAppButton({
           className="rm-pop-in fixed bottom-[104px] right-5 z-40 w-[min(340px,calc(100vw-2rem))] overflow-hidden rounded-[20px] bg-white text-[#0a0a0a] shadow-[0_24px_60px_-18px_rgba(0,0,0,0.45)] max-sm:bottom-[92px] max-sm:right-4"
         >
           <div className="flex items-center gap-3 bg-[#075e54] px-4 py-3.5 text-white">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/15">
-              <ChatIcon size={20} strokeWidth={1.8} />
-            </span>
+            {/* The RohTre Media "R" (the site icon, src/app/apple-icon.png). */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- a 180 px site icon shown at 40 px */}
+            <img
+              src="/apple-icon.png"
+              alt=""
+              width={40}
+              height={40}
+              className="size-10 shrink-0 rounded-full ring-2 ring-white/25"
+            />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[15px] font-bold">{chat.agentName}</span>
               {chat.status && <span className="block truncate text-xs text-white/80">{chat.status}</span>}
