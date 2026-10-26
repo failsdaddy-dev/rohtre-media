@@ -7,20 +7,20 @@ import { keyStep, wrapIndex } from "@/lib/count-up";
 // scroll-snap track (swipe on touch, trackpad and mouse wheel come for
 // free). Left / right arrows, dots and a "01 / 09" counter; ←/→ when the
 // slider has focus. Autoplay: every AUTOPLAY_MS the next slide glides in from
-// the right over GLIDE_MS (eased), looping; it pauses while the pointer or
-// keyboard focus is on the slider, after a swipe and while the tab is
-// hidden. The new slide's text fades in moving left to right (CSS,
-// [data-active]). Slides are server-rendered children; this only
-// moves the track. Reduced motion: no autoplay, and slides jump.
+// the right over GLIDE_MS (eased), looping, always (it only waits a moment
+// after a swipe and while the tab is hidden). The new slide's text fades in
+// moving left to right (CSS, [data-active]). Slides are server-rendered
+// children; this only moves the track. Reduced motion: slides change
+// without the glide.
 
 /** Time on each slide before the next one glides in. */
 const AUTOPLAY_MS = 3000;
 /** How long the automatic glide to the next slide takes. */
-const GLIDE_MS = 2500;
+const GLIDE_MS = 1000;
 /** Glide for the arrows and dots (a click should answer quickly). */
-const CLICK_GLIDE_MS = 700;
-/** After a swipe or wheel, autoplay waits this long. */
-const IDLE_AFTER_TOUCH_MS = 8000;
+const CLICK_GLIDE_MS = 600;
+/** After a swipe, autoplay waits this long. */
+const IDLE_AFTER_TOUCH_MS = 4000;
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -29,18 +29,13 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
   const n = slides.length;
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const [hold, setHold] = useState(false);
-  const [motion, setMotion] = useState(false);
   const [tick, setTick] = useState(0);
   const anim = useRef(0);
   const touchedAt = useRef(0);
   /** When the current glide ends (the 3 s wait starts there). */
   const glideEnd = useRef(0);
 
-  useEffect(() => {
-    setMotion(document.documentElement.hasAttribute("data-motion"));
-    return () => cancelAnimationFrame(anim.current);
-  }, []);
+  useEffect(() => () => cancelAnimationFrame(anim.current), []);
 
   // Follow the track (swipes and scrolls), once per frame.
   useEffect(() => {
@@ -95,9 +90,9 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
     [n],
   );
 
-  // Autoplay: the next slide after AUTOPLAY_MS, unless paused or held.
+  // Autoplay: the next slide AUTOPLAY_MS after the last glide ended.
   useEffect(() => {
-    if (!motion || hold || n < 2) return;
+    if (n < 2) return;
     const t = setTimeout(
       () => {
         const idle = performance.now() - touchedAt.current > IDLE_AFTER_TOUCH_MS;
@@ -108,7 +103,7 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
       Math.max(0, glideEnd.current - performance.now()) + AUTOPLAY_MS,
     );
     return () => clearTimeout(t);
-  }, [motion, hold, n, index, tick, go]);
+  }, [n, index, tick, go]);
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = keyStep(e.key);
@@ -120,24 +115,11 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
   const pad = (v: number) => String(v).padStart(2, "0");
 
   return (
-    <section
-      aria-roledescription="carousel"
-      aria-label={label}
-      className="rm-rec-slider relative"
-      onMouseEnter={() => setHold(true)}
-      onMouseLeave={() => setHold(false)}
-      onFocus={() => setHold(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHold(false);
-      }}
-    >
+    <section aria-roledescription="carousel" aria-label={label} className="rm-rec-slider relative">
       <div
         ref={track}
         onPointerDown={() => {
           cancelAnimationFrame(anim.current);
-          touchedAt.current = performance.now();
-        }}
-        onWheel={() => {
           touchedAt.current = performance.now();
         }}
         tabIndex={0}
