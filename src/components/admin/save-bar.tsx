@@ -9,8 +9,9 @@ import { Button } from "./ui";
 // reloading the tab asks first (the browser's own prompt), and clicking a
 // link inside the admin asks in this bar ("Leave without saving?"), never a
 // pop-up. Saving itself stays with each page (same calls as before).
-// When nothing is unsaved the bar shrinks to a small "Saved" pill at the
-// right, so it never covers the form; the full bar can also be hidden by
+// When nothing is unsaved the bar is gone; right after a save a small
+// "Saved" pill shows for 2.5 s, so it never covers the form. With unsaved
+// edits the full bar shows; it can also be hidden by
 // hand (▾) and brought back (▴). It always opens again for an error or the
 // leave question.
 
@@ -72,6 +73,16 @@ export function SaveBar({
   const [hidden, setHidden] = useState(false);
   const error = message?.tone === "error" && !pending;
   const compact = !guard.leaving && !error && !pending && (hidden || !dirty);
+  // "Saved" shows for a moment after a save, then the bar goes away until the
+  // next edit, so it never sits over the page when there is nothing to save.
+  const okText = message?.tone === "ok" ? message.text : null;
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!okText) return;
+    setFlash(true);
+    const t = setTimeout(() => setFlash(false), 2500);
+    return () => clearTimeout(t);
+  }, [okText]);
   const text = pending
     ? "Saving…"
     : message?.tone === "error"
@@ -79,6 +90,8 @@ export function SaveBar({
       : dirty
         ? "Unsaved changes"
         : (message?.text ?? idle);
+
+  if (compact && !dirty && !flash) return null;
 
   if (compact) {
     return (
