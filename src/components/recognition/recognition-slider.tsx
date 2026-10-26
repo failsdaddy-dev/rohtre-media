@@ -8,12 +8,13 @@ import { keyStep, wrapIndex } from "@/lib/count-up";
 // free). Left / right arrows, dots and a "01 / 09" counter; ←/→ when the
 // slider has focus. Autoplay: every AUTOPLAY_MS the next slide glides in from
 // the right over GLIDE_MS (eased), looping; it pauses while the pointer or
-// keyboard focus is on the slider, after a swipe, while the tab is hidden,
-// and with the pause button. Slides are server-rendered children; this only
+// keyboard focus is on the slider, after a swipe and while the tab is
+// hidden. The new slide's text fades in moving left to right (CSS,
+// [data-active]). Slides are server-rendered children; this only
 // moves the track. Reduced motion: no autoplay, and slides jump.
 
 /** Time on each slide before the next one glides in. */
-const AUTOPLAY_MS = 6000;
+const AUTOPLAY_MS = 3000;
 /** How long the automatic glide to the next slide takes. */
 const GLIDE_MS = 2500;
 /** Glide for the arrows and dots (a click should answer quickly). */
@@ -28,12 +29,13 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
   const n = slides.length;
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState(true);
   const [hold, setHold] = useState(false);
   const [motion, setMotion] = useState(false);
   const [tick, setTick] = useState(0);
   const anim = useRef(0);
   const touchedAt = useRef(0);
+  /** When the current glide ends (the 3 s wait starts there). */
+  const glideEnd = useRef(0);
 
   useEffect(() => {
     setMotion(document.documentElement.hasAttribute("data-motion"));
@@ -87,6 +89,7 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
         }
       };
       setIndex(next);
+      glideEnd.current = t0 + ms;
       anim.current = requestAnimationFrame(step);
     },
     [n],
@@ -94,15 +97,15 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
 
   // Autoplay: the next slide after AUTOPLAY_MS, unless paused or held.
   useEffect(() => {
-    if (!motion || !playing || hold || n < 2) return;
+    if (!motion || hold || n < 2) return;
     const t = setTimeout(() => {
       const idle = performance.now() - touchedAt.current > IDLE_AFTER_TOUCH_MS;
       if (document.hidden || !idle)
         setTick((v) => v + 1); // try again next round
       else go(index + 1, GLIDE_MS);
-    }, AUTOPLAY_MS);
+    }, Math.max(0, glideEnd.current - performance.now()) + AUTOPLAY_MS);
     return () => clearTimeout(t);
-  }, [motion, playing, hold, n, index, tick, go]);
+  }, [motion, hold, n, index, tick, go]);
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = keyStep(e.key);
@@ -148,6 +151,7 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
             aria-label={`${i + 1} of ${n}`}
             aria-hidden={i === index ? undefined : true}
             inert={i === index ? undefined : true}
+            data-active={i === index ? "" : undefined}
             className="rm-rec-slide"
           >
             {s}
@@ -188,23 +192,6 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
               </li>
             ))}
           </ul>
-          {motion && (
-            <button
-              type="button"
-              onClick={() => setPlaying(!playing)}
-              aria-label={playing ? "Pause the slides" : "Play the slides"}
-              aria-pressed={!playing}
-              className="rm-rec-arrow"
-            >
-              {playing ? (
-                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" />
-                </svg>
-              ) : (
-                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              )}
             </button>
           )}
           <button type="button" onClick={() => go(index + 1)} aria-label="Next slide" className="rm-rec-arrow">

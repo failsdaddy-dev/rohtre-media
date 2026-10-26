@@ -23,7 +23,7 @@ export function RecognitionHero({ slides }: { slides: RecognitionContent["hero"]
         <div key={i} className="rm-dark relative flex h-full items-center bg-[#140405] text-white">
           <Pic pic={s.image} sizes="100vw" fill priority={i === 0} />
           <div aria-hidden="true" className="rm-rec-shade" />
-          <Container className="relative pb-28 pt-16 md:pb-32 md:pt-20">
+          <Container className="rm-rec-content relative pb-28 pt-16 md:pb-32 md:pt-20">
             <div className="flex max-w-3xl flex-col items-start">
               {i === 0 ? <h1 className="rm-rec-title">{s.title}</h1> : <h2 className="rm-rec-title">{s.title}</h2>}
               <span aria-hidden="true" className="mt-6 block h-1 w-24 bg-brand" />
