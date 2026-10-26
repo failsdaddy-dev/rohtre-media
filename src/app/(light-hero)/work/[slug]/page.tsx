@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
  */
 export default function BrandPage({ params }: PageProps<"/work/[slug]">) {
   return (
-    <Suspense fallback={<section aria-busy="true" className="rm-hero-sky rm-hero-dark min-h-[70svh]" />}>
+    <Suspense fallback={<section aria-busy="true" className="rm-hero-sky rm-hero-dark min-h-[70svh] overflow-clip" />}>
       <Brand params={params} />
     </Suspense>
   );
@@ -69,7 +69,7 @@ async function Brand({ params }: { params: PageProps<"/work/[slug]">["params"] }
       </section>
 
       {more.length > 0 && (
-        <section aria-labelledby="more-work" className="rm-hero-sky py-16 md:py-24">
+        <section aria-labelledby="more-work" className="rm-hero-sky overflow-clip py-16 md:py-24">
           <Container>
             <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
               <h2

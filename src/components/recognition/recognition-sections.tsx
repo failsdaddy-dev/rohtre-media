@@ -71,7 +71,7 @@ export function Awards({ s }: { s: RecognitionContent["awards"] }) {
 export function ClientQuotes({ s }: { s: RecognitionContent["clients"] }) {
   if (s.items.length === 0) return null;
   return (
-    <section aria-labelledby="client-recognition" className="rm-hero-sky py-20 md:py-28">
+    <section aria-labelledby="client-recognition" className="rm-hero-sky overflow-clip py-20 md:py-28">
       <Container>
         <div className="mb-12 flex max-w-3xl flex-col gap-5 md:mb-16">
           {s.eyebrow && (

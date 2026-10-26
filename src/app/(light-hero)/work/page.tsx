@@ -47,7 +47,7 @@ export default async function WorkPage() {
       </section>
 
       {work.videos.enabled && (
-        <section aria-label="Videos" className="rm-hero-sky py-20 md:py-28">
+        <section aria-label="Videos" className="rm-hero-sky overflow-clip py-20 md:py-28">
           <Container>
             <TextBlock eyebrow={work.videos.eyebrow} title={work.videos.title} body={work.videos.body} />
             <div className="mt-14 md:mt-20">

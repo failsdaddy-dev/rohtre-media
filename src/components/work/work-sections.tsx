@@ -262,7 +262,7 @@ const STORY_COLORS = [
 /** Brand hero: sky gradient with soft strips, back link, red eyebrow, headline, logo tile, the live paragraph and buttons. */
 export function BrandHero({ b }: { b: Brand }) {
   return (
-    <section aria-label="Introduction" className="rm-hero-sky rm-hero-dark">
+    <section aria-label="Introduction" className="rm-hero-sky rm-hero-dark overflow-clip">
       <Container className="pb-14 pt-8 md:pb-20 md:pt-12">
         <Link href="/work" className="rm-work-back rm-hero-in">
           <ArrowRightIcon size={18} className="rotate-180" /> Back to all work

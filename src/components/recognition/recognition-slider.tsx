@@ -6,14 +6,39 @@ import { keyStep, wrapIndex } from "@/lib/count-up";
 // The Recognition hero slider: one full-width slide at a time on a CSS
 // scroll-snap track (swipe on touch, trackpad and mouse wheel come for
 // free). Left / right arrows, dots and a "01 / 09" counter; ←/→ when the
-// slider has focus. No autoplay. Slides are server-rendered children; this
-// only moves the track. Reduced motion: jumps instead of gliding.
+// slider has focus. Autoplay: every AUTOPLAY_MS the next slide glides in from
+// the right over GLIDE_MS (eased), looping; it pauses while the pointer or
+// keyboard focus is on the slider, after a swipe, while the tab is hidden,
+// and with the pause button. Slides are server-rendered children; this only
+// moves the track. Reduced motion: no autoplay, and slides jump.
+
+/** Time on each slide before the next one glides in. */
+const AUTOPLAY_MS = 6000;
+/** How long the automatic glide to the next slide takes. */
+const GLIDE_MS = 2500;
+/** Glide for the arrows and dots (a click should answer quickly). */
+const CLICK_GLIDE_MS = 700;
+/** After a swipe or wheel, autoplay waits this long. */
+const IDLE_AFTER_TOUCH_MS = 8000;
+
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
 export function RecognitionSlider({ children, label }: { children: ReactNode; label: string }) {
   const slides = Children.toArray(children);
   const n = slides.length;
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [hold, setHold] = useState(false);
+  const [motion, setMotion] = useState(false);
+  const [tick, setTick] = useState(0);
+  const anim = useRef(0);
+  const touchedAt = useRef(0);
+
+  useEffect(() => {
+    setMotion(document.documentElement.hasAttribute("data-motion"));
+    return () => cancelAnimationFrame(anim.current);
+  }, []);
 
   // Follow the track (swipes and scrolls), once per frame.
   useEffect(() => {
@@ -35,17 +60,49 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
     };
   }, [n]);
 
+  /** Move to slide i: an eased glide of `ms` (snap off meanwhile), or a jump for reduced motion. */
   const go = useCallback(
-    (i: number) => {
+    (i: number, ms = CLICK_GLIDE_MS) => {
       const el = track.current;
       if (!el || n === 0) return;
       const next = wrapIndex(i, n);
-      const smooth = document.documentElement.hasAttribute("data-motion");
-      el.scrollTo({ left: next * el.clientWidth, behavior: smooth ? "smooth" : "auto" });
+      cancelAnimationFrame(anim.current);
+      const to = next * el.clientWidth;
+      if (!document.documentElement.hasAttribute("data-motion")) {
+        el.scrollTo({ left: to, behavior: "auto" });
+        setIndex(next);
+        return;
+      }
+      const from = el.scrollLeft;
+      const t0 = performance.now();
+      el.style.scrollSnapType = "none";
+      el.style.scrollBehavior = "auto";
+      const step = (now: number) => {
+        const p = Math.min(1, (now - t0) / ms);
+        el.scrollLeft = from + (to - from) * easeInOut(p);
+        if (p < 1) anim.current = requestAnimationFrame(step);
+        else {
+          el.style.scrollSnapType = "";
+          el.style.scrollBehavior = "";
+        }
+      };
       setIndex(next);
+      anim.current = requestAnimationFrame(step);
     },
     [n],
   );
+
+  // Autoplay: the next slide after AUTOPLAY_MS, unless paused or held.
+  useEffect(() => {
+    if (!motion || !playing || hold || n < 2) return;
+    const t = setTimeout(() => {
+      const idle = performance.now() - touchedAt.current > IDLE_AFTER_TOUCH_MS;
+      if (document.hidden || !idle)
+        setTick((v) => v + 1); // try again next round
+      else go(index + 1, GLIDE_MS);
+    }, AUTOPLAY_MS);
+    return () => clearTimeout(t);
+  }, [motion, playing, hold, n, index, tick, go]);
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = keyStep(e.key);
@@ -57,9 +114,26 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
   const pad = (v: number) => String(v).padStart(2, "0");
 
   return (
-    <section aria-roledescription="carousel" aria-label={label} className="rm-rec-slider relative">
+    <section
+      aria-roledescription="carousel"
+      aria-label={label}
+      className="rm-rec-slider relative"
+      onMouseEnter={() => setHold(true)}
+      onMouseLeave={() => setHold(false)}
+      onFocus={() => setHold(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHold(false);
+      }}
+    >
       <div
         ref={track}
+        onPointerDown={() => {
+          cancelAnimationFrame(anim.current);
+          touchedAt.current = performance.now();
+        }}
+        onWheel={() => {
+          touchedAt.current = performance.now();
+        }}
         tabIndex={0}
         onKeyDown={onKey}
         aria-label={`${label}: use the left and right arrow keys to change slide`}
@@ -114,6 +188,25 @@ export function RecognitionSlider({ children, label }: { children: ReactNode; la
               </li>
             ))}
           </ul>
+          {motion && (
+            <button
+              type="button"
+              onClick={() => setPlaying(!playing)}
+              aria-label={playing ? "Pause the slides" : "Play the slides"}
+              aria-pressed={!playing}
+              className="rm-rec-arrow"
+            >
+              {playing ? (
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" />
+                </svg>
+              ) : (
+                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              )}
+            </button>
+          )}
           <button type="button" onClick={() => go(index + 1)} aria-label="Next slide" className="rm-rec-arrow">
             <svg
               aria-hidden="true"
