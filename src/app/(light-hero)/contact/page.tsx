@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { ContactForm } from "@/components/contact/contact-form";
+import { ContactLanding } from "@/components/contact/contact-landing";
 import { ContactScene } from "@/components/contact/contact-scene";
 import { ChatIcon, MailIcon, PhoneIcon, PinIcon } from "@/components/icons";
 import { Container } from "@/components/page-parts";
@@ -14,7 +15,8 @@ import { whatsappLink } from "@/lib/whatsapp";
 // end level. Phones: heading, form, steps, details. The background scene
 // sits behind everything (ContactScene). Words and form choices: Admin →
 // Contact page; enquiries: Admin → Leads. The id "enquiry" stays on the
-// form card: Book a Call links point to /contact#enquiry.
+// form card: Book a Call links point to /contact#enquiry, and arriving from
+// another page the Contact page opens at the top (ContactLanding).
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo } = await getContactContent();
@@ -37,6 +39,7 @@ export default async function ContactPage() {
 
   return (
     <section aria-label="Contact" className="rm-hero-dark rm-hero-sky rm-contact overflow-hidden">
+      <ContactLanding />
       <ContactScene />
       <Container className="relative z-[1] pb-16 pt-8 md:pt-14 lg:pb-24">
         <div className="rm-contact-head flex max-w-2xl flex-col items-start">
@@ -68,7 +71,10 @@ export default async function ContactPage() {
 
           <div className="flex flex-col gap-5 lg:gap-6">
             <section aria-labelledby="next-steps" className="rm-contact-card p-5 sm:p-8">
-              <h2 id="next-steps" className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]">
+              <h2
+                id="next-steps"
+                className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]"
+              >
                 {c.steps.title}
               </h2>
               <ol className="mt-5 flex flex-col gap-4 border-t border-[#eef0f3] pt-5">
@@ -79,7 +85,9 @@ export default async function ContactPage() {
                     </span>
                     <span className="min-w-0">
                       <span className="block text-[16px] font-semibold leading-snug">{step.step}</span>
-                      {step.text && <span className="mt-0.5 block text-[14px] leading-relaxed text-[#4b5563]">{step.text}</span>}
+                      {step.text && (
+                        <span className="mt-0.5 block text-[14px] leading-relaxed text-[#4b5563]">{step.text}</span>
+                      )}
                     </span>
                   </li>
                 ))}
@@ -88,7 +96,10 @@ export default async function ContactPage() {
 
             {c.details.enabled && (
               <section aria-labelledby="reach-us" className="rm-contact-card flex flex-col p-5 sm:p-8 lg:flex-1">
-                <h2 id="reach-us" className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]">
+                <h2
+                  id="reach-us"
+                  className="text-[1.4rem] font-bold leading-tight tracking-[-0.03em] sm:text-[1.65rem]"
+                >
                   {c.details.title}
                 </h2>
                 <ul className="mt-5 flex flex-col divide-y divide-[#eef0f3] border-t border-[#eef0f3] lg:flex-1 lg:justify-evenly">
