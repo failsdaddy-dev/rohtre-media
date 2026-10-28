@@ -330,8 +330,8 @@ export function BrandStory({ b }: { b: Brand }) {
         <article
           key={i}
           className="rm-svc rm-work-story"
-          style={{ "--tint": STORY_COLORS[i % STORY_COLORS.length] } as CSSProperties}
           {...reveal(i % 2)}
+          style={{ ...reveal(i % 2).style, "--tint": STORY_COLORS[i % STORY_COLORS.length] } as CSSProperties}
         >
           <header className="flex items-center gap-4">
             <span aria-hidden="true" className="rm-svc-icon shrink-0">

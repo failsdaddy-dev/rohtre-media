@@ -57,7 +57,7 @@ export default async function WorkPage() {
         </section>
       )}
 
-      <div className="pt-16 md:pt-24">
+      <div className="bg-white pt-16 md:pt-24">
         <CtaPanel {...work.cta} />
       </div>
       <AboutMotion />

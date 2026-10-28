@@ -281,6 +281,7 @@ function Field({ name, schema: raw, value, onChange, hints, errors, path }: Fiel
       <label className="flex items-center gap-2.5 pt-6 text-sm font-medium">
         <input
           type="checkbox"
+          role="switch"
           className="size-4 accent-[var(--brand)]"
           checked={Boolean(value)}
           onChange={(e) => onChange(e.target.checked)}
@@ -462,6 +463,7 @@ function ListField({
         <label className="mr-1 flex min-h-9 items-center gap-1.5 text-xs font-semibold">
           <input
             type="checkbox"
+            role="switch"
             className="size-4 accent-[var(--brand)]"
             checked={Boolean(x.enabled)}
             onChange={(e) => set(list.map((y, j) => (j === i ? { ...x, enabled: e.target.checked } : y)))}

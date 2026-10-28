@@ -1,4 +1,5 @@
 import { headlineFor, type PageDims } from "../lib/dimensions";
+import { nicheCopy } from "./niche-copy";
 import { pageContentSchema, type PageContent, type Section } from "./schemas";
 
 // The master template (R28): the default sections, in the Gate 0 order (R15),
@@ -8,6 +9,8 @@ import { pageContentSchema, type PageContent, type Section } from "./schemas";
 // start as drafts so they are rewritten for the page before publishing (R17).
 // The angle follows the service's channels (R21): Meta-only pages lead with
 // reels and creative, Google-only pages with search intent, D2C (both) mixes.
+// Niches with their own starter copy (niche-copy.ts) get their own hero line,
+// pain points and FAQs; every page gets a FAQ for its country (currency).
 
 type Channel = "meta" | "google";
 
@@ -66,6 +69,13 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
   const niche = dims.niche.headline_label.toLowerCase();
   const country = dims.country.headline_label;
   const h1 = headlineFor(dims);
+  const copy = nicheCopy(dims.niche.slug);
+  const currency = (dims.country.attrs as { currency?: unknown }).currency;
+  const countryFaq = {
+    q: `Can you run campaigns for buyers in ${country}?`,
+    a: `Yes. We target buyers in ${country}${typeof currency === "string" ? `, plan your ad budget in ${currency}` : ""} and report on the numbers that matter for your business there.`,
+    status: "draft" as const,
+  };
 
   const sections: Section[] = [
     {
@@ -76,7 +86,7 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
       props: {
         eyebrow: `${dims.service.label} · ${dims.niche.label}`,
         h1,
-        subline: `${service} for ${niche} brands in ${country}: scroll-stopping creatives, sharp targeting and campaigns built to grow your sales.`,
+        subline: `${service} for ${niche} brands in ${country}: ${copy?.subline ?? "scroll-stopping creatives, sharp targeting and campaigns built to grow your sales."}`,
         ctaLabel: "Book a Call",
         offerBanner: { desktop: null, mobile: null, alt: "" },
       },
@@ -97,7 +107,7 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
         eyebrow: "Sound familiar?",
         title: `Growing a ${niche} brand`,
         accent: "shouldn’t feel like this.",
-        items: PAIN_POINTS[angle],
+        items: copy?.painPoints ?? PAIN_POINTS[angle],
       },
     },
     {
@@ -186,6 +196,8 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
             a: `Yes. Tell us about your brand on a short call and we’ll show you how we’d approach ${dims.service.label.toLowerCase()} for it.`,
             status: "draft",
           },
+          ...(copy?.faq ?? []).map((f) => ({ ...f, status: "draft" as const })),
+          countryFaq,
           {
             q: "Do you make the ads and creatives too?",
             a: "Yes. Our team writes the copy and designs the images, videos and reels for your campaigns.",
@@ -214,7 +226,7 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
         eyebrow: "Get started",
         title: "Let’s grow",
         accent: "your brand.",
-        intro: `Tell us about your ${niche} brand. We’ll get back to you with a plan.`,
+        intro: copy?.formIntro ?? `Tell us about your ${niche} brand. We’ll get back to you with a plan.`,
         formTitle: "Book your discovery call",
         defaultInterest: angle === "meta" ? "Meta ads" : angle === "google" ? "Google Ads" : "D2C / e-commerce growth",
       },

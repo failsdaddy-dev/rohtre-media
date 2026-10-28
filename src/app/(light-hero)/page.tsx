@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AboutMotion } from "@/components/about/about-motion";
 import {
   Brands,
   ClientShowcase,
@@ -53,9 +54,10 @@ export default async function HomePage() {
       {home.engage.enabled && <ScrollEngage s={home.engage} />}
       {home.videoAds.enabled && <VideoAds s={home.videoAds} />}
       {home.results.enabled && results.length > 0 && <Results s={home.results} results={results} />}
+      <AboutMotion />
       {home.showcase.enabled && <ClientShowcase s={home.showcase} />}
       <StripeBand />
-      {home.process.enabled && <Process s={home.process} />}
+      {home.process.enabled && <Process s={home.process} phoneCta />}
       {home.brands.enabled && <Brands s={home.brands} />}
       {home.testimonials.enabled && testimonials.length > 0 && (
         <Testimonials s={home.testimonials} items={testimonials} />

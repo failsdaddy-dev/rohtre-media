@@ -40,7 +40,7 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
   const link = "text-[15px] text-fg-2 transition-colors hover:text-fg";
 
   return (
-    <footer className="rm-dark rm-glow mt-auto">
+    <footer className="rm-dark rm-glow rm-grid-bg mt-auto">
       <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1.5fr_0.8fr_0.9fr]">
         <div className="flex flex-col gap-4">
           <Logo className="h-10 w-auto self-start" />

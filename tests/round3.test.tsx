@@ -56,7 +56,7 @@ describe("partner strip layout by count", () => {
       [7, "many", 56],
       [9, "many", 56],
     ]);
-    expect(badgeLayout(6).mobileLogoPx).toBe(44);
+    expect(badgeLayout(6).mobileLogoPx).toBe(40);
   });
 
   it("re-flows into balanced rows at each width (no sideways scroll)", () => {
@@ -77,7 +77,7 @@ describe("partner strip layout by count", () => {
     expect(out).toContain('data-group="mid"');
     expect(out).toContain('data-count="5"');
     expect(out).toContain("--logo-h-lg:68px");
-    expect(out).toContain("--logo-h-sm:44px");
+    expect(out).toContain("--logo-h-sm:40px");
     expect(out).not.toContain("Badge 6");
     expect(out).not.toContain("rm-white-art"); // the old black-on-light inversion is gone
   });

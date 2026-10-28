@@ -227,7 +227,7 @@ export function Diversity({ s }: { s: AboutContent["diversity"] }) {
             )}
           </div>
           {s.ctaLabel && (
-            <div className="mt-8" {...reveal(3)}>
+            <div className="mt-8 max-sm:flex max-sm:self-stretch max-sm:[&>a]:w-full max-sm:[&>a]:justify-center" {...reveal(3)}>
               <Cta href={s.ctaHref} label={s.ctaLabel} />
             </div>
           )}
@@ -268,13 +268,8 @@ export function YearInReview({ s }: { s: AboutContent["review"] }) {
     <section id="year-in-review" className={`rm-hero-sky overflow-hidden ${PAD}`}>
       <Container className="flex flex-col items-center">
         <SectionHead eyebrow={s.eyebrow} title={s.title} center className="mb-10! md:mb-14!" />
-        <div className="w-full max-w-[1100px]" {...reveal(0, "up-lg")}>
-          <MediaSlot
-            slot={s.video}
-            sizes="(max-width: 1148px) 100vw, 1100px"
-            maxWidth={1920}
-            className="rounded-[20px] border border-black/10 bg-white/40 shadow-[0_30px_90px_-40px_rgba(10,40,80,0.45)]"
-          />
+        <div className="rm-work-frame w-full max-w-[1100px]" {...reveal(0, "up-lg")}>
+          <MediaSlot slot={s.video} sizes="(max-width: 1148px) 100vw, 1100px" maxWidth={1920} />
         </div>
         {s.body && (
           <p className="mt-10 max-w-3xl text-center text-lg leading-relaxed text-[#2b3a4d] md:mt-14" {...reveal(1)}>

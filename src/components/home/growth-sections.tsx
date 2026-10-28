@@ -147,12 +147,11 @@ export function ProductShowcase({ s }: { s: HomeContent["products"] }) {
               className="w-[72vw] shrink-0 snap-start md:w-[calc((100vw-3rem)/2.2)] lg:w-[clamp(260px,21.5vw,340px)]"
               {...reveal(i % 5)}
             >
-              <div className="rm-card flex h-full flex-col gap-4 p-3">
+              <div className="rm-card rounded-none! flex h-full flex-col gap-4 p-3">
                 <MediaSlot
                   slot={p.media}
                   sizes="(min-width: 1024px) 320px, (min-width: 640px) 44vw, 86vw"
                   maxWidth={1080}
-                  className="rounded-[12px]"
                 />
                 <div className="flex flex-col gap-1 px-1.5 pb-1.5">
                   {p.label && (
@@ -221,7 +220,9 @@ export function ScrollEngage({ s }: { s: HomeContent["engage"] }) {
               </li>
             ))}
           </ul>
-          <SectionCta {...s.cta} center={false} />
+          <div className="rm-d2c-cta">
+            <SectionCta {...s.cta} center={false} />
+          </div>
         </div>
         <div className="min-w-0" {...reveal(1, "up-lg")}>
           <div
@@ -350,21 +351,21 @@ export const isEmptySlide = (sl: Slide) => !sl.brand.trim() && !isFilled(sl.post
 function MetricCell({ m, currency }: { m: Metric & { value: number }; currency: string }) {
   const final = metricText(m);
   return (
-    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center max-md:gap-2 max-md:py-4 max-sm:gap-1.5 max-sm:py-3 md:px-4 md:py-8">
-      <dt className="order-last text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-2 max-sm:text-[9.5px] max-sm:tracking-[0.14em] md:text-xs">
+    <div className="flex flex-col items-center gap-3 border-b border-r border-line px-2 py-6 text-center max-md:gap-2 max-md:py-4 max-sm:gap-1.5 max-sm:py-3 max-sm:px-1 md:px-3 md:py-6">
+      <dt className="order-last text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-2 max-sm:text-[9px] max-sm:leading-tight max-sm:tracking-[0.08em]">
         {m.label}
       </dt>
       <dd aria-label={final} className="flex flex-col items-center gap-3 max-md:gap-2 max-sm:gap-1.5">
-        <span aria-hidden="true" className={`${DISC} size-10 max-sm:size-8 md:size-16`} style={tint(METRIC_TINT[m.icon])}>
+        <span aria-hidden="true" className={`${DISC} size-10 max-sm:size-8 md:size-12`} style={tint(METRIC_TINT[m.icon])}>
           {m.icon === "currency" ? (
-            <span className="text-lg font-bold leading-none max-sm:text-base md:text-[26px]">{currency}</span>
+            <span className="text-lg font-bold leading-none max-sm:text-base md:text-[22px]">{currency}</span>
           ) : (
-            <ServiceIcon name={m.icon} size={26} className="size-5 max-sm:size-4 md:size-[26px]" />
+            <ServiceIcon name={m.icon} size={22} className="size-5 max-sm:size-4 md:size-[22px]" />
           )}
         </span>
         <span
           aria-hidden="true"
-          className="relative whitespace-nowrap text-[clamp(1.9rem,3vw,2.75rem)] font-bold leading-none tracking-[-0.03em] tabular-nums max-md:text-[1.6rem] max-sm:text-[1.3rem]"
+          className="relative whitespace-nowrap text-[clamp(1.6rem,2.3vw,2.2rem)] font-bold leading-none tracking-[-0.03em] tabular-nums max-md:text-[1.6rem] max-sm:text-[1.15rem]"
         >
           <span className="invisible">{final}</span>
           <span
@@ -386,14 +387,14 @@ function ShowcaseSlide({ sl }: { sl: Slide }) {
   const metrics = shownMetrics(sl);
   const note = [sl.period, sl.source].filter((v) => v.trim()).join(" · ");
   return (
-    <article className="grid items-center gap-6 max-md:gap-4 lg:grid-cols-[46%_minmax(0,1fr)] lg:gap-10">
+    <article className="grid items-center gap-6 max-md:gap-4 lg:grid-cols-[54%_minmax(0,1fr)] lg:gap-8">
       <MediaSlot
         slot={sl.poster}
-        sizes="(min-width: 1280px) 530px, (min-width: 1024px) 44vw, (min-width: 768px) 92vw, 72vw"
+        sizes="(min-width: 1280px) 640px, (min-width: 1024px) 52vw, (min-width: 768px) 92vw, 80vw"
         maxWidth={1600}
-        className="rounded-[1.5rem] max-md:mx-auto max-md:w-[58vw] max-md:max-w-[260px]"
+        className="rounded-[1.5rem] max-md:mx-auto max-md:w-[80vw] max-md:max-w-[360px]"
       />
-      <div className="rm-card p-6 max-md:p-4 md:p-10">
+      <div className="rm-card p-6 max-md:p-4 md:p-8">
         {sl.brand ? (
           <h3 className="text-xl font-bold tracking-[-0.01em] max-md:text-center md:text-2xl">{sl.brand}</h3>
         ) : (
@@ -403,7 +404,7 @@ function ShowcaseSlide({ sl }: { sl: Slide }) {
         {note && <p className="mt-3 text-sm text-fg-2">{note}</p>}
         {metrics.length > 0 ? (
           <div className="mt-6 overflow-hidden max-md:mt-4">
-            <dl className="-mb-px -mr-px grid grid-cols-2 lg:grid-cols-3">
+            <dl className="-mb-px -mr-px grid grid-cols-2 max-sm:grid-cols-3 lg:grid-cols-3">
               {metrics.map((m, i) => (
                 <MetricCell key={i} m={m} currency={sl.currency} />
               ))}
@@ -469,7 +470,7 @@ export function Brands({ s }: { s: HomeContent["brands"] }) {
   const row: BrandItem[] = [];
   while (row.length < 10) row.push(...items);
   return (
-    <section id="brands" className={`rm-dark overflow-hidden ${PAD}`}>
+    <section id="brands" className={`rm-dark rm-grid-bg overflow-hidden ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>

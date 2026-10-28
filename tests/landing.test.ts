@@ -139,7 +139,7 @@ describe("section registry (R27, R28)", () => {
   });
   it("a page takes its header tone from its first enabled section, default solid", () => {
     const page = masterTemplate({ service: META, niche: FASHION, country: USA });
-    expect(pageHeaderTone(page)).toBe("transparent-light-text");
+    expect(pageHeaderTone(page)).toBe("transparent-dark-text"); // the light sky hero
     const noHero = { sections: page.sections.map((s) => (s.type === "hero" ? { ...s, enabled: false } : s)) };
     expect(pageHeaderTone(noHero)).toBe("solid");
     expect(pageHeaderTone(null)).toBe("solid");

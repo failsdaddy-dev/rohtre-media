@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { Suspense } from "react";
+import { AboutMotion } from "@/components/about/about-motion";
 import { getBadges } from "@/lib/home-data";
 import { getLandingPage, getLandingProof, getRedirect, listLandingSlugs } from "@/lib/landing-data";
 import { getSettings } from "@/lib/settings";
@@ -33,7 +35,20 @@ export async function generateMetadata({ params }: PageProps<"/lp/[slug]">): Pro
   };
 }
 
-export default async function LandingPage({ params }: PageProps<"/lp/[slug]">) {
+/**
+ * The slug comes from the URL, so the page is read inside <Suspense>: a
+ * client navigation shows the sky hero shape at once and the page streams in
+ * (Cache Components' instant navigation). Page data itself is cached.
+ */
+export default function LandingPage({ params }: PageProps<"/lp/[slug]">) {
+  return (
+    <Suspense fallback={<section aria-busy="true" className="rm-hero-sky rm-hero-dark min-h-[70svh] overflow-clip" />}>
+      <Landing params={params} />
+    </Suspense>
+  );
+}
+
+async function Landing({ params }: { params: PageProps<"/lp/[slug]">["params"] }) {
   const { slug } = await params;
   const page = await getLandingPage(slug);
   if (!page) {
@@ -76,6 +91,7 @@ export default async function LandingPage({ params }: PageProps<"/lp/[slug]">) {
         </p>
       )}
       <LandingSections sections={page.content.sections} ctx={{ proof, badges, settings, whatsappHref }} />
+      <AboutMotion />
     </div>
   );
 }

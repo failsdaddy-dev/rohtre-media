@@ -60,6 +60,7 @@ export default async function CareersPage() {
         </>
       )}
       <CtaPanel
+        band="bg-[#f4f8fd]"
         id="apply-now"
         eyebrow={c.cta.eyebrow}
         title={c.cta.title}

@@ -205,6 +205,7 @@ function BlockEditor({
             <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
               <input
                 type="checkbox"
+                role="switch"
                 className="size-5 accent-[var(--brand)]"
                 checked={hasHead}
                 onChange={(e) => onChange({ ...block, header: e.target.checked ? Array(cols).fill("") : [] })}

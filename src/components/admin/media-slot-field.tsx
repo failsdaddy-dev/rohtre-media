@@ -240,6 +240,7 @@ export function MediaSlotField({
           <label className="flex items-center gap-2.5 text-sm font-medium">
             <input
               type="checkbox"
+              role="switch"
               className="size-4 accent-[var(--brand)]"
               checked={v.loop}
               onChange={(e) => set({ loop: e.target.checked })}

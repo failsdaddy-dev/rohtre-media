@@ -43,14 +43,28 @@ describe("header tone (resolution)", () => {
 });
 
 describe("header tone (every public page)", () => {
-  it("landing pages read their tone from their sections", () => {
+  it("landing pages use the light-hero tone without reading the URL (instant navigation)", () => {
     const layout = readFileSync(join(APP, "(landing)", "lp", "[slug]", "layout.tsx"), "utf8");
-    expect(layout).toContain("pageHeaderTone(");
+    expect(layout).toContain('GROUP_TONES["(light-hero)"]');
+    expect(layout).not.toContain("await params");
   });
 
   it("finds the public pages", () => {
     expect(PUBLIC_PAGES.map((p) => URL_OF(p.path)).sort()).toEqual(
-      ["/", "/about", "/careers", "/contact", "/privacy", "/terms"].sort(),
+      [
+        "/",
+        "/about",
+        "/careers",
+        "/contact",
+        "/cookie-settings",
+        "/do-not-sell",
+        "/fraudulent-use",
+        "/privacy-notice",
+        "/recognition",
+        "/terms-of-service",
+        "/work",
+        "/work/[slug]",
+      ].sort(),
     );
   });
 
@@ -64,26 +78,16 @@ describe("header tone (every public page)", () => {
     }
   });
 
-  it("matches what is behind the header at the top of each page", () => {
-    const expected: Record<string, string> = {
-      "/": "transparent-light-text", // dark hero
-      "/about": "transparent-light-text", // dark PageHero
-      "/careers": "transparent-light-text",
-      "/contact": "transparent-light-text",
-      "/privacy": "solid", // light legal page
-      "/terms": "solid",
-    };
+  it("matches what is behind the header at the top of each page (every page starts light)", () => {
     for (const { path, group } of PUBLIC_PAGES) {
-      expect(resolveHeaderTone(GROUP_TONES[group!]), URL_OF(path)).toBe(expected[URL_OF(path)]);
+      expect(resolveHeaderTone(GROUP_TONES[group!]), URL_OF(path)).toBe("transparent-dark-text");
     }
   });
 
-  it("a page with white header text really starts with a dark hero, and the others don't", () => {
-    for (const { path, group } of PUBLIC_PAGES) {
+  it("no page under the dark-text header starts with the old dark PageHero", () => {
+    for (const { path } of PUBLIC_PAGES) {
       const source = readFileSync(join(APP, path), "utf8");
-      const darkHero = /<(Hero|PageHero)\b/.test(source);
-      const lightText = resolveHeaderTone(GROUP_TONES[group!]) === "transparent-light-text";
-      expect(darkHero, `${URL_OF(path)}: dark hero ${darkHero}, light header text ${lightText}`).toBe(lightText);
+      expect(/<PageHero\b/.test(source), URL_OF(path)).toBe(false);
     }
   });
 });

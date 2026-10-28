@@ -55,7 +55,7 @@ describe("home content (R13, R14)", () => {
     ] as const) {
       expect(DEFAULT_HOME[key].accent.length).toBeGreaterThan(0);
     }
-    expect(DEFAULT_HOME.whoWeServe.items).toHaveLength(5);
+    expect(DEFAULT_HOME.whoWeServe.items).toHaveLength(6);
     expect(DEFAULT_HOME.whoWeServe.items.every((i) => i.icon)).toBe(true);
   });
 
@@ -84,13 +84,14 @@ describe("home content (R13, R14)", () => {
     expect(JSON.stringify(DEFAULT_HOME.products)).not.toMatch(/4\.[0-9]/); // no copied star ratings
   });
 
-  it("who we serve: one colour per card, the official Shopify bag on the first", () => {
+  it("who we serve: six tinted cards, the official Shopify bag on the first", () => {
     expect(DEFAULT_HOME.whoWeServe.items.map((i) => [i.icon, i.tint])).toEqual([
       ["shopify", "green"],
       ["cart", "coral"],
       ["megaphone", "purple"],
       ["play", "orange"],
       ["network", "blue"],
+      ["users", "coral"],
     ]);
   });
 

@@ -3,14 +3,13 @@
 import { useActionState, useRef, useState } from "react";
 import { SaveBar } from "@/components/admin/save-bar";
 import { Select } from "@/components/admin/select";
-import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
+import { Button, Field, INPUT_CLASS, Panel, Toggle } from "@/components/admin/ui";
 import { callbacksToText, phonesToText } from "@/lib/settings-form";
 import { WHATSAPP_ANIMATION_LABELS, WHATSAPP_ANIMATIONS, type SiteSettings } from "@/lib/settings-schema";
 import { saveSettings, type SaveState } from "./actions";
 import { SocialLinksField } from "./social-links-field";
 
 const AREA = `${INPUT_CLASS} font-mono text-[13px] leading-6`;
-const CHECK = "size-4 accent-[var(--brand)]";
 
 export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; isOwner: boolean }) {
   const form = useRef<HTMLFormElement>(null);
@@ -93,15 +92,12 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
           >
             <input name="whatsappTemplate" defaultValue={settings.whatsapp.template} className={INPUT_CLASS} />
           </Field>
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              name="whatsappEnabled"
-              defaultChecked={settings.whatsapp.enabled}
-              className={CHECK}
-            />
-            Show the floating WhatsApp button
-          </label>
+          <Toggle
+            name="whatsappEnabled"
+            defaultChecked={settings.whatsapp.enabled}
+            label="WhatsApp button"
+            hint="The round green button at the bottom right of every page."
+          />
           <Field label="Button animation" error={e["whatsapp.animation"]}>
             <Select
               name="whatsappAnimation"
@@ -113,10 +109,13 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
               options={WHATSAPP_ANIMATIONS.map((a) => ({ value: a, label: WHATSAPP_ANIMATION_LABELS[a] }))}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm font-medium md:col-span-2">
-            <input type="checkbox" name="whatsappWidget" defaultChecked={settings.whatsapp.widget} className={CHECK} />
-            Open a chat card first (welcome message + button), like a shop chat widget. Off = straight to WhatsApp.
-          </label>
+          <Toggle
+            name="whatsappWidget"
+            defaultChecked={settings.whatsapp.widget}
+            className="md:col-span-2"
+            label="Chat card first"
+            hint="On: a small chat card opens first (welcome message + button). Off: the button goes straight to WhatsApp."
+          />
           <Field label="Chat card: name" error={e["whatsapp.agentName"]}>
             <input name="whatsappAgent" defaultValue={settings.whatsapp.agentName} className={INPUT_CLASS} />
           </Field>
@@ -146,19 +145,30 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
           <Field label="“Interested in” choices" hint="One per line" error={e.interests}>
             <textarea name="interests" rows={6} defaultValue={settings.interests.join("\n")} className={AREA} />
           </Field>
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              name="careersLineEnabled"
-              defaultChecked={settings.careersLineEnabled}
-              className={CHECK}
-            />
-            Show “Looking for a job? See Careers” under the form
-          </label>
+          <Toggle
+            name="careersLineEnabled"
+            defaultChecked={settings.careersLineEnabled}
+            label="Careers line under the form"
+            hint="Shows “Looking for a job? See Careers” under every enquiry form."
+          />
         </div>
       </Panel>
 
-      <Panel title="Privacy and publishing">
+      <Panel title="Publishing">
+        <Toggle
+          name="founderCanPublish"
+          defaultChecked={settings.founderCanPublish}
+          disabled={!isOwner}
+          label="Owner can publish landing pages"
+          hint={
+            isOwner
+              ? "On: you (the owner) see Publish, Take offline in Landing pages. Off: only the developer can publish."
+              : "Only the owner can change this."
+          }
+        />
+      </Panel>
+
+      <Panel title="Privacy">
         <div className="grid gap-4 md:grid-cols-2">
           <Field
             label="Delete leads after (days)"
@@ -174,16 +184,6 @@ export function SettingsForm({ settings, isOwner }: { settings: SiteSettings; is
               className={INPUT_CLASS}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              name="founderCanPublish"
-              defaultChecked={settings.founderCanPublish}
-              disabled={!isOwner}
-              className={CHECK}
-            />
-            Owner can publish pages {isOwner ? "" : "(only the owner can change this)"}
-          </label>
         </div>
       </Panel>
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AdminFrame, AdminLoading } from "@/components/admin/admin-frame";
-import { Panel } from "@/components/admin/ui";
+import { ADMIN_TABS, Panel, type AdminTab } from "@/components/admin/ui";
 import { canManage, requireStaff } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -57,6 +57,66 @@ function LeadsTable({ leads }: { leads: LeadRow[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/** The Overview's "Find your way": every admin page as a card, grouped by job. */
+const FIND_GROUPS: { title: string; text: string; hrefs: string[] }[] = [
+  {
+    title: "Edit the website",
+    text: "Text, images and videos on the main pages. Save and it’s live.",
+    hrefs: ["/admin/home", "/admin/about", "/admin/work", "/admin/recognition", "/admin/careers", "/admin/contact"],
+  },
+  {
+    title: "Ads & landing pages",
+    text: "Pages for your Meta and Google ads, and the proof they show.",
+    hrefs: ["/admin/pages", "/admin/proof", "/admin/routing"],
+  },
+  {
+    title: "Enquiries",
+    text: "People who contacted you or applied for a job.",
+    hrefs: ["/admin/leads", "/admin/applications"],
+  },
+  {
+    title: "Files, settings & help",
+    text: "Uploads, contact details, users and how-to.",
+    hrefs: ["/admin/media", "/admin/settings", "/admin/users", "/admin/audit", "/admin/guide"],
+  },
+];
+
+function FindYourWay({ allowed }: { allowed: (t: AdminTab) => boolean }) {
+  const byHref = new Map(ADMIN_TABS.map((t) => [t.href, t]));
+  return (
+    <div className="grid gap-5 md:grid-cols-2">
+      {FIND_GROUPS.map((g) => {
+        const tabs = g.hrefs.map((h) => byHref.get(h)).filter((t): t is AdminTab => !!t && allowed(t));
+        if (tabs.length === 0) return null;
+        return (
+          <section key={g.title} className="rounded-[18px] border border-line bg-bg-elev p-5 sm:p-6">
+            <h2 className="text-lg font-bold">{g.title}</h2>
+            <p className="mt-1 text-sm text-fg-2">{g.text}</p>
+            <ul className="mt-4 flex flex-col gap-2">
+              {tabs.map((t) => (
+                <li key={t.href}>
+                  <Link
+                    href={t.href}
+                    className="group flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3 transition-colors hover:border-brand hover:bg-[color-mix(in_srgb,var(--brand)_5%,transparent)]"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-[15px] font-semibold">{t.label}</span>
+                      <span className="block text-xs text-fg-2">{t.hint}</span>
+                    </span>
+                    <span aria-hidden="true" className="text-fg-2 transition-transform group-hover:translate-x-1 group-hover:text-brand">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -122,27 +182,18 @@ async function Overview({ searchParams }: { searchParams: Promise<Record<string,
             </p>
           </Panel>
         )}
-        {manager && (
-          <Panel title="Quick links">
-            <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-              <li>
-                <Link href="/admin/pages" className="underline underline-offset-2">
-                  Landing pages
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin/settings" className="underline underline-offset-2">
-                  Edit contact details, WhatsApp and form choices
-                </Link>
-              </li>
-              <li>
-                <Link href="/" className="underline underline-offset-2">
-                  View the website
-                </Link>
-              </li>
-            </ul>
-          </Panel>
-        )}
+        <div>
+          <h2 className="mb-1 text-xl font-bold">Find your way</h2>
+          <p className="mb-4 text-sm text-fg-2">
+            Pick what you want to do. Tip: press <kbd className="rounded border border-line px-1 text-xs">Ctrl K</kbd>{" "}
+            anywhere and type a word like “logo” or “WhatsApp”. New here?{" "}
+            <Link href="/admin/guide" className="font-semibold text-brand underline underline-offset-2">
+              Read the 2-minute guide
+            </Link>
+            .
+          </p>
+          <FindYourWay allowed={(t) => (!t.manage || manager) && (!t.owner || staff.role === "owner")} />
+        </div>
       </div>
     </AdminFrame>
   );

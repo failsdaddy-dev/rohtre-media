@@ -57,7 +57,7 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
   if (badges.length === 0) return null;
   const layout = badgeLayout(badges.length);
   return (
-    <section id="partners" aria-label="Partners and recognition" className={`rm-dark border-y border-line ${PAD}`}>
+    <section id="partners" aria-label="Partners and recognition" className={`rm-dark rm-grid-bg border-y border-line ${PAD}`}>
       <Container>
         <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} center />
       </Container>
@@ -106,7 +106,7 @@ export function BadgeBar({ s, badges: all }: { s: HomeContent["badges"]; badges:
 }
 
 // ------------------------------------------------------------------ results
-/** Proof blocks (R19) as big cards that stack while scrolling: white, red, black. Media area 1:1 (was 4:3, +33% tall). */
+/** Proof blocks (R19) as big square-cornered cards that stack while scrolling: white, red, black. Media area 1:1 (was 4:3, +33% tall). */
 const TONES = [
   "bg-white text-[#0a0a0a] [--fg-2:#5c5c5c]",
   "bg-brand text-white [--fg-2:rgba(255,255,255,0.85)]",
@@ -122,36 +122,60 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
           {results.map((r, i) => (
             <li key={r.id} style={{ "--i": i } as CSSProperties}>
               <article
-                className={`overflow-hidden rounded-[1.5rem] shadow-[0_40px_100px_-40px_rgba(0,0,0,0.8)] md:rounded-[2.5rem] ${TONES[i % 3]}`}
+                className={`overflow-hidden shadow-[0_40px_100px_-40px_rgba(0,0,0,0.8)] ${TONES[i % 3]}`}
                 {...reveal(0, "up-lg")}
               >
                 {r.is_placeholder ? (
                   <div className="p-5 md:p-10">
-                    <PlaceholderBox title={`Result ${i + 1}`} className="min-h-96 border-current">
+                    <PlaceholderBox title={`Result ${i + 1}`} className="min-h-96 rounded-none! border-current">
                       Brand name and logo, one real metric, a short summary and a dashboard screenshot on the right.
                     </PlaceholderBox>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-8 p-6 md:p-10 lg:flex-row lg:gap-12">
-                    <div className="flex w-full flex-1 flex-col gap-4">
+                  <div
+                    className={`grid items-center gap-6 p-5 md:gap-10 md:p-10 ${r.image_public_id ? "lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]" : ""}`}
+                  >
+                    <div className="flex w-full min-w-0 flex-col gap-4">
                       {!isLiveProof(r) && <NotLiveTag>Not approved yet</NotLiveTag>}
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] opacity-80">{r.brand_name}</p>
-                      <p className="text-[clamp(3rem,7vw,5.5rem)] font-bold leading-none tracking-[-0.05em]">
+                      {/* The brand's logo on a white square tile (readable on the white, red and black cards). */}
+                      <div className="flex items-center gap-4">
+                        {r.logo_public_id && (
+                          <span className="grid size-16 shrink-0 place-items-center border border-black/10 bg-white p-2 md:size-20">
+                            <Image
+                              src={r.logo_public_id}
+                              alt={`${r.brand_name} logo`}
+                              width={160}
+                              height={160}
+                              sizes="80px"
+                              loading="lazy"
+                              className="size-full object-contain"
+                            />
+                          </span>
+                        )}
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] opacity-80">{r.brand_name}</p>
+                      </div>
+                      <p
+                        data-about-count={r.metric_value}
+                        className="text-[clamp(3rem,7vw,5.5rem)] font-bold leading-none tracking-[-0.05em] tabular-nums"
+                      >
                         {r.metric_value}
                       </p>
                       <p className="text-xl font-semibold md:text-2xl">{r.metric_label}</p>
                       {r.summary && <p className="max-w-md text-[var(--fg-2)]">{r.summary}</p>}
                     </div>
                     {r.image_public_id && (
-                      <Image
-                        src={r.image_public_id}
-                        alt={r.image_alt ?? ""}
-                        width={720}
-                        height={720}
-                        sizes="(max-width: 1024px) 100vw, 460px"
-                        loading="lazy"
-                        className="aspect-square w-full max-w-[460px] rounded-[1.25rem] object-cover md:rounded-[1.75rem]"
-                      />
+                      // The whole screenshot is shown (contain, never cropped) in a large 4:3 area.
+                      <div className="relative aspect-[4/3] w-full min-w-0">
+                        <Image
+                          src={r.image_public_id}
+                          alt={r.image_alt ?? ""}
+                          width={1400}
+                          height={1050}
+                          sizes="(max-width: 1024px) 100vw, 820px"
+                          loading="lazy"
+                          className="absolute inset-0 size-full object-contain"
+                        />
+                      </div>
                     )}
                   </div>
                 )}
@@ -177,13 +201,16 @@ export function StripeBand({ text = "ROHTRE MEDIA" }: { text?: string }) {
 
 // ------------------------------------------------------------------ process
 /** Heading on the left (sticky), the steps as a vertical timeline on the right. */
-export function Process({ s }: { s: HomeContent["process"] }) {
+/** `phoneCta`: Home only, Book your call full width on phones (.rm-d2c-cta). */
+export function Process({ s, phoneCta }: { s: HomeContent["process"]; phoneCta?: boolean }) {
   return (
     <section id="process" className={PAD}>
       <Container className="grid gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="lg:sticky lg:top-[calc(var(--header-h)+56px)] lg:self-start">
           <SectionHead eyebrow={s.eyebrow} title={s.title} accent={s.accent} intro={s.intro} className="md:mb-0" />
-          <SectionCta {...s.cta} center={false} />
+          <div className={phoneCta ? "rm-d2c-cta" : undefined}>
+            <SectionCta {...s.cta} center={false} />
+          </div>
         </div>
         <ol className="flex flex-col">
           {s.steps.map((step, i) => (
@@ -398,7 +425,7 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
             {s.yearsExperience ? (
               // Number and label centred on one line; the symbol is part of the number (same size,
               // not raised). The label wraps under the number when the line is too narrow.
-              <p className="my-2 flex max-w-full flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="my-2 flex max-w-full flex-wrap items-center gap-x-3 gap-y-1 max-sm:self-stretch max-sm:justify-center">
                 <span className="whitespace-nowrap text-[29px] font-bold leading-none tracking-[-0.02em] text-brand tabular-nums md:text-[32px]">
                   {s.yearsExperience}
                   {s.yearsSuffix}
@@ -408,9 +435,11 @@ export function Founder({ s }: { s: HomeContent["founder"] }) {
             ) : (
               SHOW_PLACEHOLDERS && <NotLiveTag>Years of experience: to confirm (brief says about 20)</NotLiveTag>
             )}
-            <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
-              {s.ctaLabel} <ArrowRightIcon size={20} />
-            </ButtonLink>
+            <span className="rm-founder-cta max-sm:flex max-sm:self-stretch max-sm:[&>a]:w-full max-sm:[&>a]:justify-center max-sm:[&>a]:text-center">
+              <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
+                {s.ctaLabel} <ArrowRightIcon size={20} />
+              </ButtonLink>
+            </span>
           </div>
         </div>
       </Container>

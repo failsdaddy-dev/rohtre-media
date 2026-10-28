@@ -171,22 +171,20 @@ describe("Video Ads stage", () => {
     expect(out).not.toContain("rm-ad ");
   });
 
-  it("the phones sit in front of the monitor (z-index) and overlap it by 6% of its width", () => {
-    expect(css).toMatch(/\.rm-stage-left,\n\.rm-stage-right \{\n  position: relative;\n  z-index: 2;/);
-    expect(css).toMatch(
-      /\.rm-stage-monitor \{[^}]*z-index: 1;[^}]*margin-inline: calc\(var\(--wm\) \* var\(--ov\) \* -1\);/,
-    );
+  it("phones sit beside the monitor with a gap (no overlap on desktop), in front of it on phones", () => {
+    expect(css).toMatch(/\.rm-stage \{[^}]*column-gap: calc\(var\(--ph\) \* var\(--gr\)\);/);
+    expect(css).toMatch(/\.rm-stage \.rm-phone \{\n  position: relative;\n  z-index: 1;/);
     expect(VIDEO_STAGE.gap).toBe(0.06);
     expect(VIDEO_STAGE.monitorScale).toBe(2.1);
   });
 
-  it("the monitor matches the phone's look: same body, 1.6% bezel, no stand by default", () => {
+  it("the monitor matches the phone's look: same body, 1.6% bezel, on its stand", () => {
     expect(MONITOR_FRAME.bezel).toBe(0.016);
-    expect(SHOW_MONITOR_STAND).toBe(false);
+    expect(SHOW_MONITOR_STAND).toBe(true);
     const out = html(<MonitorFrame slot={emptyLandscape("21:9")} sizes="600px" />);
     expect(out).toContain('data-aspect="21:9"');
     expect(out).toContain("--mbz:1.6cqw");
-    expect(out).not.toContain("rm-monitor-stand");
+    expect(out).toContain("rm-monitor-stand");
     expect(css).toMatch(
       /\.rm-monitor-body \{[^}]*background: #0b0b0b;[^}]*inset 0 0 0 1px rgb\(255 255 255 \/ 0\.15\)/,
     );
@@ -226,7 +224,10 @@ describe("Video Ads stage", () => {
 
   it("1280 px and wider: phone height clamp(380px, 62svh, 640px) × size, capped at 68svh", () => {
     expect(stageLayout(1920, 950, "medium", frl, frl, frm).phoneH).toBeCloseTo(589, 0);
-    expect(stageLayout(2560, 1300, "xl", frl, frl, frm).phoneH).toBeCloseTo(832, 0); // 640 × 1.3 under 68svh (884)
+    // 640 × 1.3 = 832 by the screen, but the 1680 px container (1632 px inside) caps the whole stage first.
+    const wide = stageLayout(2560, 1300, "xl", frl, frl, frm);
+    expect(wide.phoneH).toBeLessThan(832);
+    expect(wide.width).toBeCloseTo(1632, 0);
     expect(stageLayout(1366, 657, "xl", frl, frl, frm).phoneH).toBeCloseTo(0.68 * 657, 0);
   });
 });
@@ -327,9 +328,9 @@ describe("founder stat", () => {
   for (const n of [7, 10, 2024]) {
     it(`${String(n).length} digit(s): number and symbol in one span, on the label's baseline`, () => {
       const out = founder(n);
-      expect(out).toContain("flex max-w-full flex-wrap items-baseline");
+      expect(out).toContain("flex max-w-full flex-wrap items-center");
       expect(out).toMatch(new RegExp(`tabular-nums md:text-\\[32px\\]">${n}\\+</span>`));
-      expect(out).toContain('text-[18px] leading-snug md:text-[20px]">years as a digital consultant</span>');
+      expect(out).toContain('text-[18px] leading-none md:text-[20px]">years as a digital consultant</span>');
     });
   }
 
@@ -342,7 +343,7 @@ describe("founder stat", () => {
   it("a long label wraps under the number; the symbol is optional; empty number hides the stat", () => {
     const long = "years helping fashion, beauty and lifestyle brands grow on Meta and Google";
     expect(founder(12, { yearsLabel: long.slice(0, 60), yearsSuffix: "" })).toMatch(/>12<\/span>/);
-    expect(founder(null)).not.toContain("items-baseline");
+    expect(founder(null)).not.toContain("flex-wrap items-center");
     const schema = homeSchema.shape.founder;
     expect(schema.safeParse({ ...DEFAULT_HOME.founder, yearsExperience: 9999 }).success).toBe(true);
     expect(schema.safeParse({ ...DEFAULT_HOME.founder, yearsExperience: 10000 }).success).toBe(false);

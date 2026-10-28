@@ -129,7 +129,7 @@ export const customHtmlSchema = z.object({
 
 /** Every section type: schema, allowed variants, and the header tone it needs when first. */
 export const SECTION_TYPES = {
-  hero: { schema: heroSchema, variants: ["banner-right", "banner-below"], headerTone: "transparent-light-text" },
+  hero: { schema: heroSchema, variants: ["banner-right", "banner-below"], headerTone: "transparent-dark-text" },
   badges: { schema: badgesSchema, variants: ["bar"], headerTone: undefined },
   painPoints: { schema: painPointsSchema, variants: ["cards", "list"], headerTone: undefined },
   results: { schema: resultsSchema, variants: ["stack", "grid"], headerTone: undefined },

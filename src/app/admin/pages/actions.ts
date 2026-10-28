@@ -221,3 +221,21 @@ export async function duplicateForCountry(pageId: string, countryId: string): Pr
   refresh(page.slug);
   return { ok: true, id: page.id };
 }
+
+/**
+ * Delete a landing page for good (owner/developer): its versions, preview
+ * links and tags go with it (database cascade); leads it brought in are kept.
+ * The page leaves the site and the sitemap at once (cache tags), no redeploy.
+ */
+export async function deletePage(pageId: string, confirmSlug: string): Promise<Result> {
+  const staff = await requireStaff({ manage: true });
+  const db = await supabaseServer();
+  const { page } = await loadLandingPage(db, { id: pageId });
+  if (confirmSlug.trim() !== page.slug) return { ok: false, error: "Type the page URL exactly to confirm." };
+  const { data, error } = await db.from("pages").delete().eq("id", pageId).select("id");
+  if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: "This page couldn’t be deleted (owner or developer only)." };
+  await audit(staff, "page.delete", "page", pageId, { slug: page.slug });
+  refresh(page.slug);
+  return { ok: true };
+}

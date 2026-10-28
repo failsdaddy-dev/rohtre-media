@@ -28,7 +28,7 @@ export function PlaceholderBox({
   return (
     <div
       data-placeholder
-      className={`flex flex-col items-center justify-center gap-1.5 rounded-[18px] border-2 border-dashed border-brand p-5 text-center [background:repeating-linear-gradient(135deg,color-mix(in_srgb,var(--brand)_8%,transparent)_0_14px,transparent_14px_28px)] ${className}`}
+      className={`flex flex-col items-center justify-center gap-1.5 rounded-none border-2 border-dashed border-brand p-5 text-center [background:repeating-linear-gradient(135deg,color-mix(in_srgb,var(--brand)_8%,transparent)_0_14px,transparent_14px_28px)] ${className}`}
     >
       <span className="rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-fg">
         Placeholder · not shown on the live site

@@ -27,7 +27,7 @@ export default async function AboutPage() {
       {about.diversity.enabled && <Diversity s={about.diversity} />}
       {about.review.enabled && <YearInReview s={about.review} />}
       <Team s={about.team} />
-      <CtaPanel id="lets-talk" {...about.cta} decor={about.cta.animated ? <CtaDecor /> : undefined} />
+      <CtaPanel id="lets-talk" band="bg-white" {...about.cta} decor={about.cta.animated ? <CtaDecor /> : undefined} />
       <AboutMotion />
       <MediaPlayback />
     </>

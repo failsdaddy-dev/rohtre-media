@@ -7,10 +7,13 @@ import type { CSSProperties, ReactNode } from "react";
 // with navy glyphs (red only as a small accent); the official Shopify and
 // Meta files are used unmodified. Motion (CSS in design.css, transform and
 // opacity only): the magnet floats 8 px on a 10 s loop; each piece drifts
-// along a curved path towards the magnet and back, and the "New Order" card
+// along a curved path towards the magnet and back ("YOUR BRAND" is written
+// along the magnet's band and moves with it), and the "New Order" card
 // pops slightly when it is closest. Still for reduced motion. Below 768 px
 // the parcel and thumbs-up are hidden (5 pieces, bottom-right kept clear for
-// the WhatsApp button). Decorative: hidden from screen readers.
+// the WhatsApp button). Tap or click it (MagnetTouch) and every piece flies
+// onto the poles and sticks; tap again (or wait a few seconds) to let go.
+// Decorative: hidden from screen readers.
 
 const NAVY = "#12305A";
 const GLASS = { fill: "rgba(255,255,255,0.7)", stroke: "#ffffff", strokeWidth: 1 } as const;
@@ -19,10 +22,30 @@ const GLASS = { fill: "rgba(255,255,255,0.7)", stroke: "#ffffff", strokeWidth: 1
 const pull = (px: number, py: number, delay: number, rotate = 3) =>
   ({ "--px": `${px}px`, "--py": `${py}px`, "--pr": `${rotate}deg`, "--dl": `${delay}s` }) as CSSProperties;
 
-function Piece({ style, extra, children }: { style: CSSProperties; extra?: boolean; children: ReactNode }) {
+/**
+ * Where a piece sticks when the magnet is tapped: the offset that puts it
+ * against a pole face (worked out from the magnet's -16° tilt), a small turn
+ * and a stagger so the pieces fly in one after another.
+ */
+const stick = (sx: number, sy: number, rotate: number, delay: number) =>
+  ({ "--sx": `${sx}px`, "--sy": `${sy}px`, "--sr": `${rotate}deg`, "--sd": `${delay}ms` }) as CSSProperties;
+
+function Piece({
+  style,
+  snap,
+  extra,
+  children,
+}: {
+  style: CSSProperties;
+  snap: CSSProperties;
+  extra?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <g className={`rm-mag-piece ${extra ? "rm-mag-extra" : ""}`} style={style} filter="url(#rm-mag-glass)">
-      {children}
+    <g className={`rm-mag-snap ${extra ? "rm-mag-extra" : ""}`} style={snap}>
+      <g className="rm-mag-piece" style={style} filter="url(#rm-mag-glass)">
+        {children}
+      </g>
     </g>
   );
 }
@@ -59,6 +82,9 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
           {stop(0, "#2a5a90", 0.28)}
           {stop(1, "#2a5a90", 0)}
         </radialGradient>
+        {/* The middle of the magnet's band (radius 130, between 85 and 175), from the
+            bottom leg round the left to the top leg: "YOUR BRAND" follows it. */}
+        <path id="rm-mag-text-arc" d="M250 430A130 130 0 0 1 250 170" fill="none" />
         <filter id="rm-mag-glass" x="-30%" y="-30%" width="160%" height="170%">
           <feDropShadow dx="0" dy="8" stdDeviation="9" floodColor="rgb(40,90,160)" floodOpacity="0.18" />
         </filter>
@@ -91,15 +117,36 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
             <rect x="300" y="385" width="72" height="90" rx="6" fill="#9aa6b4" />
           </g>
           <path d={BODY} fill="url(#rm-mag-red)" />
+          {/* Shine near the outer edge (radius 166), clear of the "YOUR BRAND" letters. */}
           <path
-            d="M250 142a158 158 0 0 0-148 112"
+            d="M250 134a166 166 0 0 0-155.5 117.7"
             fill="none"
             stroke="#ffffff"
-            strokeOpacity="0.45"
-            strokeWidth="9"
+            strokeOpacity="0.4"
+            strokeWidth="6"
             strokeLinecap="round"
           />
           <path d="M250 215a85 85 0 0 0 0 170" fill="none" stroke="#5a0006" strokeOpacity="0.3" strokeWidth="12" />
+          {/* "YOUR BRAND" pressed into the red band: a dark-red edge under soft white letters. */}
+          {[
+            { dy: 3, fill: "#7a0008", opacity: 0.45 },
+            { dy: 0, fill: "#ffffff", opacity: 0.6 },
+          ].map((t) => (
+            <text
+              key={t.fill}
+              transform={`translate(0 ${t.dy})`}
+              fill={t.fill}
+              fillOpacity={t.opacity}
+              fontSize="46"
+              fontWeight="800"
+              letterSpacing="6"
+              dominantBaseline="central"
+            >
+              <textPath href="#rm-mag-text-arc" startOffset="50%" textAnchor="middle">
+                YOUR BRAND
+              </textPath>
+            </text>
+          ))}
           {[125, 385].map((y) => (
             <g key={y}>
               <rect x="300" y={y} width="72" height="90" rx="6" fill="url(#rm-mag-metal)" />
@@ -111,13 +158,13 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
       </g>
 
       {/* Shopify (official bag, unmodified) on a glass disc */}
-      <Piece style={pull(-26, 22, 0)}>
+      <Piece style={pull(-26, 22, 0)} snap={stick(-54, 24, -8, 0)}>
         <circle cx="436" cy="74" r="56" {...GLASS} />
         <image href="/brand/platforms/shopify-bag.svg" x="406" y="40" width="60" height="68" />
       </Piece>
 
       {/* Heart bubble: glass, red heart as the accent */}
-      <Piece style={pull(-34, 30, -1.6, -4)}>
+      <Piece style={pull(-34, 30, -1.6, -4)} snap={stick(-189, 92, 10, 60)}>
         <path
           d="M548 44h44a14 14 0 0 1 14 14v34a14 14 0 0 1-14 14h-20l-14 14v-14h-10a14 14 0 0 1-14-14V58a14 14 0 0 1 14-14Z"
           {...GLASS}
@@ -126,13 +173,13 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
       </Piece>
 
       {/* Meta (official white lockup, unmodified) on a navy pill so it stays legible */}
-      <Piece style={pull(-30, 12, -3.4, -2)}>
+      <Piece style={pull(-30, 12, -3.4, -2)} snap={stick(-130, -39, -16, 120)}>
         <rect x="470" y="150" width="136" height="54" rx="27" fill={NAVY} stroke="#ffffff" strokeWidth="1" />
         <image href="/brand/platforms/meta-lockup-white.svg" x="491" y="159" width="94" height="36" />
       </Piece>
 
       {/* Cart tile, nearest the top pole */}
-      <Piece style={pull(-22, -8, -5, 5)}>
+      <Piece style={pull(-22, -8, -5, 5)} snap={stick(5, 76, 8, 180)}>
         <rect x="392" y="236" width="68" height="68" rx="18" {...GLASS} />
         <path
           d={CART}
@@ -146,7 +193,7 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
       </Piece>
 
       {/* "New Order" card: pops when it is closest to the magnet */}
-      <Piece style={pull(-40, -6, -2.5, -1.5)}>
+      <Piece style={pull(-40, -6, -2.5, -1.5)} snap={stick(-35, 28, -16, 240)}>
         <g className="rm-mag-pop">
           <rect x="436" y="300" width="186" height="74" rx="16" {...GLASS} />
           <rect x="450" y="317" width="40" height="40" rx="11" fill="var(--brand)" />
@@ -168,7 +215,7 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
       </Piece>
 
       {/* Parcel: light glass faces, navy tape */}
-      <Piece extra style={pull(-36, -26, -6.5, -4)}>
+      <Piece extra style={pull(-36, -26, -6.5, -4)} snap={stick(-41, -57, -12, 300)}>
         <g transform="translate(36 8)">
           <path d="M420 432l46-22 46 22-46 22Z" fill="rgba(255,255,255,0.85)" stroke="#ffffff" />
           <path d="M420 432v56l46 24v-58Z" fill="#dbe7f5" stroke="#ffffff" />
@@ -178,7 +225,7 @@ export function HeroMagnet({ className = "" }: { className?: string }) {
       </Piece>
 
       {/* Thumbs-up bubble */}
-      <Piece extra style={pull(-30, -34, -8, 3)}>
+      <Piece extra style={pull(-30, -34, -8, 3)} snap={stick(-131, -47, 14, 360)}>
         <g transform="translate(24 52)">
           <path
             d="M548 402h44a14 14 0 0 1 14 14v34a14 14 0 0 1-14 14h-10v14l-14-14h-20a14 14 0 0 1-14-14v-34a14 14 0 0 1 14-14Z"

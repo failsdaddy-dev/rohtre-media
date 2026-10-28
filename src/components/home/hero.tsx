@@ -8,6 +8,7 @@ import { MediaSlot, stillFor, stillSrcSet } from "../media/media-slot";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 import { HeroMagnet } from "./hero-magnet";
+import { MagnetTouch } from "./magnet-touch";
 import { HeroSlider } from "./hero-slider";
 import { PlaceholderBox, reveal } from "./parts";
 
@@ -146,19 +147,20 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
                 } as CSSProperties
               }
             >
-              <MediaSlot
-                slot={hero.video}
-                sizes="(min-width: 1280px) 620px, (min-width: 1024px) 46vw, 92vw"
-                maxWidth={1280}
-                priority
-                className="rounded-[20px] border border-black/10 shadow-[0_30px_90px_-40px_rgba(10,40,80,0.45)]"
-              />
+              <div className="rm-work-frame">
+                <MediaSlot
+                  slot={hero.video}
+                  sizes="(min-width: 1280px) 620px, (min-width: 1024px) 46vw, 92vw"
+                  maxWidth={1280}
+                  priority
+                />
+              </div>
               {hero.videoCaption && (
-                <figcaption className="mt-3 text-[15px] font-semibold text-fg">{hero.videoCaption}</figcaption>
+                <figcaption className="rm-work-caption rm-hero-caption mt-4 md:mt-5">{hero.videoCaption}</figcaption>
               )}
             </figure>
-            <div className="rm-hero-in flex flex-col items-start gap-3" style={{ "--i": 4 } as CSSProperties}>
-              <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
+            <div className="rm-hero-in flex flex-col items-start gap-3 max-sm:w-full max-sm:items-stretch max-sm:self-stretch max-sm:text-center" style={{ "--i": 4 } as CSSProperties}>
+              <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)] max-sm:flex max-sm:[&>a]:w-full max-sm:[&>a]:justify-center">
                 <ButtonLink href={BOOK_CALL_HREF} track="book_call_click" size="lg">
                   {hero.ctaLabel} <ArrowRightIcon size={20} />
                 </ButtonLink>
@@ -175,7 +177,9 @@ function CompositionHero({ hero }: { hero: HomeContent["hero"] }) {
                 fit="contain"
               />
             ) : (
-              <HeroMagnet />
+              <MagnetTouch>
+                <HeroMagnet />
+              </MagnetTouch>
             )}
           </div>
         </div>

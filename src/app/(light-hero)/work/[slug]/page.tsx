@@ -87,7 +87,7 @@ async function Brand({ params }: { params: PageProps<"/work/[slug]">["params"] }
         </section>
       )}
 
-      <div className="pt-16 md:pt-24">
+      <div className="bg-white pt-16 md:pt-24">
         <CtaPanel {...work.cta} />
       </div>
       <AboutMotion />

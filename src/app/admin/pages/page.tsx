@@ -30,7 +30,7 @@ async function PagesScreen() {
   const options = (type: string) =>
     [...all.values()]
       .filter((v) => v.type_key === type)
-      .map((v) => ({ id: v.id, label: v.parent_id ? `— ${v.label}` : v.label }));
+      .map((v) => ({ id: v.id, label: v.label }));
 
   return (
     <AdminFrame staff={staff} current="/admin/pages" title="Landing pages">

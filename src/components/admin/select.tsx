@@ -216,6 +216,8 @@ export function Select({
   const button = useRef<HTMLButtonElement>(null);
   const popup = useRef<HTMLDivElement>(null);
   const typed = useRef({ text: "", at: 0 });
+  /** Scroll the list to the active option only after a keyboard move or on opening, never while the mouse scrolls it. */
+  const follow = useRef(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [place, setPlace] = useState<ReturnType<typeof placePopup> | null>(null);
@@ -225,6 +227,7 @@ export function Select({
   const current = options[index];
 
   const show = (at: number) => {
+    follow.current = true;
     if (!inline) setHost(document.body);
     setActive(at);
     setOpen(true);
@@ -248,11 +251,16 @@ export function Select({
       const h = popup.current?.scrollHeight ?? POPUP_MAX_PX;
       setPlace(placePopup(r, { width: window.innerWidth, height: window.innerHeight }, h));
     };
+    // Scrolling the list itself must not re-place it (that re-render made the list jump back).
+    const onScroll = (e: Event) => {
+      if (popup.current?.contains(e.target as Node)) return;
+      update();
+    };
     update();
-    window.addEventListener("scroll", update, true);
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", update);
     return () => {
-      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", update);
     };
   }, [open, inline]);
@@ -270,7 +278,7 @@ export function Select({
 
   // Keep the active option in view.
   useEffect(() => {
-    if (!open || active < 0) return;
+    if (!open || active < 0 || !follow.current) return;
     const list = popup.current;
     const el = list?.querySelector<HTMLElement>(`[data-index="${active}"]`);
     if (!list || !el) return;
@@ -279,7 +287,8 @@ export function Select({
     if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop;
     else if (el.offsetTop + el.offsetHeight > list.scrollTop + list.clientHeight)
       list.scrollTop = el.offsetTop + el.offsetHeight - list.clientHeight;
-  }, [open, active, place]);
+    if (place || inline) follow.current = false; // placed and scrolled once; the mouse/wheel is free now
+  }, [open, active, place, inline]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     const k = e.key;
@@ -289,7 +298,7 @@ export function Select({
       e.preventDefault();
       const now = Date.now();
       typed.current = { text: now - typed.current.at < TYPE_AHEAD_MS ? typed.current.text + k : k, at: now };
-      show(typeAhead(options, open ? active : index, typed.current.text));
+      show(typeAhead(options, open ? active : index, typed.current.text)); // follows the match
       return;
     }
     if (!open) {
@@ -318,6 +327,7 @@ export function Select({
       const next = moveActive(options, active, k);
       if (next !== null) {
         e.preventDefault();
+        follow.current = true;
         setActive(next);
       }
     }
@@ -470,6 +480,7 @@ export function Select({
             aria-label={ariaLabel}
             aria-labelledby={ariaLabel ? undefined : (ariaLabelledby ?? id)}
             onPointerDown={(e) => e.preventDefault()}
+            data-lenis-prevent=""
             className="rm-select-pop absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
           >
             {rows}
@@ -528,6 +539,7 @@ export function Select({
               visibility: place ? "visible" : "hidden",
             }}
             data-up={place?.up || undefined}
+            data-lenis-prevent=""
             className="rm-select-pop z-[1000] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
           >
             {rows}

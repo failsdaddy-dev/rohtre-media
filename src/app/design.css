@@ -219,12 +219,58 @@ html:not([data-scrolled]) .rm-header[data-tone="transparent-light-text"] :focus-
   position: absolute;
   inset: 0;
   z-index: -1;
+  /* A faint light band sweeps slowly across, over the grid lines. */
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 25%, transparent 85%);
+    linear-gradient(
+      115deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.035) 48%,
+      rgba(229, 9, 20, 0.05) 50%,
+      rgba(255, 255, 255, 0.035) 52%,
+      transparent 60%
+    ),
+    linear-gradient(to right, rgba(255, 255, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.075) 1px, transparent 1px);
+  background-size:
+    300% 300%,
+    64px 64px,
+    64px 64px;
+  background-position:
+    100% 100%,
+    0 0,
+    0 0;
+  /* Full grid in the middle, fading out toward all four edges and corners. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
+    linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
+    linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+  mask-composite: intersect;
   pointer-events: none;
+}
+/* One 16 s loop: the grid drifts slowly on a diagonal (two whole squares,
+   so it loops seamlessly) while the light band crosses once. The fade mask
+   stays put. Still for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .rm-grid-bg::before {
+    animation: rm-grid-move 16s linear infinite;
+  }
+}
+@keyframes rm-grid-move {
+  from {
+    background-position:
+      100% 100%,
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0% 0%,
+      128px 128px,
+      128px 128px;
+  }
 }
 /* Soft red glow at the bottom of a section. */
 .rm-glow {
@@ -1988,12 +2034,6 @@ input:focus-visible + .rm-seg-label {
 .rm-contact-submit {
   width: 100%;
 }
-/* Phones: room on the right for the floating WhatsApp button (60 px at 16 px from the edge). */
-@media (max-width: 639.98px) {
-  .rm-contact-submit {
-    width: calc(100% - 64px);
-  }
-}
 .rm-contact-check {
   display: grid;
   place-items: center;
@@ -3132,5 +3172,534 @@ html:not([data-scrolled]) .rm-header[data-tone] .rm-nav-link[aria-current="page"
     line-height: 1.35;
     text-align: center;
     overflow-wrap: anywhere;
+  }
+}
+
+/* -------------------------------------------------------- landing pages (/lp)
+   The site's light theme: sky hero and bands (.rm-hero-sky), white square
+   cards with the red glow (.rm-svc), white square frames for the offer
+   banner and creatives. */
+.rm-lp-frame {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow:
+    0 30px 70px -36px rgba(40, 90, 160, 0.45),
+    0 0 0 4px rgba(229, 9, 20, 0.03);
+}
+.rm-svc.rm-lp-card {
+  padding: 32px;
+}
+.rm-lp-num {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: color-mix(in srgb, var(--brand) 10%, #ffffff);
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 700;
+}
+@media (max-width: 639.98px) {
+  .rm-svc.rm-lp-card {
+    padding: 20px;
+  }
+  /* Phones: the hero buttons full width, one under the other. */
+  .rm-lp-btns {
+    flex-direction: column;
+    align-self: stretch;
+  }
+  .rm-lp-btns > a {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Home D2C section on phones: Book a Call full width with its line centred
+   under it (desktop unchanged). */
+@media (max-width: 639.98px) {
+  .rm-d2c-cta > div {
+    align-items: stretch;
+    text-align: center;
+  }
+  .rm-d2c-cta > div > a {
+    width: 100%;
+    justify-content: center;
+  }
+  .rm-d2c-cta > div > p {
+    align-self: center;
+  }
+}
+
+/* ------------------------------------------------------------ admin switches
+   Every on/off checkbox in the admin (input[role="switch"]) is drawn as a
+   pill switch: grey = off, red = on, the knob slides; keyboard focus ring.
+   The Toggle row adds an On / Off word beside it. */
+input[type="checkbox"][role="switch"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: #cfd3da;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+input[type="checkbox"][role="switch"]::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+input[type="checkbox"][role="switch"]:checked {
+  background: var(--brand);
+}
+input[type="checkbox"][role="switch"]:checked::before {
+  transform: translateX(18px);
+}
+input[type="checkbox"][role="switch"]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+input[type="checkbox"][role="switch"]:disabled {
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  input[type="checkbox"][role="switch"],
+  input[type="checkbox"][role="switch"]::before {
+    transition: none;
+  }
+}
+.rm-toggle-state {
+  min-width: 2.2em;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-2);
+}
+.rm-toggle-state::after {
+  content: "Off";
+}
+input[role="switch"]:checked + .rm-toggle-state {
+  color: var(--brand);
+}
+input[role="switch"]:checked + .rm-toggle-state::after {
+  content: "On";
+}
+
+/* ----------------------------------------------- Home video stage, livelier
+   A soft red glow behind the devices, the phones tilted
+   toward the monitor, every device floating gently (out of step), a slow
+   light sweep across empty screens, and a phone straightens on hover.
+   Phones (< 768 px): one composition instead of a stacked grid, the monitor
+   on top and the two phones overlapping its lower corners. Motion stops for
+   prefers-reduced-motion. */
+.rm-stage-wrap {
+  position: relative;
+  isolation: isolate;
+}
+.rm-stage-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 4% 12% 10%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 55% at 50% 55%,
+    rgb(229 9 20 / 0.16),
+    rgb(229 9 20 / 0.05) 55%,
+    transparent 75%
+  );
+  filter: blur(8px);
+}
+.rm-stage .rm-phone-body,
+.rm-stage .rm-monitor {
+  transform-origin: 50% 100%;
+  transition: rotate 0.5s var(--ease-soft);
+}
+.rm-stage-left .rm-phone-body {
+  rotate: -5deg;
+}
+.rm-stage-right .rm-phone-body {
+  rotate: 5deg;
+}
+.rm-stage .rm-phone {
+  position: relative;
+  z-index: 1;
+}
+@media (hover: hover) {
+  .rm-stage .rm-phone:hover .rm-phone-body {
+    rotate: 0deg;
+  }
+}
+/* The light sweep: only over empty screens (never over a real video). */
+.rm-stage [data-empty-slot]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.09) 45%,
+    rgb(229 9 20 / 0.08) 50%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  background-position: 120% 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-stage .rm-phone-body {
+    animation: rm-stage-float 6s ease-in-out infinite;
+  }
+  .rm-stage-right .rm-phone-body {
+    animation-delay: -3s;
+  }
+  .rm-stage .rm-monitor {
+    animation: rm-stage-float-sm 8s ease-in-out infinite;
+    animation-delay: -1.5s;
+  }
+  .rm-stage [data-empty-slot]::after {
+    animation: rm-stage-sweep 5.5s ease-in-out infinite;
+  }
+  .rm-stage-right [data-empty-slot]::after {
+    animation-delay: -1.8s;
+  }
+  .rm-stage-monitor [data-empty-slot]::after {
+    animation-delay: -3.6s;
+  }
+}
+@keyframes rm-stage-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+@keyframes rm-stage-float-sm {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+@keyframes rm-stage-sweep {
+  0%,
+  20% {
+    background-position: 120% 0;
+  }
+  70%,
+  100% {
+    background-position: -20% 0;
+  }
+}
+@media (max-width: 767.98px) {
+  .rm-stage {
+    --ph: calc(27cqw / max(var(--frl), var(--frr)));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "stage"
+      "text";
+    row-gap: 0;
+    column-gap: 0;
+  }
+  .rm-stage-monitor,
+  .rm-stage-left,
+  .rm-stage-right {
+    grid-area: stage;
+  }
+  .rm-stage-monitor {
+    width: 74%;
+    justify-self: center;
+    align-self: start;
+  }
+  .rm-stage-left {
+    justify-self: start;
+    align-self: end;
+    margin-top: 16cqw;
+  }
+  .rm-stage-right {
+    justify-self: end;
+    align-self: end;
+    margin-top: 16cqw;
+  }
+  .rm-stage-left .rm-phone-body {
+    rotate: -7deg;
+  }
+  .rm-stage-right .rm-phone-body {
+    rotate: 7deg;
+  }
+  .rm-stage-text {
+    padding-top: 32px;
+  }
+}
+
+/* Home hero video caption: centred under the white frame like the Work
+   video captions, with a short red rule under it. */
+.rm-hero-caption::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+/* ------------------------------------------- Home D2C phones, livelier
+   The video-stage treatment for the D2C section's phones: a soft red glow
+   behind them, each phone floating gently (out of step) and a slow light
+   sweep across empty screens. At rest the phones stand straight; on hover
+   or a tap they tilt (one left, the next right). Still for reduced motion. */
+.rm-phones {
+  position: relative;
+  isolation: isolate;
+}
+.rm-phones::before {
+  content: "";
+  position: absolute;
+  inset: 0 -6%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 55%,
+    rgb(229 9 20 / 0.2),
+    rgb(229 9 20 / 0.06) 55%,
+    transparent 75%
+  );
+  filter: blur(10px);
+}
+.rm-phones .rm-phone-body {
+  transform-origin: 50% 100%;
+  transition: rotate 0.5s var(--ease-soft);
+}
+.rm-phones .rm-phone:active .rm-phone-body {
+  rotate: -5deg;
+}
+.rm-phones .rm-phone:nth-child(even):active .rm-phone-body {
+  rotate: 5deg;
+}
+@media (hover: hover) {
+  .rm-phones .rm-phone:hover .rm-phone-body {
+    rotate: -5deg;
+  }
+  .rm-phones .rm-phone:nth-child(even):hover .rm-phone-body {
+    rotate: 5deg;
+  }
+}
+.rm-phones [data-empty-slot]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.09) 45%,
+    rgb(229 9 20 / 0.08) 50%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  background-position: 120% 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-phones .rm-phone-body {
+    animation: rm-stage-float 6s ease-in-out infinite;
+  }
+  .rm-phones .rm-phone:nth-child(even) .rm-phone-body {
+    animation-delay: -3s;
+  }
+  .rm-phones [data-empty-slot]::after {
+    animation: rm-stage-sweep 5.5s ease-in-out infinite;
+  }
+  .rm-phones .rm-phone:nth-child(even) [data-empty-slot]::after {
+    animation-delay: -2.7s;
+  }
+}
+
+/* Hero magnet, tap to attract (MagnetTouch): the pieces fly onto the poles
+   one after another with a small overshoot, the magnet gives a quick jolt,
+   and they spring back when released. Each piece's own drift pauses while
+   it is stuck. */
+.rm-mag-touch {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.rm-mag-snap {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.55s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.rm-mag-touch[data-attract] .rm-mag-snap {
+  transform: translate(var(--sx), var(--sy)) rotate(var(--sr));
+  transition: transform 0.6s cubic-bezier(0.5, 0, 0.3, 1.45) var(--sd, 0ms);
+}
+.rm-mag-touch[data-attract] .rm-mag-piece,
+.rm-mag-touch[data-attract] .rm-mag-pop {
+  animation: none;
+}
+.rm-mag-touch[data-attract] .rm-mag-body {
+  animation: rm-mag-jolt 0.45s ease-out;
+}
+@keyframes rm-mag-jolt {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  30% {
+    transform: translate(-6px, 0) rotate(-1.5deg);
+  }
+  60% {
+    transform: translate(4px, 0) rotate(1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-mag-snap,
+  .rm-mag-touch[data-attract] .rm-mag-snap {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* -------------------------------------------------------- admin polish
+   The loading bar along the very top (red, brand gradient), grey shimmer
+   placeholders while a page loads, the spinning ring, the pulsing "Live"
+   dot, the quick-find pop-in and a soft fade-in for each admin page.
+   Motion off for prefers-reduced-motion. */
+.rm-admin-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  height: 3px;
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #ff4d5a, var(--brand), #ff4d5a);
+  box-shadow: 0 0 10px rgb(229 9 20 / 0.6);
+  transition:
+    width 0.3s ease,
+    opacity 0.4s ease 0.2s;
+}
+.rm-admin-progress[data-on] {
+  opacity: 1;
+  width: 85%;
+  transition:
+    width 8s cubic-bezier(0.1, 0.8, 0.2, 1),
+    opacity 0.1s ease;
+}
+.rm-skel {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton) 0%,
+    color-mix(in srgb, var(--skeleton) 40%, transparent) 50%,
+    var(--skeleton) 100%
+  );
+  background-size: 200% 100%;
+}
+.rm-admin-spin {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 3px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  border-top-color: var(--brand);
+}
+.rm-live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #22c55e;
+}
+.rm-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #22c55e;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-skel {
+    animation: rm-skel 1.4s ease-in-out infinite;
+  }
+  .rm-admin-spin {
+    animation: rm-spin 0.8s linear infinite;
+  }
+  .rm-live-dot::after {
+    animation: rm-live 2s ease-out infinite;
+  }
+  .rm-admin-in {
+    animation: rm-admin-in 0.35s ease-out both;
+  }
+  .rm-admin-pop {
+    animation: rm-admin-pop 0.18s ease-out both;
+  }
+}
+@keyframes rm-skel {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes rm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rm-live {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes rm-admin-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rm-admin-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rm-admin-fade {
+    animation: rm-admin-fade 0.15s ease-out both;
+  }
+}
+@keyframes rm-admin-fade {
+  from {
+    opacity: 0;
   }
 }

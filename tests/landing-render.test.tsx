@@ -49,8 +49,9 @@ describe("landing page render", () => {
     expect(order).not.toContain("process"); // off by default (R15)
   });
 
-  it("starts with a dark hero (white header text) and shows no prices", () => {
-    expect(html).toMatch(/class="rm-dark rm-hero-dark/);
+  it("starts with the light sky hero (site theme) and shows no prices", () => {
+    expect(html).toMatch(/class="rm-hero-sky rm-hero-dark/);
+    expect(html).not.toMatch(/rm-beams/);
     expect(html.toLowerCase()).not.toMatch(/price|package|what’s included|what's included/);
   });
 });

@@ -11,6 +11,7 @@ import type { PageContent, Section, SectionType } from "@/sections/schemas";
 import {
   checkPage,
   createPreviewLink,
+  deletePage,
   duplicateForCountry,
   publish,
   restoreVersion,
@@ -23,7 +24,7 @@ import {
 // move up/down, layout (variant) and its fields; add a section; save as a
 // new draft version. The side panel runs the publish check, publishes,
 // makes preview links, changes the URL/visibility, duplicates for another
-// country and restores older versions.
+// country, restores older versions and (owner/developer) deletes the page.
 
 const TYPE_LABELS: Record<SectionType, string> = {
   hero: "Hero + offer banner",
@@ -103,6 +104,7 @@ export function PageEditor(props: {
   const [pending, start] = useTransition();
   const [settings, setSettings] = useState({ slug: props.page.slug, visibility: props.page.visibility });
   const [country, setCountry] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const update = (next: PageContent) => {
     setContent(next);
@@ -222,14 +224,15 @@ export function PageEditor(props: {
                       options={VARIANTS[s.type].map((v) => ({ value: v, label: v }))}
                     />
                   )}
-                  <label className="flex items-center gap-1.5 text-sm">
+                  <label className="flex min-w-[5.5rem] cursor-pointer items-center gap-2 text-sm font-semibold">
                     <input
                       type="checkbox"
+                      role="switch"
                       className="size-4 accent-[var(--brand)]"
                       checked={s.enabled}
                       onChange={(e) => setSection(i, { ...s, enabled: e.target.checked } as Section)}
                     />
-                    On
+                    {s.enabled ? "On" : "Off"}
                   </label>
                   <Button
                     variant="ghost"
@@ -512,6 +515,52 @@ export function PageEditor(props: {
             ))}
           </ul>
         </Panel>
+
+        {props.canManage && (
+          <Panel title="Delete page">
+            <p className="mb-3 text-sm text-fg-2">
+              Removes /lp/{props.page.slug} from the website and the sitemap at once, with all its versions and
+              preview links. Leads it brought in are kept. This can’t be undone.
+            </p>
+            {confirmDelete === null ? (
+              <Button variant="danger" disabled={pending} onClick={() => setConfirmDelete("")}>
+                Delete this page
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Field label={`Type ${props.page.slug} to confirm`}>
+                  <input
+                    className={INPUT_CLASS}
+                    value={confirmDelete}
+                    onChange={(e) => setConfirmDelete(e.target.value)}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="danger"
+                    disabled={pending || confirmDelete.trim() !== props.page.slug}
+                    onClick={() =>
+                      run(async () => {
+                        const res = await deletePage(props.page.id, confirmDelete);
+                        if (!res.ok) return setMessage({ tone: "error", text: res.error });
+                        setDirty(false);
+                        router.push("/admin/pages");
+                        router.refresh();
+                      })
+                    }
+                  >
+                    Delete for good
+                  </Button>
+                  <Button variant="ghost" disabled={pending} onClick={() => setConfirmDelete(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Panel>
+        )}
       </aside>
     </div>
   );

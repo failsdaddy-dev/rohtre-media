@@ -16,7 +16,9 @@ import type { SiteSettings } from "@/lib/settings-schema";
 import type { Section, SectionOf } from "./schemas";
 
 // Section registry, part 2: how each section type renders on a landing page.
-// Bands alternate dark and light. Proof sections show only matched, approved
+// Drawn in the site's light theme (Work / Recognition / Contact): the sky hero,
+// white square cards with the red glow (.rm-svc), sky bands and the white form
+// card; proof sections reuse the Home blocks. Proof sections show only matched, approved
 // items on the live site and disappear when there are none; while building,
 // placeholders show (marked) so the layout can be judged.
 
@@ -34,7 +36,7 @@ export type RenderContext = {
 function OfferBanner({ banner, priority }: { banner: SectionOf<"hero">["props"]["offerBanner"]; priority: boolean }) {
   if (!banner.desktop || !banner.mobile) {
     return SHOW_PLACEHOLDERS ? (
-      <PlaceholderBox title="Offer banner" className="aspect-[4/5] w-full bg-[#0d0d0d] md:aspect-[4/3]">
+      <PlaceholderBox title="Offer banner" className="aspect-[4/5] w-full rounded-none border-0 bg-white md:aspect-[4/3]">
         This page’s own offer banner (the offer lives only inside this image): desktop about 1200×900, mobile about
         1080×1350, with alt text.
       </PlaceholderBox>
@@ -63,7 +65,7 @@ function OfferBanner({ banner, priority }: { banner: SectionOf<"hero">["props"][
     <picture>
       <source media="(min-width: 768px)" srcSet={desktopSet} />
       {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes from getImageProps */}
-      <img {...img} srcSet={mobileSet} className="aspect-[4/5] w-full rounded-[24px] object-cover md:aspect-[4/3]" />
+      <img {...img} srcSet={mobileSet} className="aspect-[4/5] w-full object-cover md:aspect-[4/3]" />
     </picture>
   );
 }
@@ -73,50 +75,56 @@ function Hero({ s, ctx }: { s: SectionOf<"hero">; ctx: RenderContext }) {
   const below = s.variant === "banner-below";
   const enter = (i: number) => ({ className: "rm-hero-in", style: { "--i": i } as CSSProperties });
   return (
-    <section aria-label="Introduction" className="rm-dark rm-hero-dark rm-beams overflow-hidden">
+    <section aria-label="Introduction" className="rm-hero-sky rm-hero-dark overflow-clip">
       <Container
-        className={`grid items-center gap-12 pb-20 pt-16 md:pt-24 ${below ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
+        className={`grid items-center gap-10 pb-16 pt-10 md:gap-12 md:pb-24 md:pt-16 ${below ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
       >
-        <div className={`flex flex-col ${below ? "items-center text-center" : "items-start"}`}>
+        <div className={`flex min-w-0 flex-col ${below ? "items-center text-center" : "items-start"}`}>
           {p.eyebrow && (
-            <p {...enter(0)}>
-              <span className="rm-pill mb-7">{p.eyebrow}</span>
+            <p {...enter(0)} className="rm-hero-in rm-label mb-4">
+              {p.eyebrow}
             </p>
           )}
           <h1
-            className="rm-hero-in mb-6 text-[clamp(2.3rem,5.2vw,4.25rem)] font-semibold leading-[1.06] tracking-[-0.04em]"
+            className="rm-hero-in text-[clamp(2.3rem,5.2vw,4.2rem)] font-bold leading-[1.05] tracking-[-0.05em] text-[#0a0a0a] [overflow-wrap:anywhere] max-md:text-[clamp(2rem,9vw,2.6rem)]"
             style={{ "--i": 1 } as CSSProperties}
           >
             {p.h1}
           </h1>
+          <span
+            aria-hidden="true"
+            className="rm-hero-in mt-6 block h-1 w-24 bg-brand"
+            style={{ "--i": 2 } as CSSProperties}
+          />
           {p.subline && (
             <p
-              className="rm-hero-in mb-9 max-w-2xl text-lg leading-relaxed text-[#ececec]"
+              className="rm-hero-in mt-6 max-w-2xl text-[17px] leading-relaxed text-[#1f2a3a] md:text-xl"
               style={{ "--i": 2 } as CSSProperties}
             >
               {p.subline}
             </p>
           )}
-          <div className="rm-hero-in flex flex-wrap gap-4" style={{ "--i": 3 } as CSSProperties}>
-            <span className="rounded-full shadow-[0_6px_28px_rgba(229,9,20,0.35)]">
-              <ButtonLink href={FORM_ANCHOR} track="book_call_click">
-                {p.ctaLabel} <ArrowRightIcon size={18} />
-              </ButtonLink>
-            </span>
+          <div className="rm-hero-in rm-lp-btns mt-9 flex flex-wrap gap-3" style={{ "--i": 3 } as CSSProperties}>
+            <ButtonLink href={FORM_ANCHOR} track="book_call_click" size="lg">
+              {p.ctaLabel} <ArrowRightIcon size={20} />
+            </ButtonLink>
             {ctx.whatsappHref && (
               <a
                 href={ctx.whatsappHref}
                 target="_blank"
                 rel="noopener"
-                className="rm-press inline-flex h-12 items-center gap-2 rounded-full border border-white/20 px-6 font-semibold text-white transition-colors hover:bg-white/10"
+                className="rm-press inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[#0a0a0a]/15 bg-white px-7 text-lg font-semibold text-[#0a0a0a] transition-colors hover:border-brand hover:text-brand"
               >
-                <ChatIcon size={18} /> WhatsApp us
+                <ChatIcon size={20} /> WhatsApp us
               </a>
             )}
           </div>
         </div>
-        <div className={`rm-hero-in w-full ${below ? "mx-auto max-w-4xl" : ""}`} style={{ "--i": 4 } as CSSProperties}>
-          <div className="overflow-hidden rounded-[24px] shadow-[0_40px_120px_-40px_rgba(229,9,20,0.45)]">
+        <div
+          className={`rm-hero-in w-full min-w-0 ${below ? "mx-auto max-w-4xl" : ""}`}
+          style={{ "--i": 4 } as CSSProperties}
+        >
+          <div className="rm-lp-frame">
             <OfferBanner banner={p.offerBanner} priority />
           </div>
         </div>
@@ -130,23 +138,25 @@ function PainPoints({ s }: { s: SectionOf<"painPoints"> }) {
   const p = s.props;
   const list = s.variant === "list";
   return (
-    <section className={PAD}>
+    <section className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={p.eyebrow} title={p.title} accent={p.accent} />
-        <ul className={list ? "flex max-w-3xl flex-col gap-4" : "grid gap-6 md:grid-cols-3"}>
+        <ul className={list ? "flex max-w-3xl flex-col gap-4" : "grid gap-5 md:grid-cols-3 md:gap-6"}>
           {p.items.map((item, i) => (
             <li key={item.title} {...reveal(i)}>
-              <div className="rm-card flex h-full flex-col gap-3 p-7">
-                <span className="text-sm font-bold text-brand">{String(i + 1).padStart(2, "0")}</span>
-                <h3 className="text-xl font-bold tracking-[-0.02em]">{item.title}</h3>
-                <p className="leading-relaxed text-fg-2">{item.text}</p>
+              <div className="rm-svc rm-lp-card flex h-full flex-col gap-3">
+                <span aria-hidden="true" className="rm-lp-num">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="text-xl font-bold tracking-[-0.02em] text-[#0a0a0a]">{item.title}</h3>
+                <p className="leading-relaxed text-[#3a3a3a]">{item.text}</p>
               </div>
             </li>
           ))}
         </ul>
-        <div className="mt-12 flex justify-center" {...reveal(0)}>
-          <ButtonLink href={FORM_ANCHOR} variant="dark" track="book_call_click">
-            Fix this with us <ArrowRightIcon size={18} />
+        <div className="mt-12 flex justify-center max-sm:[&>a]:w-full" {...reveal(0)}>
+          <ButtonLink href={FORM_ANCHOR} track="book_call_click" size="lg">
+            Fix this with us <ArrowRightIcon size={20} />
           </ButtonLink>
         </div>
       </Container>
@@ -160,7 +170,7 @@ function CreativeTile({ c }: { c: Creative }) {
   const media = c.media_public_id;
   return (
     <figure className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-[20px] border border-line bg-bg-elev">
+      <div className="rm-lp-frame relative">
         {!media ? (
           <PlaceholderBox
             title={c.concept ? "Concept work" : `${c.kind === "reel" ? "Reel" : "Creative"}`}
@@ -216,7 +226,7 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
   const shown = items.length > 0 ? items : SHOW_PLACEHOLDERS ? null : [];
   if (shown && shown.length === 0) return null;
   return (
-    <section className={`border-y border-line ${PAD}`}>
+    <section className={`rm-hero-sky overflow-clip ${PAD}`}>
       <Container>
         <SectionHead eyebrow={p.eyebrow} title={p.title} accent={p.accent} intro={p.intro} />
         {shown ? (
@@ -228,7 +238,7 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
             ))}
           </ul>
         ) : (
-          <PlaceholderBox title="Creatives" className="min-h-60">
+          <PlaceholderBox title="Creatives" className="min-h-96 max-sm:min-h-72">
             No creatives are tagged for this page yet. Add real ads and reels (and, if you want, labelled concept work).
           </PlaceholderBox>
         )}
@@ -238,25 +248,30 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
 }
 
 // -------------------------------------------------------------- platforms
+/** Icon tile colours, one per card (the Work story cards' palette). */
+const PLATFORM_TINTS = ["#2563EB", "#DB2777", "#E50914", "#7C3AED", "#0D9488", "#EA580C"];
+
 function Platforms({ s }: { s: SectionOf<"platforms"> }) {
   const p = s.props;
   return (
-    <section className={`rm-dark ${PAD}`}>
+    <section className={`bg-white ${PAD}`}>
       <Container>
         <SectionHead eyebrow={p.eyebrow} title={p.title} accent={p.accent} />
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {p.items.map((item, i) => (
-            <li key={item.name} {...reveal(i % 3)}>
-              <div className="rm-glow-card p-7">
-                <span className="rm-glow-face" aria-hidden="true" />
-                <span className="mb-5 grid size-[52px] place-items-center bg-white/[0.06] text-brand">
+            <li key={item.name} className="flex" {...reveal(i % 3)}>
+              <div
+                className="rm-svc rm-lp-card flex w-full flex-col"
+                style={{ "--tint": PLATFORM_TINTS[i % PLATFORM_TINTS.length] } as CSSProperties}
+              >
+                <span aria-hidden="true" className="rm-svc-icon mb-5">
                   <ServiceIcon
                     name={/google|search|shopping|youtube/i.test(item.name) ? "search" : "megaphone"}
-                    size={22}
+                    size={24}
                   />
                 </span>
-                <h3 className="mb-2 text-xl font-bold text-white">{item.name}</h3>
-                <p className="text-[15px] leading-relaxed text-white/50">{item.text}</p>
+                <h3 className="mb-2 text-xl font-bold text-[#0a0a0a]">{item.name}</h3>
+                <p className="text-[15px] leading-relaxed text-[#3a3a3a]">{item.text}</p>
               </div>
             </li>
           ))}
@@ -270,20 +285,26 @@ function Platforms({ s }: { s: SectionOf<"platforms"> }) {
 function Form({ s, ctx }: { s: SectionOf<"form">; ctx: RenderContext }) {
   const p = s.props;
   return (
-    <section id="enquiry" className={`rm-dark rm-grid-bg scroll-mt-24 ${PAD}`}>
-      <Container className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
+    <section id="enquiry" className={`rm-hero-sky overflow-clip scroll-mt-24 ${PAD}`}>
+      <Container className="grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+        <div className="min-w-0">
           <SectionHead eyebrow={p.eyebrow} title={p.title} accent={p.accent} intro={p.intro} className="md:mb-8" />
-          <ul className="flex flex-col gap-3 text-fg-2" {...reveal(2)}>
+          <ul className="flex flex-col gap-3 text-[17px] font-semibold text-[#0a0a0a]" {...reveal(2)}>
             {["A 15-minute discovery call", "A plan for your brand", "No obligation"].map((t) => (
               <li key={t} className="flex items-center gap-3">
-                <CheckIcon size={18} className="text-brand" /> {t}
+                <span
+                  aria-hidden="true"
+                  className="grid size-8 shrink-0 place-items-center rounded-full bg-brand text-white"
+                >
+                  <CheckIcon size={16} />
+                </span>
+                {t}
               </li>
             ))}
           </ul>
         </div>
         <div
-          className="relative rounded-[28px] bg-white p-6 text-[#0a0a0a] [color-scheme:light] sm:p-10 [--bg-elev:#ffffff] [--fg-2:#5c5c5c] [--fg:#0a0a0a] [--field-bg:#ffffff] [--field-border:#d6d4cf] [--line:rgba(10,10,10,0.1)]"
+          className="rm-contact-card relative min-w-0 p-5 text-[#0a0a0a] [color-scheme:light] sm:p-8 [--bg-elev:#ffffff] [--fg-2:#5c5c5c] [--fg:#0a0a0a] [--field-bg:#ffffff] [--field-border:#d6d4cf] [--line:rgba(10,10,10,0.1)]"
           {...reveal(1, "up-lg")}
         >
           <LeadForm
@@ -326,7 +347,7 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
       const results = ctx.proof.results.slice(0, s.props.limit);
       if (results.length === 0) {
         return SHOW_PLACEHOLDERS ? (
-          <section className={`rm-dark ${PAD}`}>
+          <section className={`bg-white ${PAD}`}>
             <Container>
               <SectionHead
                 eyebrow={s.props.eyebrow}
@@ -334,7 +355,7 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
                 accent={s.props.accent}
                 intro={s.props.intro}
               />
-              <PlaceholderBox title="Results" className="min-h-60">
+              <PlaceholderBox title="Results" className="min-h-96 max-sm:min-h-72">
                 No results are tagged for this page yet. Add 2-3 real results (client, metric, dashboard screenshot).
               </PlaceholderBox>
             </Container>

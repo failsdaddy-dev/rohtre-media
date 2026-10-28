@@ -176,6 +176,7 @@ export function CtaPanel({
   decor,
   id,
   action,
+  band = "",
 }: {
   eyebrow?: string;
   title?: string;
@@ -190,14 +191,16 @@ export function CtaPanel({
   id?: string;
   /** Replaces the Book a Call / WhatsApp buttons (e.g. Careers' "Apply Now"). */
   action?: ReactNode;
+  /** The band's background, matching the section above it (default: the page's own). */
+  band?: string;
 }) {
   return (
-    <section id={id} className="pb-20 pt-4 md:pb-28">
+    <section id={id} className={`pb-20 pt-4 md:pb-28 ${band}`}>
       <Container>
         <div
           data-reveal="up-lg"
           data-cta-card=""
-          className="rm-dark relative overflow-hidden rounded-[2rem] bg-[#0d0d0d] px-6 py-16 text-center shadow-[0_40px_90px_-40px_rgba(0,0,0,0.6)] sm:px-12 md:py-20"
+          className="rm-dark rm-grid-bg relative overflow-hidden rounded-none bg-[#0d0d0d] px-6 py-16 text-center shadow-[0_40px_90px_-40px_rgba(0,0,0,0.6)] sm:px-12 md:py-20"
         >
           <PanelAccents />
           {decor}

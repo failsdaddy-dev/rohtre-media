@@ -175,13 +175,8 @@ export function Blocks({ s }: { s: CareersContent["blocks"] }) {
       <Container className="flex flex-col gap-20 md:gap-28">
         {s.items.map((b, i) => (
           <div key={i} className="grid items-center gap-8 md:grid-cols-2 md:gap-16">
-            <div className={b.side === "right" ? "md:order-2" : ""} {...reveal(0, "up-lg")}>
-              <MediaSlot
-                slot={b.image}
-                sizes="(max-width: 768px) 100vw, 560px"
-                maxWidth={1280}
-                className="border border-[#e5e7eb] shadow-[0_30px_80px_-40px_rgba(10,40,80,0.35)]"
-              />
+            <div className={`rm-work-frame ${b.side === "right" ? "md:order-2" : ""}`} {...reveal(0, "up-lg")}>
+              <MediaSlot slot={b.image} sizes="(max-width: 768px) 100vw, 560px" maxWidth={1280} />
             </div>
             <div className="flex flex-col items-start gap-5">
               {b.eyebrow && (

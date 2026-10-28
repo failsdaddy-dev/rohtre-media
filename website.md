@@ -201,9 +201,9 @@ Design modelled on the effects of peakpilots.in (reference only; our colours, fo
 - `HeaderTone` = `"solid"` (default) | `"transparent-dark-text"` | `"transparent-light-text"`. In every tone the scrolled header is the same white bar with dark logo and links (unchanged).
 - Set on the server: the route-group layout passes `tone` (from `GROUP_TONES`) to `SiteChrome` → `SiteHeader`, which writes `data-tone` on `<header>`; CSS in `design.css` styles `html:not([data-scrolled]) .rm-header[data-tone=…]`. First paint is correct (no flash, no layout shift). `resolveHeaderTone()` turns anything missing/unknown into `solid`, so forgetting a tone is harmless.
 - Never style the header from other page content (`body:has(...)`): with Cache Components, pages you navigated away from stay in the DOM hidden (React Activity), which is what made the header white on Privacy/Terms (fixed 2026-10-21).
-- Where each page declares its tone: `(light-hero)/layout.tsx` → `transparent-dark-text` (home, About, Careers, Contact, the five legal pages); `(site)/layout.tsx` → none → `solid` (new pages); `not-found.tsx` → `solid`.
+- Where each page declares its tone: `(light-hero)/layout.tsx` → `transparent-dark-text` (every public page: Home, About, Work + brand pages, Recognition, Careers, Contact, the five legal pages); `(landing)/lp/[slug]/layout.tsx` → the same light-hero tone (since 2026-10-27 the landing hero is the light sky hero; the layout no longer reads the URL, which fixed the Cache Components "instant" warning); `(site)/layout.tsx` → none → `solid`; `not-found.tsx` → `solid`. The hero section type declares `transparent-dark-text` (`src/sections/schemas.ts`); `pageHeaderTone()` is still used by `/preview`.
 - **Phase 3 hook:** every hero/section type in the future section registry declares the header tone it needs, and a page takes its header tone from its first enabled section; if none declares one the default is solid. The registry reuses the exported `HeaderTone` type.
-- Test: `tests/header-tone.test.ts` (every public page is in a group with a valid tone; dark-hero pages and only those get white text).
+- Test: `tests/header-tone.test.ts` (lists the 12 public pages; all start light; landing layout doesn't read params).
 
 ## 5b. Badge render rule (`src/lib/proof.ts` → `publicBadges`)
 
@@ -222,6 +222,11 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 - Settings → Social links: rows of platform (Select with icon preview; each platform once), link (live https check + soft warning when the host isn't the platform's), Shown/Hidden switch, ↑ ↓, delete with a confirm click, "+ Add social link". Saved with the settings form (same save call, `updateTag(SETTINGS_TAG)`).
 - Home editor, Video ads & reels: Words (incl. strapline/paragraph under the screen), Screens (Left phone / Centre screen / Right phone, each limited to its family), Icon row (title + icon picker with previews), Frame size. Founder: Number / Symbol after the number (optional) / Label, in Words.
 - Proof & badges: the badge form has Logo style with a live preview of the red cell; tabs wrap instead of scrolling; Delete needs a second click.
+- **2026-10-27 admin polish** (`admin-frame.tsx`): red loading bar at the top on every admin navigation (`admin-progress.tsx`); `AdminLoading` = bar + spinner + grey shimmer skeleton (no plain "Loading…"); a black **Live** strip under the header (pulsing green dot, "Saved page edits go live in seconds · Landing pages go live when published", Help, Open website ↗); **Quick find** (`admin-search.tsx`, Ctrl/⌘+K or the search button next to the logo): searches every admin page by name, plain-words `hint` (new field on every `ADMIN_TABS` entry) and aliases, grouped results, portalled to `<body>` (inside the blurred header a fixed overlay is trapped), closes on Esc / outside click; Overview "Find your way" cards (4 groups); **Help & guide** page `/admin/guide` (how it works, 4 step-by-step jobs, glossary, habits). Page fade-in, all motion off for reduced motion.
+- **Switches**: every on/off checkbox (`input[role="switch"]`) is drawn as a pill switch (grey off, red on; CSS in `design.css`); `Toggle` row in `ui.tsx` (title, hint, switch, On/Off word). Settings: WhatsApp button, chat card, careers line, and a separate **Publishing** panel with "Owner can publish landing pages" (owner-only). Multi-choice tick boxes stay checkboxes.
+- **Landing pages admin**: Delete page panel (owner/developer; type the slug to confirm; versions/preview links/tags cascade, leads kept; `deletePage` in `admin/pages/actions.ts`). New-page dropdowns show plain names (no "— " before children).
+- `Select` fix (2026-10-27): scrolling inside the list no longer re-places it (that re-render snapped the list back to the active option); it follows the active option only on open and keyboard moves; `data-lenis-prevent` on the list.
+- Save bar "Saved" pill: derived from the message (no setState inside the effect; lint rule).
 - Ideas not built (other admin pages): Landing pages list as compact rows with status chips; a Media library grid filter (unused / images / videos); Leads saved filters; a Settings section rail like the home editor.
 
 ## 6. Visibility and bots (`src/lib/crawlers.ts`)
@@ -304,6 +309,9 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | 2026-10-24 | Legal pages: new slugs named after the pages; live text copied word for word (typos and outdated WordPress cookie names kept, editable); the live opt-out and fraud report forms replaced by "Email us" buttons; cookie switches wait for Phase 6's banner | Founder |
 | 2026-10-24 | Branches: briefs asked for feature branches; the two-branch rule (`dev` + `main`) won every time | Founder rule |
 | 2026-10-24 | Claude doesn't run lint, build, typecheck, tests or the dev server; the founder runs them | Founder |
+| 2026-10-27 | Landing pages redrawn in the site's light theme (sky hero, white `.rm-svc` cards, sky form band, white frames); proof sections reuse the Home blocks. Owner publishes after switching on Settings → Publishing. Ad pages: Unlisted recommended | Founder |
+| 2026-10-27 | Sharp corners site-wide for media frames and cards: `.rm-work-frame` reused for the Home hero video, About video and Careers images; Results cards, Home product cards, `PlaceholderBox` and the closing CTA card square (CtaPanel `band` prop matches the strip to the section above) | Founder |
+| 2026-10-27 | Niches: 27 D2C niches/sub-niches (`20261027120000_more_niches`) + Lifestyle, Real estate, SaaS, Event management (`20261027130000_…`); "Health" = existing Health & wellness. Niche starter copy (hero line, pain points, 2 FAQs, form intro) in `src/sections/niche-copy.ts` (sub-niches use the parent's); every new page also gets a country FAQ (currency). Existing pages unchanged | Founder |
 | 2026-10-26 | Work + Recognition from the live pages; only the 10 named brands (live grid also has italki, Teddy Blake, StoryLearning, SpeakBubbles, Load More: not built); live client-quotes carousel on /work not built; live "Learn more" (/contact-us) and "Hire us" (#) -> /contact; "Meet some of our colleagues" (#) -> /about#team [TO CONFIRM]; brands in a table (`work_brands`), pages in `page_content` | Founder brief |
 
 ## 8. Env var names (values only in `.env.local` / host settings)
@@ -340,8 +348,9 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Company pages: About, Careers (+ applications), Contact (+ sales email) | done 2026-10-23/24 |
 | Legal pages (5) + admin Company/Legal menus | done 2026-10-24 |
 | Work (+ 10 brand pages), Recognition, 6-link header, phone layout, Book a Call -> Contact fix | done 2026-10-26 (founder testing) |
+| Landing theme, admin polish (loading, Live strip, Quick find, guide, switches, delete page), niches, mobile + motion polish | done 2026-10-27 (all 286 tests pass) |
 | 5 AI | **dropped** (founder, 2026-10-23) |
-| 6 Case studies, tracking + consent, SEO/performance · 7 Launch | not started; wait for the founder |
+| 6 Tracking (GTM, GA4, Google Ads conversions, Meta Pixel + CAPI) + consent banner, SEO hardening, performance pass · 7 Launch | not started; wait for the founder. Case studies = the 10 brand pages (no separate section); blog dropped |
 
 ## 9a. Launch blockers
 
@@ -354,6 +363,7 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Work/brands: live numbers that look copy-pasted (KSI +80K Brand Credibility, BetterHelp +700M Audience engagement, Law Care +₹33K Modern Identity, same 80K/160/700 on EA, TFV, RiceKraft, OhMyGoal; PedTalks +136K vs text 138,000); typos kept (NEIL GUIDES, PetTalk, RohanTre); SEO descriptions are WordPress auto-excerpts (Work/Recognition contain "+ 0 clients"): rewrite | founder | Admin -> Work page / Recognition page |
 | Work: upload the 2 videos (live: new-render-rakhi.mp4, higgsfield v720p.mp4 on videos.files.wordpress.com); low-res images: ICCMRT slide 400x180, PedTalks banner, OhMyGoal; live logos are white-on-black squares (upload dark-on-transparent for a clean white tile); Pedram has no photo | founder | Admin |
 | Host env: SMTP_* (+ CONTACT_NOTIFY_EMAIL) on the hosting | founder | Phase 7 |
+| Apply `20261027120000_more_niches` and `20261027130000_niches_lifestyle_realestate_saas_events` (`npx supabase db push`) | founder | terminal |
 | "2B+" stat badge (disabled): exact number, unit (conversions / views / other), "as of" date, proof source. Conflict: live home says 2 Billion conversions, live About says 2B views, the brief says 2,000,000+ conversions (1,000x and metric differ) | founder | `badges` row `e474c465…` |
 | 5 live badges have no proof link (shown as a showcase by founder decision) | founder (optional) | `badges` |
 | Home placeholders (dev only, never in production): 2 hero slides, 3 result blocks, founder years of experience | founder | home |
@@ -414,7 +424,7 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-**All public pages are built on `dev` (2026-10-26): Home, About, Work (+10 brand pages), Recognition, Careers, Contact and the five legal pages.** All migrations applied (`npx supabase db push --dry-run` = up to date); `seed:work` run once. Founder is testing everything, then says "push" (dev -> GitHub; main only when the site is finished). After new routes run `npx next typegen`.
-Next: Phase 6 or 7, only when the founder says so.
+**All public pages and the landing system are built on `dev` (2026-10-27).** 2026-10-27 work (landing theme, admin polish, niches, sharp frames, motion, mobile buttons) passes typecheck/lint/tests (286); the founder runs the build, then says "commit and push" (dev -> GitHub; main only when the site is finished). Two niche migrations to apply. After new routes run `npx next typegen`.
+Next (founder's word): Phase 6 = tracking + consent banner (needs GTM ID, GA4 ID, Ads conversion ID/label, Meta Pixel ID + CAPI token), SEO hardening (rewrite auto-excerpt descriptions, share images, Search Console), performance (Lighthouse mobile). Phase 7 = hosting choice (Vercel Hobby forbids commercial use), domain switch, WordPress redirect map (needs the URL export), uptime + backups, launch checklist.
 
 Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.

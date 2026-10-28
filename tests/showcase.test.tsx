@@ -133,7 +133,7 @@ describe("FAQ", () => {
   it("never shows approval pills, and every closed card has the same size in one aligned grid", () => {
     const out = html(<Faq s={DEFAULT_HOME.faq} />);
     expect(out).not.toMatch(/approval|draft/i);
-    expect(out).toContain("grid gap-5 md:grid-cols-2 md:items-start");
+    expect(out).toContain("grid gap-4 md:grid-cols-2 md:items-start md:gap-5");
     const cards = out.match(/<details class="[^"]*"/g) ?? [];
     const summaries = out.match(/<summary class="[^"]*"/g) ?? [];
     expect(cards).toHaveLength(6);

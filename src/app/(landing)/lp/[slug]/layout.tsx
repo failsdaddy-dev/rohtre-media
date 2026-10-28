@@ -1,12 +1,10 @@
 import { SiteChrome } from "@/components/site-chrome";
-import { getLandingPage } from "@/lib/landing-data";
-import { pageHeaderTone } from "@/sections/tone";
+import { GROUP_TONES } from "@/lib/header-tone";
 
 // Landing pages keep the full site header and footer (R8, never standalone).
-// The header tone comes from the page's first enabled section (a dark hero →
-// white header text; anything else → the safe solid header).
-export default async function LandingLayout({ children, params }: LayoutProps<"/lp/[slug]">) {
-  const { slug } = await params;
-  const page = await getLandingPage(slug);
-  return <SiteChrome tone={pageHeaderTone(page?.content)}>{children}</SiteChrome>;
+// Every landing page opens on the light sky hero (the publish check keeps the
+// hero first), so the header starts see-through with the dark logo, like the
+// (light-hero) pages. Not read from the URL, so navigation stays instant.
+export default function LandingLayout({ children }: LayoutProps<"/lp/[slug]">) {
+  return <SiteChrome tone={GROUP_TONES["(light-hero)"]}>{children}</SiteChrome>;
 }

@@ -231,7 +231,7 @@ export function LeadForm({
       <button
         type="submit"
         disabled={busy}
-        className="rm-press inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 font-semibold text-brand-fg disabled:opacity-60"
+        className="rm-press inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 font-semibold text-brand-fg disabled:opacity-60 max-sm:h-14 max-sm:w-full max-sm:text-lg"
       >
         {busy ? "Sending…" : "Send my enquiry"}
         {!busy && <ArrowRightIcon size={18} />}

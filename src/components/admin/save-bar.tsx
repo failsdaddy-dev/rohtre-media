@@ -76,13 +76,17 @@ export function SaveBar({
   // "Saved" shows for a moment after a save, then the bar goes away until the
   // next edit, so it never sits over the page when there is nothing to save.
   const okText = message?.tone === "ok" ? message.text : null;
-  const [flash, setFlash] = useState(false);
+  // The pill shows while okText is new; 2.5 s later that text is marked as
+  // shown (state set from the timer, not during the effect itself).
+  const [shown, setShown] = useState<string | null>(null);
   useEffect(() => {
     if (!okText) return;
-    setFlash(true);
-    const t = setTimeout(() => setFlash(false), 2500);
+    const t = setTimeout(() => setShown(okText), 2500);
     return () => clearTimeout(t);
   }, [okText]);
+  // When the message clears, forget it, so the same text flashes again on the next save.
+  if (okText === null && shown !== null) setShown(null);
+  const flash = okText !== null && shown !== okText;
   const text = pending
     ? "Saving…"
     : message?.tone === "error"
