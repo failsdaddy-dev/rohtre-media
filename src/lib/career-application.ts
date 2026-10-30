@@ -18,14 +18,14 @@ export const APPLICATION_STATUSES = ["new", "contacted", "rejected", "hired"] as
 
 /** Country calling codes offered next to the phone number (India first). */
 export const DIAL_CODES = [
-  { code: "+91", label: "IN +91" },
-  { code: "+1", label: "US +1" },
-  { code: "+971", label: "AE +971" },
-  { code: "+44", label: "UK +44" },
-  { code: "+61", label: "AU +61" },
-  { code: "+65", label: "SG +65" },
-  { code: "+977", label: "NP +977" },
-  { code: "+880", label: "BD +880" },
+  { code: "+91", country: "IN", name: "India" },
+  { code: "+1", country: "US", name: "USA & Canada" },
+  { code: "+971", country: "AE", name: "United Arab Emirates" },
+  { code: "+44", country: "GB", name: "United Kingdom" },
+  { code: "+61", country: "AU", name: "Australia" },
+  { code: "+65", country: "SG", name: "Singapore" },
+  { code: "+977", country: "NP", name: "Nepal" },
+  { code: "+880", country: "BD", name: "Bangladesh" },
 ] as const;
 
 export const CONSENT_TEXT = "I agree that RohTre Media may store my details and contact me about this application.";

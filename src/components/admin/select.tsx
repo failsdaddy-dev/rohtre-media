@@ -49,6 +49,8 @@ export type SelectOption = {
   group?: string;
   /** A small icon or preview before the label. */
   icon?: ReactNode;
+  /** Shown instead of the label and hint in the closed box (a narrow box, e.g. "+91"). */
+  short?: string;
   disabled?: boolean;
 };
 
@@ -74,6 +76,8 @@ export type SelectProps = {
    * picker. For dropdowns inside a modal or a scrolling panel (the careers form).
    */
   inline?: boolean;
+  /** Width of the inline list (default: the same as the box). */
+  popupClassName?: string;
 };
 
 const POPUP_MAX_PX = 320;
@@ -208,6 +212,7 @@ export function Select({
   className = "",
   placeholder = "Choose…",
   inline = false,
+  popupClassName = "inset-x-0",
 }: SelectProps) {
   const coarse = useCoarsePointer();
   const auto = useId();
@@ -341,8 +346,8 @@ export function Select({
         </span>
       )}
       <span className={`min-w-0 flex-1 truncate ${o ? "" : "text-fg-2"}`}>
-        {o ? o.label : placeholder}
-        {o?.hint && <span className="ml-2 text-xs text-fg-2">{o.hint}</span>}
+        {o ? (o.short ?? o.label) : placeholder}
+        {o?.hint && !o.short && <span className="ml-2 text-xs text-fg-2">{o.hint}</span>}
       </span>
     </>
   );
@@ -481,7 +486,7 @@ export function Select({
             aria-labelledby={ariaLabel ? undefined : (ariaLabelledby ?? id)}
             onPointerDown={(e) => e.preventDefault()}
             data-lenis-prevent=""
-            className="rm-select-pop absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
+            className={`rm-select-pop absolute ${popupClassName} top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]`}
           >
             {rows}
           </div>

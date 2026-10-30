@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import type { ContactContent } from "@/content/contact-schema";
 import { loadAttribution } from "@/lib/attribution";
-import { CONTACT_CONSENT_TEXT, DIAL_CODES, enquirySchema, MESSAGE_MAX } from "@/lib/contact-enquiry";
+import { CONTACT_CONSENT_TEXT, enquirySchema, MESSAGE_MAX } from "@/lib/contact-enquiry";
 import { pushDataLayer } from "@/lib/data-layer";
 import { generateEventId, META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
 import { track } from "@/lib/track";
 import { Select } from "../admin/select";
+import { DIAL_OPTIONS } from "../country-flag";
 import { ArrowRightIcon, ChatIcon, ServiceIcon } from "../icons";
 import { MultiSelect } from "./multi-select";
 
@@ -213,14 +214,15 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
         <div className={LABEL}>
           <label htmlFor="contact-phone">WhatsApp / phone {REQUIRED}</label>
           <div className="flex gap-2">
-            <span className="rm-apply-select w-[6.9rem] shrink-0">
+            <span className="rm-apply-select w-[8.5rem] shrink-0">
               <Select
                 inline
                 name="dialCode"
                 value={dialCode}
                 onChange={setDialCode}
                 aria-label="Country code"
-                options={DIAL_CODES.map((d) => ({ value: d.code, label: d.label }))}
+                popupClassName="left-0 w-72 max-w-[calc(100vw-3.5rem)]"
+                options={DIAL_OPTIONS}
               />
             </span>
             <Field className="min-w-0 flex-1">

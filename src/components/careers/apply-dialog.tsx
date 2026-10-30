@@ -6,12 +6,12 @@ import { CAREER_CATEGORIES } from "@/content/careers-schema";
 import {
   applicationSchema,
   CONSENT_TEXT,
-  DIAL_CODES,
   OTHER_ROLE,
   RESUME_MAX_BYTES,
   RESUME_TYPES,
 } from "@/lib/career-application";
 import { Select } from "../admin/select";
+import { DIAL_OPTIONS } from "../country-flag";
 import { ArrowRightIcon, ServiceIcon } from "../icons";
 
 // The careers application form, in a modal dialog: a clean white panel
@@ -285,14 +285,15 @@ export function ApplyDialog({
               <div className={`${LABEL} sm:col-span-2`}>
                 <label htmlFor="apply-phone">Phone / WhatsApp number</label>
                 <div className="flex gap-2.5">
-                  <span className="rm-apply-select w-[7.6rem] shrink-0">
+                  <span className="rm-apply-select w-[8.5rem] shrink-0">
                     <Select
                       inline
                       name="dialCode"
                       value={dialCode}
                       onChange={setDialCode}
                       aria-label="Country code"
-                      options={DIAL_CODES.map((d) => ({ value: d.code, label: d.label }))}
+                      popupClassName="left-0 w-72 max-w-[calc(100vw-3.5rem)]"
+                      options={DIAL_OPTIONS}
                     />
                   </span>
                   <Field className="min-w-0 flex-1">
