@@ -225,6 +225,8 @@ export async function duplicateForCountry(pageId: string, countryId: string): Pr
 /**
  * Delete a landing page for good (owner/developer): its versions, preview
  * links and tags go with it (database cascade); leads it brought in are kept.
+ * Images and videos from any of its versions are removed from Cloudinary too,
+ * unless another page or section still uses them.
  * The page leaves the site and the sitemap at once (cache tags), no redeploy.
  */
 export async function deletePage(pageId: string, confirmSlug: string): Promise<Result> {
@@ -232,10 +234,12 @@ export async function deletePage(pageId: string, confirmSlug: string): Promise<R
   const db = await supabaseServer();
   const { page } = await loadLandingPage(db, { id: pageId });
   if (confirmSlug.trim() !== page.slug) return { ok: false, error: "Type the page URL exactly to confirm." };
+  const { data: versions } = await db.from("page_versions").select("content").eq("page_id", pageId);
   const { data, error } = await db.from("pages").delete().eq("id", pageId).select("id");
   if (error) return { ok: false, error: error.message };
   if (!data?.length) return { ok: false, error: "This page couldn’t be deleted (owner or developer only)." };
-  await audit(staff, "page.delete", "page", pageId, { slug: page.slug });
+  const cleaned = await cleanupAfterEdit(versions?.map((v) => v.content) ?? [], null);
+  await audit(staff, "page.delete", "page", pageId, { slug: page.slug, mediaCleanup: cleaned });
   refresh(page.slug);
   return { ok: true };
 }
