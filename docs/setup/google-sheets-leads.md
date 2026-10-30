@@ -1,6 +1,6 @@
 # Website leads → Google Sheet (optional)
 
-Every website enquiry is saved in Supabase first; the admin panel shows it. This adds a copy of each one to a Google Sheet. If it isn't set up, or Google is down, nothing breaks: the lead is still in Supabase.
+Every website enquiry (Contact page and landing page forms) is saved in Supabase first; the admin panel shows it. This adds a copy of each one to a Google Sheet. If it isn't set up, or Google is down, nothing breaks: the lead is still in Supabase.
 
 ## 1. Make the sheet
 

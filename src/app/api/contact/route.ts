@@ -1,14 +1,14 @@
 // POST: the Contact page enquiry form (JSON).
 // Order: same-site check -> validate (same rules as the form, plus the
 // admin's dropdown and chip lists) -> spam signals -> rate limit (shared
-// with the lead route) -> save in public.leads -> email sales (after the
-// response). The visitor sees success once the enquiry is saved (or, if
+// with the lead route) -> save in public.leads -> copy to the Google Sheet and
+// email sales (after the response). The visitor sees success once the enquiry is saved (or, if
 // saving failed, once it was emailed); a failed email is noted for Admin → Leads.
 import { after } from "next/server";
 import { getContactContent } from "@/lib/contact-data";
 import { CONTACT_MIN_FILL_MS, enquirySchema } from "@/lib/contact-enquiry";
 import { emailSales, noteEnquiryError, saveEnquiry } from "@/lib/contact.server";
-import { allowLead, clientIp, hashIp } from "@/lib/leads.server";
+import { allowLead, clientIp, hashIp, sendLeadToSheet } from "@/lib/leads.server";
 
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 const reason = (err: unknown) => `email: ${err instanceof Error ? err.message : "failed"}`;
@@ -54,21 +54,23 @@ export async function POST(request: Request) {
     }
   })();
 
-  let id: string | null = null;
+  let saved: Awaited<ReturnType<typeof saveEnquiry>> | null = null;
   try {
-    id = await saveEnquiry(enquiry, { ipHash, sourcePage, userAgent: request.headers.get("user-agent") });
+    saved = await saveEnquiry(enquiry, { ipHash, sourcePage, userAgent: request.headers.get("user-agent") });
   } catch (err) {
     console.error("contact: save failed", err);
   }
 
-  if (id) {
-    const saved = id;
+  if (saved) {
+    const { id, createdAt, row } = saved;
     after(async () => {
+      // Never throws: a failed copy is only logged. All the chosen services go in the one column.
+      await sendLeadToSheet(id, createdAt, { ...row, interest: enquiry.interests.join(", ") || null });
       try {
         await emailSales(enquiry, sourcePage);
       } catch (err) {
         console.error("contact: email failed", err);
-        await noteEnquiryError(saved, reason(err));
+        await noteEnquiryError(id, reason(err));
       }
     });
     return json({ ok: true });

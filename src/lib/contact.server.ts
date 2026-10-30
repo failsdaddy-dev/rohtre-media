@@ -13,48 +13,46 @@ import { whatsappLink } from "./whatsapp";
 //   2. emailed to sales through the same Gmail SMTP account as the careers
 //      form. A failed email never loses the enquiry: the failure is written
 //      to leads.notify_error for Admin → Leads.
+//   3. copied to the Google Sheet (sendLeadToSheet, optional).
 // Env (server only): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (shared with
 // careers); CONTACT_NOTIFY_EMAIL (comma-separated), else
 // CAREERS_NOTIFY_FALLBACK, else the sending account.
 
 type Meta = { ipHash: string; sourcePage: string; userAgent: string | null };
 
-export async function saveEnquiry(e: Enquiry, meta: Meta): Promise<string> {
+export async function saveEnquiry(e: Enquiry, meta: Meta) {
   const sb = supabaseAdmin();
   if (!sb) throw new Error("supabase_not_configured");
   const a = e.attribution;
-  const { data, error } = await sb
-    .from("leads")
-    .insert({
-      page_path: meta.sourcePage.slice(0, 500),
-      name: e.fullName,
-      phone: enquiryPhone(e),
-      email: e.email,
-      business_type: e.businessType || null,
-      website: e.website || null,
-      ad_spend_range: e.adSpend || null,
-      // The first choice also goes in the older single column, so older screens still show it.
-      interest: e.interests[0]?.slice(0, 80) ?? null,
-      interested_in: e.interests.length ? e.interests : null,
-      message: e.message || null,
-      consent: true,
-      consent_at: new Date().toISOString(),
-      consent_text_version: CONTACT_CONSENT_VERSION,
-      utm_source: a.utm_source?.slice(0, 200) ?? null,
-      utm_medium: a.utm_medium?.slice(0, 200) ?? null,
-      utm_campaign: a.utm_campaign?.slice(0, 200) ?? null,
-      utm_term: a.utm_term?.slice(0, 200) ?? null,
-      utm_content: a.utm_content?.slice(0, 200) ?? null,
-      gclid: a.gclid?.slice(0, 300) ?? null,
-      fbclid: a.fbclid?.slice(0, 300) ?? null,
-      referrer: a.referrer?.slice(0, 500) ?? null,
-      user_agent: meta.userAgent?.slice(0, 500) ?? null,
-      ip_hash: meta.ipHash,
-    })
-    .select("id")
-    .single();
+  const row = {
+    page_path: meta.sourcePage.slice(0, 500),
+    name: e.fullName,
+    phone: enquiryPhone(e),
+    email: e.email,
+    business_type: e.businessType || null,
+    website: e.website || null,
+    ad_spend_range: e.adSpend || null,
+    // The first choice also goes in the older single column, so older screens still show it.
+    interest: e.interests[0]?.slice(0, 80) ?? null,
+    interested_in: e.interests.length ? e.interests : null,
+    message: e.message || null,
+    consent: true,
+    consent_at: new Date().toISOString(),
+    consent_text_version: CONTACT_CONSENT_VERSION,
+    utm_source: a.utm_source?.slice(0, 200) ?? null,
+    utm_medium: a.utm_medium?.slice(0, 200) ?? null,
+    utm_campaign: a.utm_campaign?.slice(0, 200) ?? null,
+    utm_term: a.utm_term?.slice(0, 200) ?? null,
+    utm_content: a.utm_content?.slice(0, 200) ?? null,
+    gclid: a.gclid?.slice(0, 300) ?? null,
+    fbclid: a.fbclid?.slice(0, 300) ?? null,
+    referrer: a.referrer?.slice(0, 500) ?? null,
+    user_agent: meta.userAgent?.slice(0, 500) ?? null,
+    ip_hash: meta.ipHash,
+  };
+  const { data, error } = await sb.from("leads").insert(row).select("id, created_at").single();
   if (error) throw error;
-  return data.id as string;
+  return { id: data.id as string, createdAt: data.created_at as string, row };
 }
 
 function salesEmails(): string[] {
