@@ -65,8 +65,8 @@ function salesSender() {
 }
 
 async function salesEmails(sender: string): Promise<string[]> {
-  const { data } = (await supabaseAdmin()?.from("careers_private").select("sales_notify_emails").eq("id", true).maybeSingle()) ?? {};
-  const saved = (data?.sales_notify_emails as string[] | null) ?? [];
+  const res = await supabaseAdmin()?.from("careers_private").select("sales_notify_emails").eq("id", true).maybeSingle();
+  const saved = (res?.data?.sales_notify_emails as string[] | null) ?? [];
   if (saved.length) return saved;
   const list = process.env.CONTACT_NOTIFY_EMAIL || process.env.CAREERS_NOTIFY_FALLBACK || sender;
   return list
