@@ -7,12 +7,12 @@ import { secretLoginPath } from "./src/lib/login-path";
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'", // Next.js inline bootstrap + theme boot script
+  "script-src 'self' 'unsafe-inline' https://connect.facebook.net", // Next.js inline bootstrap + theme boot script
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://res.cloudinary.com",
+  "img-src 'self' data: https://res.cloudinary.com https://www.facebook.com",
   "media-src 'self' https://res.cloudinary.com",
   "font-src 'self'",
-  `connect-src 'self' ${supabase} https://api.cloudinary.com`.trim(),
+  `connect-src 'self' ${supabase} https://api.cloudinary.com https://connect.facebook.net https://www.facebook.com`.trim(),
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
