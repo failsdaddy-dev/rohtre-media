@@ -5,6 +5,7 @@ import { CtaDecor } from "@/components/home/cta-decor";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { CtaPanel } from "@/components/page-parts";
 import { getAboutContent } from "@/lib/about-data";
+import { OG_IMAGES } from "@/lib/seo";
 
 // About (R33). Same sections and order as the live About page
 // (https://rohtremedia.com/about/), drawn with the home page's design
@@ -13,7 +14,12 @@ import { getAboutContent } from "@/lib/about-data";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo } = await getAboutContent();
-  return { title: seo.title, description: seo.description, alternates: { canonical: "/about" } };
+  return {
+    title: seo.title,
+    description: seo.description,
+    alternates: { canonical: "/about" },
+    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/about", type: "website", images: OG_IMAGES },
+  };
 }
 
 export default async function AboutPage() {

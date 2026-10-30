@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { useEffect, useSyncExternalStore } from "react";
+import { readConsent, subscribeConsent } from "@/lib/cookie-consent";
 import { pushDataLayer } from "@/lib/data-layer";
 import {
   generateEventId,
@@ -33,34 +34,21 @@ fbq('set', 'autoConfig', false, '${META_PIXEL_ID}');
 fbq('init', '${META_PIXEL_ID}');
 fbq('track', 'PageView');`;
 
-const noSubscribe = () => () => {};
-// The secret sign-in address can't be listed in browser code, and Meta would
-// receive it, so any page with a password field keeps the script off.
-const hasNoPasswordField = () => !document.querySelector('input[type="password"]');
+// Loads only after the visitor accepts marketing cookies. The secret sign-in
+// address can't be listed in browser code, and Meta would receive it, so any
+// page with a password field keeps the script off. No <noscript> image: it
+// would fire before any choice.
+const allowedHere = () => readConsent()?.marketing === true && !document.querySelector('input[type="password"]');
 
 export function MetaPixel() {
   const pathname = usePathname();
-  const allowed = useSyncExternalStore(noSubscribe, hasNoPasswordField, () => false);
+  const allowed = useSyncExternalStore(subscribeConsent, allowedHere, () => false);
 
-  if (!META_PIXEL_ENABLED || isMetaPixelExcluded(pathname)) return null;
+  if (!META_PIXEL_ENABLED || !allowed || isMetaPixelExcluded(pathname)) return null;
   return (
-    <>
-      {allowed && (
-        <Script id="meta-pixel" strategy="afterInteractive">
-          {BASE_CODE}
-        </Script>
-      )}
-      <noscript>
-        {/* eslint-disable-next-line @next/next/no-img-element -- Meta's 1 px no-JavaScript fallback */}
-        <img
-          height="1"
-          width="1"
-          style={{ display: "none" }}
-          alt=""
-          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
-        />
-      </noscript>
-    </>
+    <Script id="meta-pixel" strategy="afterInteractive">
+      {BASE_CODE}
+    </Script>
   );
 }
 

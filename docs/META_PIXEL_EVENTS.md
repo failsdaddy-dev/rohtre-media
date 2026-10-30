@@ -15,6 +15,10 @@ The pixel does not load on: `/admin`, `/api`, `/login`, `/preview`, `/no-access`
 
 To add one, edit `META_PIXEL_EXCLUDED_PATH_PREFIXES` in `src/lib/meta-pixel.ts`. Any page with a password field also keeps the script off, which covers the secret sign-in address.
 
+## Consent
+
+The pixel loads only after the visitor accepts marketing cookies in the banner or on Cookie Settings (`src/lib/cookie-consent.ts`). With Reject all, nothing is sent to Meta, so reported numbers will be lower than real traffic. There is no `<noscript>` image, because it would fire before any choice.
+
 ## Events
 
 | Event | Type | Trigger | Parameters | Conversion |
@@ -34,7 +38,7 @@ Set `NEXT_PUBLIC_META_PIXEL_ENABLED=true` in `.env.local` and restart `npm run d
 
 ### Meta Pixel Helper
 
-1. Open the home page: one PageView.
+1. Open the home page in a private window and click Accept all: one PageView. With Reject all, Pixel Helper finds no pixel.
 2. Click Work, then About: one more PageView for each page change.
 3. Click Book a Call in the header: one BookACall.
 4. On `/contact`, click WhatsApp us: one Lead with content_name `WhatsApp`.

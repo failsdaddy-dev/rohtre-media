@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   autoColor,
   autoIcon,
@@ -13,6 +13,7 @@ import {
   type LegalSlug,
 } from "@/content/legal-schema";
 import { getLegalPage } from "@/lib/legal-data";
+import { OG_IMAGES } from "@/lib/seo";
 import { ArrowRightIcon, LockIcon, ServiceIcon } from "../icons";
 import { MediaSlot } from "../media/media-slot";
 import { Container } from "../page-parts";
@@ -53,6 +54,7 @@ export async function legalMetadata(slug: LegalSlug): Promise<Metadata> {
       description: page.seoDescription,
       url: `/${slug}`,
       type: "website",
+      images: OG_IMAGES,
     },
   };
 }
@@ -155,7 +157,7 @@ function Sub({ s }: { s: LegalSection }) {
 
 type Group = { head: LegalSection | null; subs: LegalSection[] };
 
-export async function LegalTemplate({ slug }: { slug: LegalSlug }) {
+export async function LegalTemplate({ slug, top }: { slug: LegalSlug; top?: ReactNode }) {
   const page: LegalPage = await getLegalPage(slug);
   const meta = LEGAL_PAGES.find((p) => p.slug === slug)!;
   const others = LEGAL_PAGES.filter((p) => p.slug !== slug);
@@ -251,6 +253,8 @@ export async function LegalTemplate({ slug }: { slug: LegalSlug }) {
                 <LegalToc items={toc} variant="bar" />
               </div>
             )}
+
+            {top}
 
             {cards.map(({ g, id, num, color, icon }, i) =>
               g.head ? (

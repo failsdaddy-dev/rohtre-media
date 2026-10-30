@@ -6,6 +6,7 @@ import { ContactScene } from "@/components/contact/contact-scene";
 import { ChatIcon, MailIcon, PhoneIcon, PinIcon } from "@/components/icons";
 import { Container } from "@/components/page-parts";
 import { getContactContent } from "@/lib/contact-data";
+import { OG_IMAGES } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: seo.title,
     description: seo.description,
     alternates: { canonical: "/contact" },
-    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/contact", type: "website" },
+    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/contact", type: "website", images: OG_IMAGES },
   };
 }
 

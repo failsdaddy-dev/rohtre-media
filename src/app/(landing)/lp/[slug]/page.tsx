@@ -5,6 +5,7 @@ import { AboutMotion } from "@/components/about/about-motion";
 import { getBadges } from "@/lib/home-data";
 import { getLandingPage, getLandingProof, getRedirect, listLandingSlugs } from "@/lib/landing-data";
 import { getSettings } from "@/lib/settings";
+import { OG_IMAGES } from "@/lib/seo";
 import { fillTemplate, whatsappLink } from "@/lib/whatsapp";
 import { LandingSections } from "@/sections/render";
 
@@ -29,6 +30,13 @@ export async function generateMetadata({ params }: PageProps<"/lp/[slug]">): Pro
     title: { absolute: page.content.meta.title },
     description: page.content.meta.description,
     alternates: { canonical: `/lp/${page.slug}` },
+    openGraph: {
+      title: page.content.meta.title,
+      description: page.content.meta.description,
+      url: `/lp/${page.slug}`,
+      type: "website",
+      images: OG_IMAGES,
+    },
     robots: indexable
       ? { index: true, follow: true }
       : { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false, noimageindex: true } },

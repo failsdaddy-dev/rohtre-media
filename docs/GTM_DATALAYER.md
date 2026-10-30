@@ -12,6 +12,12 @@
 
 GTM loads on all public pages and on published landing pages (`/lp/*`). It does not load on `/admin`, `/api`, `/login`, `/preview`, `/no-access`, `/auth` (the shared list `META_PIXEL_EXCLUDED_PATH_PREFIXES` in `src/lib/meta-pixel.ts`), on any page with a password field, or on a landing page in draft preview. On landing pages GTM starts after the page finishes loading, so the draft check can run.
 
+## Consent
+
+Google Consent Mode is on. `src/components/tracking/google-tag-manager.tsx` sets every storage type to denied, or to the visitor's saved choice, before `gtm.js` loads, and `saveConsent` in `src/lib/cookie-consent.ts` sends the update. Analytics cookies map to `analytics_storage`, marketing cookies to `ad_storage`, `ad_user_data` and `ad_personalization`, and functional cookies to `functionality_storage` and `personalization_storage`.
+
+Google tags obey this by themselves. Any non-Google tag in the container, such as Calendly, needs a consent setting in GTM, or it runs without consent. There is no `<noscript>` iframe, because it would skip the consent step.
+
 ## Events
 
 All four carry `page_path`, `page_type` (`landing` for `/lp`, otherwise `site`) and `event_id`.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Awards, ClientQuotes, RecognitionHero, TeamBlock } from "@/components/recognition/recognition-sections";
+import { OG_IMAGES } from "@/lib/seo";
 import { getRecognitionContent } from "@/lib/work-data";
 
 // Recognition. Same content and order as the live page
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: seo.description,
       url: "/recognition",
       type: "website",
+      images: OG_IMAGES,
     },
   };
 }

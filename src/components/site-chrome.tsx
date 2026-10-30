@@ -6,6 +6,7 @@ import { Motion } from "./motion";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { SmoothScroll } from "./smooth-scroll";
+import { CookieBanner } from "./tracking/cookie-banner";
 import { WhatsAppButton } from "./whatsapp-button";
 
 // The global shell on every public page (R8, R9): header, footer, WhatsApp.
@@ -28,6 +29,7 @@ export async function SiteChrome({ children, tone }: { children: ReactNode; tone
         enabled={settings.whatsapp.enabled}
         chat={settings.whatsapp}
       />
+      <CookieBanner />
       <Motion />
     </div>
   );

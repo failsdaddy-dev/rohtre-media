@@ -350,7 +350,8 @@ Open decision: the 2026-10-21 fix request asked for "enabled AND proof AND not p
 | Work (+ 10 brand pages), Recognition, 6-link header, phone layout, Book a Call -> Contact fix | done 2026-10-26 (founder testing) |
 | Landing theme, admin polish (loading, Live strip, Quick find, guide, switches, delete page), niches, mobile + motion polish | done 2026-10-27 (all 286 tests pass) |
 | 5 AI | **dropped** (founder, 2026-10-23) |
-| 6 Tracking (GTM, GA4, Google Ads conversions, Meta Pixel + CAPI) + consent banner, SEO hardening, performance pass · 7 Launch | not started; wait for the founder. Case studies = the 10 brand pages (no separate section); blog dropped |
+| 6 Tracking + consent + SEO | **closed by the founder 2026-10-30.** Built: Meta Pixel (`docs/META_PIXEL_EVENTS.md`), GTM + data layer (`docs/GTM_DATALAYER.md`), cookie banner + Cookie Settings switches (`src/lib/cookie-consent.ts`; the pixel waits for marketing consent, GTM uses Consent Mode), share image, Organization / WebSite / Breadcrumb data. Not done: Lighthouse (founder said no test runs), GTM container review and tag mapping (specialist), Search Console (founder), CAPI. Case studies = the 10 brand pages; blog dropped |
+| 7 Launch | **closed by the founder 2026-10-30:** hosting plan changed; the founder runs hosting and launch. Nothing in this phase was done here |
 
 ## 9a. Launch blockers
 

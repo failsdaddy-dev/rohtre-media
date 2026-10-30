@@ -16,6 +16,7 @@ import { ArrowRightIcon } from "@/components/icons";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { CtaPanel } from "@/components/page-parts";
 import { getCareersContent } from "@/lib/careers-data";
+import { jsonLd, OG_IMAGES } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/whatsapp";
 
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: seo.title,
     description: seo.description,
     alternates: { canonical: "/careers" },
-    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/careers", type: "website" },
+    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/careers", type: "website", images: OG_IMAGES },
   };
 }
 
@@ -54,8 +55,7 @@ export default async function CareersPage() {
           <CareersFaq s={c.faq} />
           <script
             type="application/ld+json"
-            // JSON.stringify output with "<" escaped, so text can't close the script tag.
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(c.faq)).replace(/</g, "\u003c") }}
+            dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd(c.faq)) }}
           />
         </>
       )}

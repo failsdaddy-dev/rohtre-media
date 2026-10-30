@@ -13,6 +13,7 @@ import { Hero } from "@/components/home/hero";
 import { BadgeBar, Faq, Founder, Process, Results, StripeBand, Testimonials } from "@/components/home/sections";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { CtaPanel } from "@/components/page-parts";
+import { jsonLd, OG_IMAGES, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { getBadges, getHomeContent, getResults, getTestimonials, SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import { getSettings } from "@/lib/settings";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -30,6 +31,14 @@ export const metadata: Metadata = {
   description:
     "RohTre Media plans and runs Meta and Google ad campaigns, makes the creatives and videos, and builds the pages they land on.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "RohTre Media | Digital marketing and growth agency",
+    description:
+      "RohTre Media plans and runs Meta and Google ad campaigns, makes the creatives and videos, and builds the pages they land on.",
+    url: "/",
+    type: "website",
+    images: OG_IMAGES,
+  },
 };
 
 export default async function HomePage() {
@@ -47,6 +56,10 @@ export default async function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd([organizationJsonLd(settings), websiteJsonLd()]) }}
+      />
       <Hero hero={home.hero} whatsappHref={whatsappHref} />
       {home.badges.enabled && badges.length > 0 && <BadgeBar s={home.badges} badges={badges} />}
       {home.whoWeServe.enabled && <WhoWeServe s={home.whoWeServe} />}

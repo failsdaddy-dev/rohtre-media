@@ -3,6 +3,7 @@ import { AboutMotion } from "@/components/about/about-motion";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { Container, CtaPanel } from "@/components/page-parts";
 import { BrandGrid, StatStrip, TextBlock, VideoPair, WorkHero } from "@/components/work/work-sections";
+import { OG_IMAGES } from "@/lib/seo";
 import { getBrands, getWorkContent } from "@/lib/work-data";
 
 // Work. Same content and order as the live page (https://rohtremedia.com/work-2/),
@@ -17,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: seo.title,
     description: seo.description,
     alternates: { canonical: "/work" },
-    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/work", type: "website" },
+    openGraph: { title: `${seo.title} | RohTre Media`, description: seo.description, url: "/work", type: "website", images: OG_IMAGES },
   };
 }
 

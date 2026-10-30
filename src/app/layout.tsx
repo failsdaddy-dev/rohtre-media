@@ -5,6 +5,7 @@ import { GoogleTagManager } from "@/components/tracking/google-tag-manager";
 import { MetaPixel, MetaPixelClicks } from "@/components/tracking/meta-pixel";
 import { SITE_URL } from "@/lib/env";
 import { MOTION_BOOT_SCRIPT } from "@/lib/motion-boot";
+import { OG_IMAGES } from "@/lib/seo";
 import "./globals.css";
 import "./design.css";
 
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "RohTre Media", template: "%s | RohTre Media" },
   description: "RohTre Media is a digital marketing and growth agency.",
+  openGraph: { siteName: "RohTre Media", type: "website", images: OG_IMAGES },
+  twitter: { card: "summary_large_image", images: OG_IMAGES },
 };
 
 // No theme toggle: the site is light with dark sections (see globals.css).

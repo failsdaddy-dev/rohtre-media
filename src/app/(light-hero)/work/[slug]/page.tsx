@@ -7,6 +7,7 @@ import { ArrowRightIcon } from "@/components/icons";
 import { MediaPlayback } from "@/components/media/media-playback";
 import { Container, CtaPanel } from "@/components/page-parts";
 import { BrandGrid, BrandHero, BrandMedia, BrandStory, moreBrands, StatStrip } from "@/components/work/work-sections";
+import { breadcrumbJsonLd, jsonLd, OG_IMAGES } from "@/lib/seo";
 import { getBrand, getBrands, getWorkContent } from "@/lib/work-data";
 
 // One brand page per published brand (/work/<slug>), one template, the
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: PageProps<"/work/[slug]">): P
       description: b.seo.description,
       url: `/work/${b.slug}`,
       type: "website",
+      images: OG_IMAGES,
     },
   };
 }
@@ -58,6 +60,17 @@ async function Brand({ params }: { params: PageProps<"/work/[slug]">["params"] }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            breadcrumbJsonLd([
+              { name: "Work", path: "/work" },
+              { name: b.name, path: `/work/${b.slug}` },
+            ]),
+          ),
+        }}
+      />
       <BrandHero b={b} />
       <StatStrip items={b.metrics} label={`${b.name} results`} />
 
