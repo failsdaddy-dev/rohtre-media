@@ -8,9 +8,9 @@ export const META_PIXEL_ENABLED = process.env.NEXT_PUBLIC_META_PIXEL_ENABLED ===
 
 /**
  * The pixel does not load on these paths. Add a prefix here to exclude more.
- * Every landing page, including ones built later in the admin, lives under /lp.
+ * Landing pages (/lp) keep the pixel: ads point at them.
  */
-export const META_PIXEL_EXCLUDED_PATH_PREFIXES = ["/admin", "/api", "/lp", "/login", "/preview", "/no-access", "/auth"];
+export const META_PIXEL_EXCLUDED_PATH_PREFIXES = ["/admin", "/api", "/login", "/preview", "/no-access", "/auth"];
 
 export const META_BOOK_CALL_EVENT = "BookACall";
 /** Value of the data-meta-event attribute on Book a Call buttons. */

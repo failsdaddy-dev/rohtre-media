@@ -11,17 +11,17 @@
 
 ### Excluded routes
 
-The pixel does not load on: `/admin`, `/api`, `/lp`, `/login`, `/preview`, `/no-access`, `/auth`.
+The pixel does not load on: `/admin`, `/api`, `/login`, `/preview`, `/no-access`, `/auth`. It does load on landing pages (`/lp`), which stay unlisted: the noindex headers, robots rules and AI-bot block are unchanged.
 
-To add one, edit `META_PIXEL_EXCLUDED_PATH_PREFIXES` in `src/lib/meta-pixel.ts`. Every landing page, including ones built later in the admin, is under `/lp`, so new landing pages need no change. Any page with a password field also keeps the script off, which covers the secret sign-in address.
+To add one, edit `META_PIXEL_EXCLUDED_PATH_PREFIXES` in `src/lib/meta-pixel.ts`. Any page with a password field also keeps the script off, which covers the secret sign-in address.
 
 ## Events
 
 | Event | Type | Trigger | Parameters | Conversion |
 | --- | --- | --- | --- | --- |
-| PageView | Standard | Every public page view | None | No |
+| PageView | Standard | Every public page and landing page view | None | No |
 | BookACall | Custom | Click on any Book a Call button | None | No |
-| Lead (SendEnquiry) | Standard | Contact form, after the server confirms success | content_name `SendEnquiry`, content_category `Contact_Conversion`, eventID | Yes |
+| Lead (SendEnquiry) | Standard | Contact form or landing page form, after the server confirms success | content_name `SendEnquiry`, content_category `Contact_Conversion`, eventID | Yes |
 | Lead (WhatsApp) | Standard | Click on any link to `wa.me`, `api.whatsapp.com` or `whatsapp.com/send` | content_name `WhatsApp`, content_category `Contact_Conversion`, eventID | Yes |
 
 Nothing else is tracked. Names, emails, phone numbers and messages are never sent to Meta. Advanced Matching and the Conversions API are not used. Meta's automatic button-click collection is off (`autoConfig` false).
@@ -41,7 +41,8 @@ Set `NEXT_PUBLIC_META_PIXEL_ENABLED=true` in `.env.local` and restart `npm run d
 5. Click the floating WhatsApp button, then Start chat: one Lead with content_name `WhatsApp`. Opening the chat card alone sends nothing.
 6. Send a valid enquiry: one Lead with content_name `SendEnquiry`.
 7. Submit with a required field empty: nothing fires.
-8. Open `/admin` and any `/lp/` page: Pixel Helper finds no pixel.
+8. Open a `/lp/` page: one PageView. Book a Call fires BookACall, WhatsApp fires Lead with content_name `WhatsApp`, and a valid landing form enquiry fires Lead with content_name `SendEnquiry`.
+9. Open `/admin`: Pixel Helper finds no pixel.
 
 ### Events Manager, Test Events
 

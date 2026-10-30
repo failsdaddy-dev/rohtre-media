@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { loadAttribution } from "@/lib/attribution";
 import { CONSENT_TEXT } from "@/lib/consent";
+import { META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
 import { track } from "@/lib/track";
 import { ArrowRightIcon, CheckIcon } from "./icons";
 
@@ -33,6 +34,7 @@ export function LeadForm({
 }: Props) {
   const id = useId();
   const started = useRef(0);
+  const metaSent = useRef(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +79,10 @@ export function LeadForm({
       };
       if (res.ok && out.ok) {
         track("lead_submit", { form: "lead" });
+        if (!metaSent.current) {
+          metaSent.current = true;
+          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY);
+        }
         setDone(input.name.trim().split(" ")[0]);
         return;
       }
