@@ -69,7 +69,7 @@ function salesEmails(): string[] {
  * when it's there, else from the live site.
  */
 const LOGO_FILE = "brand/logo-wordmark-white.png";
-function logoAttachment() {
+export function logoAttachment() {
   const local = path.join(process.cwd(), "public", LOGO_FILE);
   return {
     filename: "rohtre-media.png",
@@ -83,7 +83,44 @@ const esc = (v: string) =>
 /** Header text: one line, no control characters. */
 const oneLine = (v: string) => v.replace(/[\r\n\t]+/g, " ").trim();
 
-/** The sales email: HTML (every visitor value escaped) with a plain-text copy. No tracking pixels. */
+/** One email row: label, value, optional link. */
+export type EmailRow = [string, string, string?];
+
+/**
+ * The branded form email (red header with the logo, then label and value
+ * rows). Every value is escaped. Needs logoAttachment() in the attachments.
+ * No tracking pixels.
+ */
+export function brandedEmail(title: string, rows: EmailRow[], footer: string): string {
+  const cell = "padding:10px 14px;border-bottom:1px solid #eceef2;vertical-align:top;font-size:14px;line-height:1.5";
+  return `<!doctype html><html><body style="margin:0;padding:24px;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif;color:#111827">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb">
+<tr><td style="padding:20px 24px;background:#e50914;color:#ffffff">
+<img src="cid:rohtre-logo" width="150" height="40" alt="RohTre Media" style="display:block;border:0;width:150px;height:auto">
+<div style="font-size:20px;font-weight:bold;margin-top:14px">${esc(title)}</div>
+</td></tr>
+<tr><td style="padding:8px 10px">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+${rows
+  .map(
+    ([label, value, link]) =>
+      `<tr><td style="${cell};width:160px;color:#6b7280;font-weight:bold">${esc(label)}</td><td style="${cell};white-space:pre-line">${
+        link ? `<a href="${esc(link)}" style="color:#e50914">${esc(value)}</a>` : esc(value)
+      }</td></tr>`,
+  )
+  .join("\n")}
+</table>
+</td></tr>
+<tr><td style="padding:16px 24px;font-size:13px;color:#6b7280;line-height:1.5">
+${esc(footer)}
+</td></tr>
+</table>
+</body></html>`;
+}
+
+const FOOTER = "Reply to this email to answer the client directly. All enquiries: Admin → Leads.";
+
+/** The sales email: the branded HTML with a plain-text copy. */
 export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) throw new Error("smtp_not_configured");
   const to = salesEmails();
@@ -104,7 +141,7 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
   const wa = whatsappLink(phone, `Hi ${e.fullName}, this is RohTre Media about your enquiry.`);
   const interests = e.interests.join(", ");
 
-  const rows: [string, string, string?][] = [
+  const rows: EmailRow[] = [
     ["Name", e.fullName],
     ["WhatsApp / phone", phone, wa],
     ["Email", e.email, `mailto:${e.email}`],
@@ -117,37 +154,14 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
     ["Page", sourcePage],
   ];
 
-  const cell = "padding:10px 14px;border-bottom:1px solid #eceef2;vertical-align:top;font-size:14px;line-height:1.5";
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif;color:#111827">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb">
-<tr><td style="padding:20px 24px;background:#e50914;color:#ffffff">
-<img src="cid:rohtre-logo" width="150" height="40" alt="RohTre Media" style="display:block;border:0;width:150px;height:auto">
-<div style="font-size:20px;font-weight:bold;margin-top:14px">New sales enquiry</div>
-</td></tr>
-<tr><td style="padding:8px 10px">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-${rows
-  .map(
-    ([label, value, link]) =>
-      `<tr><td style="${cell};width:160px;color:#6b7280;font-weight:bold">${esc(label)}</td><td style="${cell};white-space:pre-line">${
-        link ? `<a href="${esc(link)}" style="color:#e50914">${esc(value)}</a>` : esc(value)
-      }</td></tr>`,
-  )
-  .join("\n")}
-</table>
-</td></tr>
-<tr><td style="padding:16px 24px;font-size:13px;color:#6b7280;line-height:1.5">
-Reply to this email to answer the client directly. All enquiries: Admin → Leads.
-</td></tr>
-</table>
-</body></html>`;
+  const html = brandedEmail("New sales enquiry", rows, FOOTER);
 
   const text = [
     "RohTre Media: new sales enquiry",
     "",
     ...rows.map(([label, value, link]) => `${label}: ${value}${link && link !== value ? ` (${link})` : ""}`),
     "",
-    "Reply to this email to answer the client directly. All enquiries: Admin → Leads.",
+    FOOTER,
   ].join("\n");
 
   await transport.sendMail({

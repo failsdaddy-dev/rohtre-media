@@ -1,13 +1,15 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { fullPhone, roleOf, type Application } from "./career-application";
+import { brandedEmail, logoAttachment, type EmailRow } from "./contact.server";
 import { supabaseAdmin } from "./supabase/admin";
+import { whatsappLink } from "./whatsapp";
 
 // What happens to a careers application (route: /api/careers):
 //   1. saved in public.careers_applications (server only, secret key; RLS
 //      has no public policies)
-//   2. emailed to HR through Gmail SMTP (free; an app password on the
-//      sending Gmail account), with the resume attached if one was sent.
+//   2. emailed to HR through the site's SMTP mailbox, with the resume attached
+//      if one was sent.
 //      The resume is never stored anywhere else.
 //   3. WhatsApp message to HR through the WhatsApp Business Cloud API:
 //      prepared but OFF (CAREERS_WHATSAPP_ENABLED must be "true").
@@ -63,7 +65,7 @@ async function hrEmails(): Promise<string[]> {
 
 export const mailConfigured = () => Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 
-/** Plain-text email (no HTML, so nothing the applicant typed can be injected). */
+/** The branded HTML email (same as the sales email, every value escaped) with a plain-text copy. */
 export async function emailHr(a: Application, resume: Resume | null): Promise<void> {
   if (!mailConfigured()) throw new Error("smtp_not_configured");
   const to = await hrEmails();
@@ -114,15 +116,35 @@ export async function emailHr(a: Application, resume: Resume | null): Promise<vo
     "",
     "RohTre Media Careers",
   ];
+  const phone = fullPhone(a);
+  const portfolio = a.portfolio || "Not provided";
+  const rows: EmailRow[] = [
+    ["Name", a.fullName],
+    ["WhatsApp / phone", phone, whatsappLink(phone, `Hi ${a.fullName}, this is RohTre Media about your application.`)],
+    ["Email", a.email, `mailto:${a.email}`],
+    ["Role", roleOf(a)],
+    ["Type", a.category],
+    ["Experience", a.experience],
+    ["Portfolio", portfolio, /^https?:\/\//i.test(portfolio) ? portfolio : undefined],
+    ["Message", a.message || "No message provided"],
+    ["Resume", resume ? `Attached: ${resume.name}` : "No resume attached"],
+    ["Submitted", `${when} (IST)`],
+  ];
   await transport.sendMail({
     from: `"RohTre Media Careers" <${process.env.SMTP_USER}>`,
     to,
     replyTo: a.email,
     subject: `📩 New application: ${roleOf(a)} (${a.category}) – ${a.fullName}`,
     text: lines.join("\n"),
-    attachments: resume
-      ? [{ filename: resume.name, content: Buffer.from(resume.bytes), contentType: resume.type }]
-      : [],
+    html: brandedEmail(
+      "New job application",
+      rows,
+      "Reply to this email to contact the candidate directly. All applications: Admin → Applications.",
+    ),
+    attachments: [
+      logoAttachment(),
+      ...(resume ? [{ filename: resume.name, content: Buffer.from(resume.bytes), contentType: resume.type }] : []),
+    ],
   });
 }
 
