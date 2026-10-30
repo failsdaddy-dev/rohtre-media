@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { loadAttribution } from "@/lib/attribution";
 import { CONSENT_TEXT } from "@/lib/consent";
-import { META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
+import { pushDataLayer } from "@/lib/data-layer";
+import { generateEventId, META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
 import { track } from "@/lib/track";
 import { ArrowRightIcon, CheckIcon } from "./icons";
 
@@ -81,7 +82,9 @@ export function LeadForm({
         track("lead_submit", { form: "lead" });
         if (!metaSent.current) {
           metaSent.current = true;
-          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY);
+          const eventId = generateEventId();
+          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY, eventId);
+          pushDataLayer("send_enquiry_success", { event_id: eventId });
         }
         setDone(input.name.trim().split(" ")[0]);
         return;

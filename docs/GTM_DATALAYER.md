@@ -6,7 +6,7 @@
 - `NEXT_PUBLIC_GTM_ENABLED`: must be `true` or nothing loads. Keep it `false` on every non-production environment.
 - Loader: `src/components/tracking/google-tag-manager.tsx`, mounted once in `src/app/layout.tsx`.
 - Events: `pushDataLayer` in `src/lib/data-layer.ts`. Clicks use the one shared listener in `src/components/tracking/meta-pixel.tsx`.
-- Production needs the Google addresses allowed in the Content-Security-Policy in `next.config.ts`. Without that the browser blocks GTM in production. The policy does not apply under `npm run dev`.
+- The Content-Security-Policy in `next.config.ts` lists the Google addresses for GTM, GA4 and Google Ads (`googleTags`). It applies in production only, not under `npm run dev`. A new third-party tag added in GTM must be added there too, or the browser blocks it.
 
 ### Excluded routes
 
@@ -21,7 +21,7 @@ All four carry `page_path`, `page_type` (`landing` for `/lp`, otherwise `site`) 
 | book_a_call | Click on any Book a Call button | None | Own value |
 | whatsapp_click | Click on any link to `wa.me`, `api.whatsapp.com` or `whatsapp.com/send` | link_url | Same as the Meta Lead (WhatsApp) eventID |
 | phone_click | Click on any `tel:` link | link_url | Own value |
-| send_enquiry_success | Contact page form, after the server confirms success | None | Same as the Meta Lead (SendEnquiry) eventID |
+| send_enquiry_success | Contact page form or landing page form, after the server confirms success | None | Same as the Meta Lead (SendEnquiry) eventID |
 
 No page_view is pushed. No names, emails, phone numbers, messages or form text are pushed. `link_url` holds the company's own number.
 
@@ -29,11 +29,9 @@ No page_view is pushed. No names, emails, phone numbers, messages or form text a
 
 The site also pushes these older events through `src/lib/track.ts`. They stay in place, but do not trigger tags from them alongside the events above, or the same action counts twice:
 
-- `lead_submit`: Contact form and landing page form, after success.
+- `lead_submit`: same submissions as `send_enquiry_success`.
 - `book_call_click`: same clicks as `book_a_call`.
 - `call_click`: same clicks as `phone_click` where the link carries it.
-
-`lead_submit` is currently the only event that covers landing page form submissions.
 
 ## Old GA4 key events
 
@@ -61,6 +59,7 @@ Mapping: to be decided by the specialist.
 | Click Start chat in the floating WhatsApp card | whatsapp_click with link_url |
 | Click a phone number in the footer | phone_click with `tel:` link_url |
 | Send a valid Contact enquiry | send_enquiry_success with event_id |
+| Send a valid landing page enquiry | send_enquiry_success, page_type landing |
 | Submit the Contact form with a required field empty | Nothing |
 | Open a published `/lp/` page and click Book a Call | book_a_call, page_type landing |
 | Open `/admin` or a draft landing page | GTM does not load |
