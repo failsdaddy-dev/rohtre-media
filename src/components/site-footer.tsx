@@ -48,6 +48,7 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
           <Link
             href={BOOK_CALL_HREF}
             data-track="book_call_click"
+            data-meta-event="book_a_call"
             className="rm-press inline-flex h-11 items-center self-start rounded-full bg-brand px-5 text-sm font-semibold text-brand-fg"
           >
             Book a Call

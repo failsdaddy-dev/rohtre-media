@@ -118,12 +118,13 @@ export function ButtonLink({
   }[variant];
   const scale = size === "lg" ? "h-14 gap-2.5 px-8 text-lg" : "h-12 gap-2 px-6";
   const cls = `rm-press inline-flex items-center rounded-full font-semibold ${scale} ${look}`;
+  const metaEvent = track === "book_call_click" ? "book_a_call" : undefined;
   return external ? (
-    <a href={href} target="_blank" rel="noopener" className={cls} data-track={track}>
+    <a href={href} target="_blank" rel="noopener" className={cls} data-track={track} data-meta-event={metaEvent}>
       {children}
     </a>
   ) : (
-    <Link href={href} className={cls} data-track={track}>
+    <Link href={href} className={cls} data-track={track} data-meta-event={metaEvent}>
       {children}
     </Link>
   );

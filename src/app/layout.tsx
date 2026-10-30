@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
+import { Suspense } from "react";
+import { MetaPixel, MetaPixelClicks } from "@/components/tracking/meta-pixel";
 import { SITE_URL } from "@/lib/env";
 import { MOTION_BOOT_SCRIPT } from "@/lib/motion-boot";
 import "./globals.css";
@@ -41,6 +43,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         {children}
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
+        <MetaPixelClicks />
       </body>
     </html>
   );

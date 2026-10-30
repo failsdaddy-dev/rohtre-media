@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import type { ContactContent } from "@/content/contact-schema";
 import { loadAttribution } from "@/lib/attribution";
 import { CONTACT_CONSENT_TEXT, DIAL_CODES, enquirySchema, MESSAGE_MAX } from "@/lib/contact-enquiry";
+import { META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
 import { track } from "@/lib/track";
 import { Select } from "../admin/select";
 import { ArrowRightIcon, ChatIcon, ServiceIcon } from "../icons";
@@ -42,6 +43,7 @@ function Field({ icon, children, className = "" }: { icon?: string; children: Re
 
 export function ContactForm({ form, whatsappHref }: { form: ContactContent["form"]; whatsappHref: string | null }) {
   const started = useRef(0);
+  const metaSent = useRef(false);
   const [state, setState] = useState<State>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,10 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
       if (res.ok && body.ok) {
         // The site's existing conversion event, unchanged: only after a confirmed submission.
         track("lead_submit", { form: "lead" });
+        if (!metaSent.current) {
+          metaSent.current = true;
+          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY);
+        }
         setName(input.fullName.trim().split(/\s+/)[0] ?? "");
         setState("success");
         return;
