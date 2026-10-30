@@ -54,7 +54,7 @@ const STATUS_LABEL: Record<string, string> = {
 /** What went wrong with the HR email, in plain words, plus what to do. */
 function explain(error: string): string {
   if (/invalid login|badcredentials|username and password not accepted/i.test(error))
-    return "Gmail didn’t accept the sign-in. In .env.local, SMTP_USER must be the Gmail address and SMTP_PASS an app password created on that same account. Restart npm run dev after changing it.";
+    return "The mailbox didn’t accept the sign-in. Check the mailbox address and password in the SMTP settings, then restart the site.";
   if (/smtp_not_configured/.test(error))
     return "Email sending isn’t set up yet: add SMTP_USER and SMTP_PASS to .env.local.";
   if (/no_hr_email/.test(error)) return "No HR email address is saved: add one in Admin → Careers page → HR emails.";

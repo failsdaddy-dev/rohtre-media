@@ -14,9 +14,11 @@ import { whatsappLink } from "./whatsapp";
 //      form. A failed email never loses the enquiry: the failure is written
 //      to leads.notify_error for Admin → Leads.
 //   3. copied to the Google Sheet (sendLeadToSheet, optional).
-// Env (server only): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (shared with
-// careers); CONTACT_NOTIFY_EMAIL (comma-separated), else
-// CAREERS_NOTIFY_FALLBACK, else the sending account.
+// Env (server only): SMTP_HOST, SMTP_PORT (shared with careers);
+// SMTP_SALES_USER, SMTP_SALES_PASS (the sending mailbox, else SMTP_USER and
+// SMTP_PASS). Recipients: Admin → Contact page → Sales emails (private table),
+// else CONTACT_NOTIFY_EMAIL (comma-separated), else CAREERS_NOTIFY_FALLBACK,
+// else the sending mailbox.
 
 type Meta = { ipHash: string; sourcePage: string; userAgent: string | null };
 
@@ -55,8 +57,18 @@ export async function saveEnquiry(e: Enquiry, meta: Meta) {
   return { id: data.id as string, createdAt: data.created_at as string, row };
 }
 
-function salesEmails(): string[] {
-  const list = process.env.CONTACT_NOTIFY_EMAIL || process.env.CAREERS_NOTIFY_FALLBACK || process.env.SMTP_USER || "";
+/** The mailbox that sends enquiries: its own, or the shared one. Never mixes a user with another's password. */
+function salesSender() {
+  return process.env.SMTP_SALES_USER && process.env.SMTP_SALES_PASS
+    ? { user: process.env.SMTP_SALES_USER, pass: process.env.SMTP_SALES_PASS }
+    : { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
+}
+
+async function salesEmails(sender: string): Promise<string[]> {
+  const { data } = (await supabaseAdmin()?.from("careers_private").select("sales_notify_emails").eq("id", true).maybeSingle()) ?? {};
+  const saved = (data?.sales_notify_emails as string[] | null) ?? [];
+  if (saved.length) return saved;
+  const list = process.env.CONTACT_NOTIFY_EMAIL || process.env.CAREERS_NOTIFY_FALLBACK || sender;
   return list
     .split(",")
     .map((x) => x.trim())
@@ -122,15 +134,16 @@ const FOOTER = "Reply to this email to answer the client directly. All enquiries
 
 /** The sales email: the branded HTML with a plain-text copy. */
 export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) throw new Error("smtp_not_configured");
-  const to = salesEmails();
+  const { user, pass } = salesSender();
+  if (!user || !pass) throw new Error("smtp_not_configured");
+  const to = await salesEmails(user);
   if (to.length === 0) throw new Error("no_sales_email");
   const port = Number(process.env.SMTP_PORT || 465);
   const transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port,
     secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    auth: { user, pass },
   });
   const when = new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
@@ -165,7 +178,7 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
   ].join("\n");
 
   await transport.sendMail({
-    from: `"RohTre Media Website" <${process.env.SMTP_USER}>`,
+    from: `"RohTre Media Website" <${user}>`,
     to,
     replyTo: e.email,
     subject: oneLine(

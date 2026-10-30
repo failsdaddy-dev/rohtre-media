@@ -13,7 +13,7 @@ export function HrEmails({ initial, mailReady }: { initial: string[]; mailReady:
     <Panel title="HR emails for applications">
       <p className="-mt-2 mb-3 text-sm text-fg-2">
         Each application is emailed here (with the resume attached, if one was sent) and saved in Admin → Applications.
-        One address per line. Empty = the sending Gmail account itself.
+        One address per line. Empty = the sending mailbox itself.
       </p>
       {!mailReady && (
         <p className="mb-3 text-sm font-medium text-danger">
