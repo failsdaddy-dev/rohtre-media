@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
+import { GoogleTagManager } from "@/components/tracking/google-tag-manager";
 import { MetaPixel, MetaPixelClicks } from "@/components/tracking/meta-pixel";
 import { SITE_URL } from "@/lib/env";
 import { MOTION_BOOT_SCRIPT } from "@/lib/motion-boot";
@@ -36,6 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: MOTION_BOOT_SCRIPT }} />
       </head>
       <body className="min-h-dvh">
+        <Suspense fallback={null}>
+          <GoogleTagManager />
+        </Suspense>
         <a
           href="#main"
           className="sr-only-focusable fixed left-4 top-4 z-50 rounded-full bg-brand px-4 py-2 font-semibold text-brand-fg"

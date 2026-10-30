@@ -58,10 +58,10 @@ export function trackMetaCustom(event: string, params: Params = {}) {
 }
 
 /** The conversion: one Lead, told apart by content_name. */
-export function trackMetaConversion(contentName: string) {
+export function trackMetaConversion(contentName: string, eventId = generateEventId()) {
   trackMeta(
     META_CONVERSION_EVENT,
     { content_name: contentName, content_category: META_CONVERSION_CATEGORY },
-    { eventID: generateEventId() },
+    { eventID: eventId },
   );
 }

@@ -3,7 +3,9 @@
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { useEffect, useSyncExternalStore } from "react";
+import { pushDataLayer } from "@/lib/data-layer";
 import {
+  generateEventId,
   isMetaPixelExcluded,
   META_BOOK_CALL_ATTR,
   META_BOOK_CALL_EVENT,
@@ -62,15 +64,27 @@ export function MetaPixel() {
   );
 }
 
-/** The one click listener: Book a Call by attribute, WhatsApp by href. Never blocks the click. */
+/**
+ * The one click listener, for Meta and the GTM data layer: Book a Call by
+ * attribute, WhatsApp and phone by href. Never blocks the click.
+ */
 export function MetaPixelClicks() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (isMetaPixelExcluded(window.location.pathname)) return;
       const target = e.target as Element | null;
-      if (target?.closest(`[data-meta-event="${META_BOOK_CALL_ATTR}"]`)) trackMetaCustom(META_BOOK_CALL_EVENT);
+      if (target?.closest(`[data-meta-event="${META_BOOK_CALL_ATTR}"]`)) {
+        trackMetaCustom(META_BOOK_CALL_EVENT);
+        pushDataLayer("book_a_call");
+      }
       const href = target?.closest("a[href]")?.getAttribute("href") ?? "";
-      if (META_WHATSAPP_HREFS.some((h) => href.includes(h))) trackMetaConversion(META_CONVERSION_WHATSAPP);
+      if (META_WHATSAPP_HREFS.some((h) => href.includes(h))) {
+        const eventId = generateEventId();
+        trackMetaConversion(META_CONVERSION_WHATSAPP, eventId);
+        pushDataLayer("whatsapp_click", { event_id: eventId, link_url: href });
+      } else if (href.startsWith("tel:")) {
+        pushDataLayer("phone_click", { link_url: href });
+      }
     };
     document.addEventListener("click", onClick, { passive: true });
     return () => document.removeEventListener("click", onClick);

@@ -70,7 +70,6 @@ export function WhatsAppButton({
   const go = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Fill the message at click time, so it always matches the current page.
     e.currentTarget.href = whatsappLink(number, fillTemplate(template, pageVars()));
-    track("whatsapp_click");
   };
   const href = whatsappLink(number, fillTemplate(template, {}));
   const look =

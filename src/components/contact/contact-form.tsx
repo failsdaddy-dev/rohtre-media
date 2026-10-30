@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import type { ContactContent } from "@/content/contact-schema";
 import { loadAttribution } from "@/lib/attribution";
 import { CONTACT_CONSENT_TEXT, DIAL_CODES, enquirySchema, MESSAGE_MAX } from "@/lib/contact-enquiry";
-import { META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
+import { pushDataLayer } from "@/lib/data-layer";
+import { generateEventId, META_CONVERSION_SEND_ENQUIRY, trackMetaConversion } from "@/lib/meta-pixel";
 import { track } from "@/lib/track";
 import { Select } from "../admin/select";
 import { ArrowRightIcon, ChatIcon, ServiceIcon } from "../icons";
@@ -110,7 +111,9 @@ export function ContactForm({ form, whatsappHref }: { form: ContactContent["form
         track("lead_submit", { form: "lead" });
         if (!metaSent.current) {
           metaSent.current = true;
-          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY);
+          const eventId = generateEventId();
+          trackMetaConversion(META_CONVERSION_SEND_ENQUIRY, eventId);
+          pushDataLayer("send_enquiry_success", { event_id: eventId });
         }
         setName(input.fullName.trim().split(/\s+/)[0] ?? "");
         setState("success");

@@ -85,6 +85,7 @@ async function Landing({ params }: { params: PageProps<"/lp/[slug]">["params"] }
       {page.isDraft && (
         <p
           data-placeholder
+          data-draft-preview
           className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-brand px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand-fg shadow-lg"
         >
           Draft preview · not published
