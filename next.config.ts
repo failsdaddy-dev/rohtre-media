@@ -15,6 +15,8 @@ const googleTags = [
   "https://stats.g.doubleclick.net",
   "https://googleads.g.doubleclick.net",
   "https://www.googleadservices.com",
+  "https://pagead2.googlesyndication.com",
+  "https://ad.doubleclick.net",
   "https://www.google.com",
 ].join(" ");
 const CSP = [
