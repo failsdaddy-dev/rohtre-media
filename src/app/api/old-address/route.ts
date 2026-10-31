@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
 
   if (to && !to.startsWith("//")) {
     const target = new URL(to, origin);
-    for (const [key, value] of searchParams) if (key !== "from") target.searchParams.append(key, value);
+    // "from" and "path" come from the rewrite, not the visitor.
+    for (const [key, value] of searchParams)
+      if (key !== "from" && key !== "path") target.searchParams.append(key, value);
     return Response.redirect(target, 308);
   }
 
