@@ -792,6 +792,13 @@ html[data-intro] .rm-intro {
   pointer-events: none;
   animation: rm-intro-hide 0s linear 3.1s forwards;
 }
+/* Everything waits on the dark screen until motion-boot sets data-intro-go. */
+html[data-intro]:not([data-intro-go]) .rm-intro,
+html[data-intro]:not([data-intro-go]) .rm-intro *,
+html[data-intro]:not([data-intro-go]) .rm-intro *::after,
+html[data-intro]:not([data-intro-go]) .rm-hero-in {
+  animation-play-state: paused;
+}
 .rm-intro-backdrop {
   position: absolute;
   inset: 0;

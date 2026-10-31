@@ -5,6 +5,7 @@
 //   <html data-scrolled> page scrolled past the top (header turns solid)
 //   <html data-intro>    intro splash playing (once per visit, not on
 //                        landing pages, admin or preview)
+//   <html data-intro-go> the page is ready: the intro's animations may run
 // Scroll reveals and filled lines start after hydration, in
 // src/components/motion.tsx. Styles: src/app/design.css.
 // Written in plain ES5-style code on purpose: it runs before anything else.
@@ -23,10 +24,43 @@ const source = function () {
       if (!noIntro && !sessionStorage.getItem("rm-intro")) {
         sessionStorage.setItem("rm-intro", "1");
         d.setAttribute("data-intro", "");
-        new Image().src = "/brand/logo-wordmark-white.png"; // ready before the logo builds up
+        // The intro holds on its dark screen until the page has finished
+        // loading and the logo is ready, so it never plays unseen behind a slow
+        // load. MAX_WAIT stops a slow image or video from holding it for long.
+        var started = false;
+        var waiting = 2;
+        var start = function () {
+          if (started) return;
+          if (!document.querySelector(".rm-intro")) {
+            if (document.readyState === "complete") d.removeAttribute("data-intro");
+            return;
+          }
+          started = true;
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              d.setAttribute("data-intro-go", "");
+              setTimeout(function () {
+                d.removeAttribute("data-intro");
+                d.removeAttribute("data-intro-go");
+              }, 3300);
+            });
+          });
+        };
+        var ready = function () {
+          waiting--;
+          if (waiting <= 0) start();
+        };
+        var logo = new Image();
+        logo.onload = logo.onerror = ready;
+        logo.src = "/brand/logo-wordmark-white.png";
+        window.addEventListener("load", ready);
+        window.addEventListener("DOMContentLoaded", function () {
+          if (waiting <= 0) start();
+        });
         setTimeout(function () {
-          d.removeAttribute("data-intro");
-        }, 3300);
+          waiting = 0;
+          start();
+        }, 3000); // MAX_WAIT
       }
     } catch {}
   }
