@@ -111,7 +111,11 @@ export function NewPageForm({
           </Button>
         )}
       </div>
-      {managing && <ManageOptions lists={{ service: withAdded("service"), niche: withAdded("niche"), country: withAdded("country") }} />}
+      {managing && (
+        <ManageOptions
+          lists={{ service: withAdded("service"), niche: withAdded("niche"), country: withAdded("country") }}
+        />
+      )}
     </div>
   );
 }

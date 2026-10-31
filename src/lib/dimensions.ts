@@ -39,7 +39,7 @@ const RESERVED_SLUGS = new Set(["admin", "api", "lp", "login", "preview", "new",
 export function slugPart(text: string): string {
   return text
     .normalize("NFKD")
-    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
@@ -54,7 +54,7 @@ const plainText = (min: number, max: number, what: string) =>
     .trim()
     .min(min, `${what} needs at least ${min} characters.`)
     .max(max, `${what} can be up to ${max} characters.`)
-    .regex(/^[^<>\x00-\x1F]*$/, `${what} can’t contain < or >.`);
+    .regex(/^[^<>]*$/, `${what} can’t contain < or >.`);
 
 export const optionNameSchema = plainText(2, 60, "The name");
 export const optionWordingSchema = plainText(2, 48, "The headline wording");

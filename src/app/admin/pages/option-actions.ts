@@ -28,8 +28,9 @@ const TYPES: OptionType[] = ["service", "niche", "country"];
 function wordingFields(type: OptionType, wording: string, attrs: Record<string, unknown>) {
   if (type !== "niche") return { headline_label: wording, attrs };
   const { headline_label, noBrands } = parseNicheWording(wording);
-  const { noBrands: _old, ...rest } = attrs;
-  return { headline_label, attrs: noBrands ? { ...rest, noBrands: true } : rest };
+  const next = { ...attrs };
+  delete next.noBrands;
+  return { headline_label, attrs: noBrands ? { ...next, noBrands: true } : next };
 }
 
 export async function addOption(

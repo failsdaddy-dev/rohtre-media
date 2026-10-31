@@ -32,7 +32,8 @@ const SAMPLES: Record<OptionType, DimensionValue> = {
   country: SAMPLE("country", "india", "India"),
 };
 
-const defaultWording = (type: OptionType, name: string) => (type === "niche" && name.trim() ? `${name.trim()} Brands` : name);
+const defaultWording = (type: OptionType, name: string) =>
+  type === "niche" && name.trim() ? `${name.trim()} Brands` : name;
 
 const WORDING_HINT: Record<OptionType, string> = {
   service: "How it reads in the headline, before “for”.",
@@ -87,7 +88,7 @@ export function OptionForm({
       setError(null);
       if (editing) {
         const res = await renameOption(editing.id, { label: name, wording });
-        if (res.ok) onSaved({ ...editing, label: name, ...draft, id: editing.id, slug: editing.slug, attrs: { ...editing.attrs, ...draft.attrs } });
+        if (res.ok) onSaved(editing);
         else setError(res.error);
         return;
       }

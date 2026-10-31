@@ -421,7 +421,7 @@ export function Select({
             : o.sticky
               ? "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,var(--bg-elev))]"
               : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
-        } ${selected ? "font-semibold" : ""} ${o.sticky ? "sticky bottom-0 bg-bg-elev font-semibold" : ""}`}
+        } ${selected ? "font-semibold" : ""} ${o.sticky ? "sticky -bottom-1.5 bg-bg-elev font-semibold" : ""}`}
       >
         {o.icon && (
           <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center">
