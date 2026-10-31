@@ -12,8 +12,8 @@ import { pageContentSchema, type PageContent, type Section } from "./schemas";
 // Niches with their own starter copy (niche-copy.ts) get their own hero line,
 // pain points and FAQs; every page gets a FAQ for its country (currency).
 // Custom services and niches added in the admin use the same sections, but
-// text we can't know for them starts as an "[Add ... here]" prompt, which the
-// publish check refuses.
+// text we can't know for them starts as an "[Add ... here]" prompt, which is
+// left off the live page until it is replaced.
 
 /** Lowercase a custom niche, leaving words like "SaaS" or "D2C" as typed. */
 const lowerUnlessAcronym = (s: string) => (/[A-Z]{2}|[a-z][A-Z]/.test(s) ? s : s.toLowerCase());

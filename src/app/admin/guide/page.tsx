@@ -98,10 +98,11 @@ async function Guide() {
                 country.
               </Step>
               <Step n={2} title="Fill the checklist">
-                Check the text and mark FAQ answers ready. Upload images and videos right on the page: open{" "}
+                Check the text. FAQ answers show on the live page once marked ready. Upload images and videos right on the page: open{" "}
                 <strong>Results</strong> or <strong>Creatives &amp; reels</strong> and add them there. The offer banner is
-                optional; if you add one, it needs desktop, mobile and alt text. Sections with nothing to show stay off the
-                live page by themselves. Press{" "}
+                optional; if you add one, it needs desktop, mobile and alt text. A page can be published with nothing
+                uploaded: the banner, results and creatives then show empty frames, so switch a section off if you’d
+                rather hide it. Press{" "}
                 <strong>Save</strong>, then <strong>Re-check</strong>.
               </Step>
               <Step n={3} title="Publish">
@@ -158,8 +159,8 @@ async function Guide() {
             </Step>
             <Step n={4} title="Fill the prompts">
               Text we can’t write for a new service or niche starts as a prompt like{" "}
-              <strong>[Add the hero text here]</strong>. Replace each one. They are listed in the <strong>Publish</strong>{" "}
-              box, and the page can’t be published until they are gone, so visitors never see them.
+              <strong>[Add the hero text here]</strong>. Replace each one when you can. You can still publish without them: visitors
+              never see a prompt, and that text is simply left off the live page.
             </Step>
             <Step n={5} title="Hide, rename or reorder">
               Press <strong>Manage options</strong> under the form. Hide takes an option out of the dropdowns; pages

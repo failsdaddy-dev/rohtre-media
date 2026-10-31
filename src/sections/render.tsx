@@ -8,8 +8,9 @@ import { MediaPlayback } from "@/components/media/media-playback";
 import { MediaSlot } from "@/components/media/media-slot";
 import { RawHtml } from "@/components/raw-html";
 import { ButtonLink, Container } from "@/components/page-parts";
-import { isFilled } from "@/content/media-slot";
+import { emptySlot, isFilled } from "@/content/media-slot";
 import { cloudinaryUrl } from "@/lib/cloudinary/url";
+import { HAS_PROMPT } from "@/lib/dimensions";
 import type { Badge, Result } from "@/lib/home-data";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import type { Creative, LandingProof } from "@/lib/landing-data";
@@ -23,10 +24,15 @@ import type { Section, SectionOf } from "./schemas";
 // white square cards with the red glow (.rm-svc), sky bands and the white form
 // card; proof sections reuse the Home blocks. Proof sections show only matched, approved
 // items on the live site and disappear when there are none; while building,
-// placeholders show (marked) so the layout can be judged.
+// placeholders show (marked) so the layout can be judged. A live page may have
+// no media yet: the banner, results and creatives then show empty neutral
+// frames, and leftover "[Add ... here]" prompts are left out.
 
 const PAD = "py-20 md:py-28";
 const FORM_ANCHOR = "#enquiry";
+
+/** "[Add ... here]" prompts show while building, never on a live page. */
+const liveText = (text: string) => (!SHOW_PLACEHOLDERS && HAS_PROMPT.test(text) ? "" : text);
 
 export type RenderContext = {
   proof: LandingProof;
@@ -43,7 +49,9 @@ function OfferBanner({ banner, priority }: { banner: SectionOf<"hero">["props"][
         This page’s own offer banner (the offer lives only inside this image): desktop about 1200×900, mobile about
         1080×1350, with alt text.
       </PlaceholderBox>
-    ) : null;
+    ) : (
+      <MediaSlot slot={emptySlot("4:3")} sizes="560px" />
+    );
   }
   const common = { alt: banner.alt, sizes: "(min-width: 1024px) 560px, 100vw" };
   const {
@@ -76,13 +84,11 @@ function OfferBanner({ banner, priority }: { banner: SectionOf<"hero">["props"][
 function Hero({ s, ctx }: { s: SectionOf<"hero">; ctx: RenderContext }) {
   const p = s.props;
   const below = s.variant === "banner-below";
-  // No banner on a live page: the text takes the whole hero, with no empty frame.
-  const hasBanner = Boolean(p.offerBanner.desktop && p.offerBanner.mobile) || SHOW_PLACEHOLDERS;
   const enter = (i: number) => ({ className: "rm-hero-in", style: { "--i": i } as CSSProperties });
   return (
     <section aria-label="Introduction" className="rm-hero-sky rm-hero-dark overflow-clip">
       <Container
-        className={`grid items-center gap-10 pb-16 pt-10 md:gap-12 md:pb-24 md:pt-16 ${below || !hasBanner ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
+        className={`grid items-center gap-10 pb-16 pt-10 md:gap-12 md:pb-24 md:pt-16 ${below ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
       >
         <div className={`flex min-w-0 flex-col ${below ? "items-center text-center" : "items-start"}`}>
           {p.eyebrow && (
@@ -125,16 +131,14 @@ function Hero({ s, ctx }: { s: SectionOf<"hero">; ctx: RenderContext }) {
             )}
           </div>
         </div>
-        {hasBanner && (
-          <div
-            className={`rm-hero-in w-full min-w-0 ${below ? "mx-auto max-w-4xl" : ""}`}
-            style={{ "--i": 4 } as CSSProperties}
-          >
-            <div className="rm-lp-frame">
-              <OfferBanner banner={p.offerBanner} priority />
-            </div>
+        <div
+          className={`rm-hero-in w-full min-w-0 ${below ? "mx-auto max-w-4xl" : ""}`}
+          style={{ "--i": 4 } as CSSProperties}
+        >
+          <div className="rm-lp-frame">
+            <OfferBanner banner={p.offerBanner} priority />
           </div>
-        )}
+        </div>
       </Container>
     </section>
   );
@@ -231,8 +235,7 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
     s.variant === "reels-first" ? [...byKind("reel"), ...byKind("image")] : [...byKind("image"), ...byKind("reel")];
   const items = [...ordered.slice(0, p.limit), ...(p.showConcept ? ctx.proof.concept.slice(0, p.limit) : [])];
   const own = p.media.filter(isFilled);
-  const shown = items.length > 0 || own.length > 0 ? items : SHOW_PLACEHOLDERS ? null : [];
-  if (shown && shown.length === 0 && own.length === 0) return null;
+  const shown = items.length > 0 || own.length > 0 ? items : null;
   return (
     <section className={`rm-hero-sky overflow-clip ${PAD}`}>
       <Container>
@@ -252,11 +255,17 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
               </li>
             ))}
           </ul>
-        ) : (
+        ) : SHOW_PLACEHOLDERS ? (
           <PlaceholderBox title="Creatives" className="min-h-96 max-sm:min-h-72">
             Nothing here yet. Upload images and videos in this section of the page editor, or tag creatives in Proof &
             badges.
           </PlaceholderBox>
+        ) : (
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <MediaSlot key={i} slot={emptySlot("4:5")} sizes="360px" />
+            ))}
+          </div>
         )}
       </Container>
     </section>
@@ -340,7 +349,7 @@ function Form({ s, ctx }: { s: SectionOf<"form">; ctx: RenderContext }) {
 function renderSection(s: Section, ctx: RenderContext): ReactNode {
   switch (s.type) {
     case "hero":
-      return <Hero s={s} ctx={ctx} />;
+      return <Hero s={{ ...s, props: { ...s.props, subline: liveText(s.props.subline) } }} ctx={ctx} />;
     case "badges": {
       const chosen = s.props.badgeIds.length ? ctx.badges.filter((b) => s.props.badgeIds.includes(b.id)) : ctx.badges;
       const badges = publicBadges(chosen);
@@ -357,8 +366,12 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
         />
       ) : null;
     }
-    case "painPoints":
-      return <PainPoints s={s} />;
+    case "painPoints": {
+      const items = s.props.items
+        .map((i) => ({ title: liveText(i.title), text: liveText(i.text) }))
+        .filter((i) => i.title);
+      return items.length ? <PainPoints s={{ ...s, props: { ...s.props, items } }} /> : null;
+    }
     case "results": {
       const uploads = s.props.uploads
         .filter((u) => u.brand.trim() || u.metric.trim() || isFilled(u.file))
@@ -380,7 +393,7 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
         );
       const results = [...uploads, ...ctx.proof.results].slice(0, s.props.limit);
       if (results.length === 0) {
-        return SHOW_PLACEHOLDERS ? (
+        return (
           <section className={`bg-white ${PAD}`}>
             <Container>
               <SectionHead
@@ -389,19 +402,27 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
                 accent={s.props.accent}
                 intro={s.props.intro}
               />
-              <PlaceholderBox title="Results" className="min-h-96 max-sm:min-h-72">
-                Nothing here yet. Upload results in this section of the page editor, or tag results in Proof & badges.
-              </PlaceholderBox>
+              {SHOW_PLACEHOLDERS ? (
+                <PlaceholderBox title="Results" className="min-h-96 max-sm:min-h-72">
+                  Nothing here yet. Upload results in this section of the page editor, or tag results in Proof & badges.
+                </PlaceholderBox>
+              ) : (
+                <MediaSlot slot={emptySlot("16:9")} sizes="1200px" />
+              )}
             </Container>
           </section>
-        ) : null;
+        );
       }
       return <Results s={{ enabled: true, ...s.props }} results={results} />;
     }
     case "creatives":
       return <Creatives s={s} ctx={ctx} />;
-    case "platforms":
-      return <Platforms s={s} />;
+    case "platforms": {
+      const items = s.props.items
+        .map((i) => ({ name: liveText(i.name), text: liveText(i.text) }))
+        .filter((i) => i.name);
+      return items.length ? <Platforms s={{ ...s, props: { ...s.props, items } }} /> : null;
+    }
     case "testimonials":
       return ctx.proof.testimonials.length ? (
         <Testimonials

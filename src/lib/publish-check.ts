@@ -1,5 +1,4 @@
 import { pageContentSchema, type PageContent, type Section, type SectionOf } from "../sections/schemas";
-import { HAS_PROMPT } from "./dimensions";
 
 // The automatic publish check (R25). Publishing is refused while any issue
 // remains. Pure: the page script, the admin (Phase 4) and the tests use it.
@@ -75,11 +74,6 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
     if (s.props.showConcept && ctx.unlabelledConcept > 0)
       add("concept-label", "Every concept work item needs its “Concept work” label.", s.id);
   }
-  for (const s of enabledOf(c, "faq")) {
-    if (s.props.items.length === 0) add("faq-empty", "Add FAQ answers or switch the section off.", s.id);
-    if (s.props.items.some((i) => i.status !== "ready"))
-      add("faq-draft", "Some FAQ answers are still drafts. Rewrite them for this page and mark them ready.", s.id);
-  }
   for (const s of enabledOf(c, "badges")) {
     const missing = s.props.badgeIds.filter((id) => !ctx.liveBadgeIds.includes(id));
     if (missing.length) add("badges", `${missing.length} chosen badge(s) are switched off or deleted.`, s.id);
@@ -91,15 +85,6 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
     add("missing-facts", "This section still contains [NEEDS DATA] or TO CONFIRM.", s.id);
   if (MISSING_MARKERS.test(JSON.stringify(c.meta)))
     add("missing-facts", "The meta title or description still has a placeholder.");
-
-  // "[Add ... here]" prompts on pages made from custom options
-  const PROMPT_SECTIONS: Partial<Record<Section["type"], string>> = {
-    hero: "Hero",
-    painPoints: "Pain points",
-    platforms: "Platforms",
-  };
-  for (const s of c.sections.filter((x) => x.enabled && HAS_PROMPT.test(JSON.stringify(x.props))))
-    add("prompts", `${PROMPT_SECTIONS[s.type] ?? "A section"}: replace the “[Add … here]” text.`, s.id);
 
   return issues;
 }

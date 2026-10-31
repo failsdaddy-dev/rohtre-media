@@ -174,8 +174,8 @@ describe("publish check (R25)", () => {
   it("passes a complete page", () => {
     expect(codes(ready())).toEqual([]);
   });
-  it("blocks draft FAQs but not a missing banner", () => {
-    expect(codes(masterTemplate({ service: META, niche: FASHION, country: USA }))).toEqual(["faq-draft"]);
+  it("allows the fresh master template (no banner, draft FAQs)", () => {
+    expect(codes(masterTemplate({ service: META, niche: FASHION, country: USA }))).toEqual([]);
   });
   it("blocks a half-finished banner", () => {
     const page = ready();
