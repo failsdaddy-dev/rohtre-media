@@ -64,8 +64,19 @@ const nextConfig: NextConfig = {
     ];
   },
   // The sign-in page is served at the secret address (see src/lib/login-path.ts).
+  // Addresses that match no page are checked against the admin's redirects
+  // (src/app/api/old-address/route.ts) before the 404 page.
   async rewrites() {
-    return loginPath ? { beforeFiles: [{ source: loginPath, destination: "/login" }] } : { beforeFiles: [] };
+    return {
+      beforeFiles: loginPath ? [{ source: loginPath, destination: "/login" }] : [],
+      afterFiles: [],
+      fallback: [
+        {
+          source: "/:path((?!_next|_hidden-404|api|admin|lp|login|preview).*)",
+          destination: "/api/old-address?from=:path",
+        },
+      ],
+    };
   },
   async headers() {
     return [

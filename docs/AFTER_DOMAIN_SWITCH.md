@@ -28,7 +28,7 @@ These addresses are in Google Ads and don't exist on the new site.
 - [ ] Open each old address on `rohtremedia.com` and confirm it lands on the right page.
 - [ ] Open one with `?gclid=test` on the end and confirm `gclid=test` is still in the address.
 
-The Redirects & ads page in the admin only works for `/lp/...` addresses today. Old addresses like `/ppcagency` need a code change before they can redirect.
+Add these in Admin → More → Redirects & ads, before the switch. Use the address without the domain, for example `/ppcagency`. You can add more here later, with no code change.
 
 ## 3. Google Ads (India campaign)
 
