@@ -68,7 +68,9 @@ async function EditorScreen({ params }: { params: Promise<{ id: string }> }) {
           value: b.id as string,
           label: `${b.label}${b.enabled ? "" : " (switched off)"}`,
         }))}
-        countries={[...all.values()].filter((v) => v.type_key === "country").map((v) => ({ id: v.id, label: v.label }))}
+        countries={[...all.values()]
+          .filter((v) => v.type_key === "country" && v.active !== false)
+          .map((v) => ({ id: v.id, label: v.label }))}
         canManage={canManage(staff.role)}
         canPublish={canPublish}
       />

@@ -21,7 +21,10 @@ async function must<T>(p: PromiseLike<{ data: T; error: { message: string } | nu
 
 export async function dimensionMap(db: Db): Promise<Map<string, DimensionValue>> {
   const rows = await must(
-    db.from("dimension_values").select("id, type_key, parent_id, slug, label, headline_label, attrs").order("sort"),
+    db
+      .from("dimension_values")
+      .select("id, type_key, parent_id, slug, label, headline_label, attrs, active, sort")
+      .order("sort"),
   );
   return new Map((rows as DimensionValue[]).map((v) => [v.id, v]));
 }

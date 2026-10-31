@@ -139,6 +139,34 @@ async function Guide() {
           </Card>
         </div>
 
+        <Card title="Landing pages: adding your own Service, Niche or Country">
+          <ol className="flex flex-col gap-4">
+            <Step n={1} title="Add it">
+              In <A href="/admin/pages">Landing pages</A>, open the Service, Niche or Country dropdown and press{" "}
+              <strong>+ Add new</strong> at the bottom. Only the owner and developer see this.
+            </Step>
+            <Step n={2} title="Check the URL and headline">
+              Type the name. The URL text and headline wording fill in by themselves, and you can change them. The live
+              preview shows the final URL and headline. The URL text can’t change after saving.
+            </Step>
+            <Step n={3} title="Create the page">
+              The new option is selected for you. Press <strong>Create draft page</strong>. The page uses the same layout
+              and sections as every other landing page.
+            </Step>
+            <Step n={4} title="Fill the prompts">
+              Text we can’t write for a new service or niche starts as a prompt like{" "}
+              <strong>[Add the hero text here]</strong>. Replace each one. They are listed in the <strong>Publish</strong>{" "}
+              box, and the page can’t be published until they are gone, so visitors never see them.
+            </Step>
+            <Step n={5} title="Hide, rename or reorder">
+              Press <strong>Manage options</strong> under the form. Hide takes an option out of the dropdowns; pages
+              already made from it stay as they are. Rename changes the name for new pages, not the text saved on existing
+              pages. Built-in options can’t be deleted. A custom option can’t be deleted while a landing page or a proof
+              item uses it.
+            </Step>
+          </ol>
+        </Card>
+
         <Card title="Words you will see">
           <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
             {[

@@ -1,4 +1,5 @@
 import { pageContentSchema, type PageContent, type Section, type SectionOf } from "../sections/schemas";
+import { HAS_PROMPT } from "./dimensions";
 
 // The automatic publish check (R25). Publishing is refused while any issue
 // remains. Pure: the page script, the admin (Phase 4) and the tests use it.
@@ -100,6 +101,15 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
     add("missing-facts", "This section still contains [NEEDS DATA] or TO CONFIRM.", s.id);
   if (MISSING_MARKERS.test(JSON.stringify(c.meta)))
     add("missing-facts", "The meta title or description still has a placeholder.");
+
+  // "[Add ... here]" prompts on pages made from custom options
+  const PROMPT_SECTIONS: Partial<Record<Section["type"], string>> = {
+    hero: "Hero",
+    painPoints: "Pain points",
+    platforms: "Platforms",
+  };
+  for (const s of c.sections.filter((x) => x.enabled && HAS_PROMPT.test(JSON.stringify(x.props))))
+    add("prompts", `${PROMPT_SECTIONS[s.type] ?? "A section"}: replace the “[Add … here]” text.`, s.id);
 
   return issues;
 }

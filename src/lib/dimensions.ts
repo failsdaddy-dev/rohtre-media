@@ -12,7 +12,64 @@ export type DimensionValue = {
   label: string;
   headline_label: string;
   attrs: Record<string, unknown>;
+  /** Loaded by the admin (dimensionMap); off = hidden from the "New landing page" dropdowns. */
+  active?: boolean;
+  sort?: number;
 };
+
+/** Added from the admin (attrs.custom), not one of the seeded values. */
+export const isCustomValue = (v: Pick<DimensionValue, "attrs">) => v.attrs.custom === true;
+
+/** Niche wording that doesn't read as "... Brands" (e.g. "Schools"): no "Brands" in its headline or URL. */
+const noBrands = (niche: Pick<DimensionValue, "attrs">) => niche.attrs.noBrands === true;
+
+/** "Clothing Brands": how a niche reads inside a headline. */
+export function nichePhrase(niche: Pick<DimensionValue, "attrs" | "headline_label">): string {
+  return noBrands(niche) ? niche.headline_label : `${niche.headline_label} Brands`;
+}
+
+/** Editor prompt for text a new custom page still needs. Publishing is refused while one remains. */
+export const promptText = (what: string) => `[Add ${what} here]`;
+export const HAS_PROMPT = /\[Add [^\]]* here\]/;
+
+/** Words a custom option's URL text can't be. */
+const RESERVED_SLUGS = new Set(["admin", "api", "lp", "login", "preview", "new", "draft", "brands", "auth", "no-access"]);
+
+/** "Video Editing!" -> "video-editing" */
+export function slugPart(text: string): string {
+  return text
+    .normalize("NFKD")
+    .replace(/[^\x00-\x7F]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+    .replace(/-+$/, "");
+}
+
+const plainText = (min: number, max: number, what: string) =>
+  z
+    .string()
+    .trim()
+    .min(min, `${what} needs at least ${min} characters.`)
+    .max(max, `${what} can be up to ${max} characters.`)
+    .regex(/^[^<>\x00-\x1F]*$/, `${what} can’t contain < or >.`);
+
+export const optionNameSchema = plainText(2, 60, "The name");
+export const optionWordingSchema = plainText(2, 48, "The headline wording");
+export const optionSlugSchema = z
+  .string()
+  .min(2, "The URL text needs at least 2 characters.")
+  .max(40, "The URL text can be up to 40 characters.")
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "The URL text may only use a-z, 0-9 and single dashes.")
+  .refine((s) => !RESERVED_SLUGS.has(s), "That URL text is reserved. Choose another.");
+
+/** What the admin's "Headline wording" box means for a niche: "Video Editing Brands" or "Schools". */
+export function parseNicheWording(wording: string): { headline_label: string; noBrands: boolean } {
+  const match = wording.match(/^(.+?)\s+brands$/i);
+  return match ? { headline_label: match[1], noBrands: false } : { headline_label: wording, noBrands: true };
+}
 
 /** Per-country settings stored in dimension_values.attrs (R7). */
 export const countryAttrsSchema = z.object({
@@ -42,6 +99,7 @@ export type PageDims = { service: DimensionValue; niche: DimensionValue; country
  * a 301 (database trigger).
  */
 export function slugFor(dims: Pick<PageDims, "service" | "niche" | "country">): string {
+  if (noBrands(dims.niche)) return [dims.service.slug, dims.niche.slug, dims.country.slug].join("-");
   return [dims.service.slug, dims.niche.slug, "brands", dims.country.slug].join("-");
 }
 
@@ -54,7 +112,7 @@ export function uniqueSlug(base: string, taken: Iterable<string>): string {
 
 /** Headline (R4): "Meta Ads for Fashion Brands in the USA". Editable later. */
 export function headlineFor(dims: Pick<PageDims, "service" | "niche" | "country">): string {
-  return `${dims.service.headline_label} for ${dims.niche.headline_label} Brands in ${dims.country.headline_label}`;
+  return `${dims.service.headline_label} for ${nichePhrase(dims.niche)} in ${dims.country.headline_label}`;
 }
 
 /** A value plus all its ancestors (e.g. clothing → fashion), nearest first. */

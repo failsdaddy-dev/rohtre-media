@@ -1,4 +1,4 @@
-import { headlineFor, type PageDims } from "../lib/dimensions";
+import { headlineFor, isCustomValue, nichePhrase, promptText, type PageDims } from "../lib/dimensions";
 import { nicheCopy } from "./niche-copy";
 import { pageContentSchema, type PageContent, type Section } from "./schemas";
 
@@ -11,6 +11,12 @@ import { pageContentSchema, type PageContent, type Section } from "./schemas";
 // reels and creative, Google-only pages with search intent, D2C (both) mixes.
 // Niches with their own starter copy (niche-copy.ts) get their own hero line,
 // pain points and FAQs; every page gets a FAQ for its country (currency).
+// Custom services and niches added in the admin use the same sections, but
+// text we can't know for them starts as an "[Add ... here]" prompt, which the
+// publish check refuses.
+
+/** Lowercase a custom niche, leaving words like "SaaS" or "D2C" as typed. */
+const lowerUnlessAcronym = (s: string) => (/[A-Z]{2}|[a-z][A-Z]/.test(s) ? s : s.toLowerCase());
 
 type Channel = "meta" | "google";
 
@@ -66,10 +72,15 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
   const channels = channelsOf(dims);
   const angle = channels.length === 1 ? channels[0] : "both";
   const service = dims.service.headline_label;
-  const niche = dims.niche.headline_label.toLowerCase();
+  const customService = isCustomValue(dims.service);
+  const customNiche = isCustomValue(dims.niche);
+  const needsPrompts = customService || customNiche;
+  const niche = customNiche ? lowerUnlessAcronym(dims.niche.headline_label) : dims.niche.headline_label.toLowerCase();
+  const nicheBrands = customNiche ? lowerUnlessAcronym(nichePhrase(dims.niche)) : `${niche} brands`;
+  const yourBrand = dims.niche.attrs.noBrands === true ? "your business" : `your ${niche} brand`;
   const country = dims.country.headline_label;
-  const h1 = headlineFor(dims);
-  const copy = nicheCopy(dims.niche.slug);
+  const h1 = headlineFor(dims).slice(0, 120);
+  const copy = customNiche ? null : nicheCopy(dims.niche.slug);
   const currency = (dims.country.attrs as { currency?: unknown }).currency;
   const countryFaq = {
     q: `Can you run campaigns for buyers in ${country}?`,
@@ -84,9 +95,11 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
       variant: "banner-right",
       enabled: true,
       props: {
-        eyebrow: `${dims.service.label} · ${dims.niche.label}`,
+        eyebrow: `${dims.service.label} · ${dims.niche.label}`.slice(0, 60),
         h1,
-        subline: `${service} for ${niche} brands in ${country}: ${copy?.subline ?? "scroll-stopping creatives, sharp targeting and campaigns built to grow your sales."}`,
+        subline: needsPrompts
+          ? promptText("the hero text")
+          : `${service} for ${nicheBrands} in ${country}: ${copy?.subline ?? "scroll-stopping creatives, sharp targeting and campaigns built to grow your sales."}`,
         ctaLabel: "Book a Call",
         offerBanner: { desktop: null, mobile: null, alt: "" },
       },
@@ -105,9 +118,14 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
       enabled: true,
       props: {
         eyebrow: "Sound familiar?",
-        title: `Growing a ${niche} brand`,
+        title: customNiche ? `Growing ${yourBrand}` : `Growing a ${niche} brand`,
         accent: "shouldn’t feel like this.",
-        items: copy?.painPoints ?? PAIN_POINTS[angle],
+        items: needsPrompts
+          ? [1, 2, 3].map((n) => ({
+              title: promptText(`pain point ${n}`),
+              text: promptText(`the detail for pain point ${n}`),
+            }))
+          : (copy?.painPoints ?? PAIN_POINTS[angle]),
       },
     },
     {
@@ -147,7 +165,12 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
         eyebrow: "Where we run your ads",
         title: "The platforms",
         accent: "your customers use.",
-        items: channels.flatMap((c) => PLATFORMS[c]),
+        items: customService
+          ? [1, 2].map((n) => ({
+              name: promptText(`platform ${n}`),
+              text: promptText(`the text for platform ${n}`),
+            }))
+          : channels.flatMap((c) => PLATFORMS[c]),
       },
     },
     {
@@ -189,10 +212,10 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
       props: {
         eyebrow: "FAQ",
         title: "Questions",
-        accent: `${niche} brands ask us.`,
+        accent: `${nicheBrands} ask us.`.slice(0, 60),
         items: [
           {
-            q: `Do you work with ${niche} brands in ${country}?`,
+            q: `Do you work with ${nicheBrands} in ${country}?`,
             a: `Yes. Tell us about your brand on a short call and we’ll show you how we’d approach ${dims.service.label.toLowerCase()} for it.`,
             status: "draft",
           },
@@ -226,18 +249,24 @@ export function masterTemplate(dims: Pick<PageDims, "service" | "niche" | "count
         eyebrow: "Get started",
         title: "Let’s grow",
         accent: "your brand.",
-        intro: copy?.formIntro ?? `Tell us about your ${niche} brand. We’ll get back to you with a plan.`,
+        intro: copy?.formIntro ?? `Tell us about ${yourBrand}. We’ll get back to you with a plan.`,
         formTitle: "Book your discovery call",
-        defaultInterest: angle === "meta" ? "Meta ads" : angle === "google" ? "Google Ads" : "D2C / e-commerce growth",
+        defaultInterest: customService
+          ? ""
+          : angle === "meta"
+            ? "Meta ads"
+            : angle === "google"
+              ? "Google Ads"
+              : "D2C / e-commerce growth",
       },
     },
   ];
 
   return pageContentSchema.parse({
     meta: {
-      title: h1.length <= 60 ? h1 : `${service} for ${dims.niche.headline_label} Brands`,
+      title: (h1.length <= 60 ? h1 : `${service} for ${nichePhrase(dims.niche)}`).slice(0, 70),
       description:
-        `${service} for ${niche} brands in ${country}. Creatives, targeting and campaigns built to grow your sales. Book a call with RohTre Media.`.slice(
+        `${service} for ${nicheBrands} in ${country}. Creatives, targeting and campaigns built to grow your sales. Book a call with RohTre Media.`.slice(
           0,
           160,
         ),

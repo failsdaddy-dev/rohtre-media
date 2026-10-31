@@ -51,6 +51,8 @@ export type SelectOption = {
   icon?: ReactNode;
   /** Shown instead of the label and hint in the closed box (a narrow box, e.g. "+91"). */
   short?: string;
+  /** Stays visible at the bottom of the list while it scrolls (e.g. an "add new" row). */
+  sticky?: boolean;
   disabled?: boolean;
 };
 
@@ -416,8 +418,10 @@ export function Select({
         className={`flex min-h-11 items-center gap-3 rounded-[10px] px-3 py-2 text-[15px] ${
           o.disabled
             ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
-        } ${selected ? "font-semibold" : ""}`}
+            : o.sticky
+              ? "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,var(--bg-elev))]"
+              : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
+        } ${selected ? "font-semibold" : ""} ${o.sticky ? "sticky bottom-0 bg-bg-elev font-semibold" : ""}`}
       >
         {o.icon && (
           <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center">

@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { updateTag } from "next/cache";
 import { audit } from "@/lib/audit";
 import { canManage, requireStaff, type Staff } from "@/lib/auth";
-import type { PageDims } from "@/lib/dimensions";
+import { headlineFor, slugFor, type PageDims } from "@/lib/dimensions";
 import { LANDING_TAG, pageTag } from "@/lib/landing-data";
 import { cleanupAfterEdit } from "@/lib/media.server";
 import {
@@ -39,13 +39,19 @@ export async function createPage(
   serviceId: string,
   nicheId: string,
   countryId: string,
-): Promise<Result<{ id: string }>> {
+): Promise<Result<{ id: string }> | { ok: false; error: string; existingId: string }> {
   const staff = await requireStaff();
   const db = await supabaseServer();
   const all = await dimensionMap(db);
   const dims = { service: all.get(serviceId), niche: all.get(nicheId), country: all.get(countryId) };
   if (dims.service?.type_key !== "service" || dims.niche?.type_key !== "niche" || dims.country?.type_key !== "country")
     return { ok: false, error: "Choose a service, a niche and a country." };
+  const slug = slugFor(dims as PageDims);
+  if (slug.length > 120 || headlineFor(dims as PageDims).length > 120)
+    return { ok: false, error: "That combination is too long. Shorten the wording of one of the options." };
+  const { data: existing } = await db.from("pages").select("id").eq("slug", slug).maybeSingle();
+  if (existing)
+    return { ok: false, error: `A page for this combination already exists: /lp/${slug}.`, existingId: existing.id };
   try {
     const page = await createLandingPage(db, dims as PageDims, {
       note: "Created from the master template",

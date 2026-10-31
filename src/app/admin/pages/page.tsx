@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AdminFrame, AdminLoading } from "@/components/admin/admin-frame";
 import { Panel } from "@/components/admin/ui";
-import { requireStaff } from "@/lib/auth";
+import { canManage, requireStaff } from "@/lib/auth";
 import { headlineFor, type DimensionValue } from "@/lib/dimensions";
 import { dimensionMap } from "@/lib/page-ops";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -27,10 +27,7 @@ async function PagesScreen() {
     Object.fromEntries(
       (dims ?? []).filter((d) => d.page_id === pageId).map((d) => [d.type_key, all.get(d.value_id)]),
     ) as Record<string, DimensionValue | undefined>;
-  const options = (type: string) =>
-    [...all.values()]
-      .filter((v) => v.type_key === type)
-      .map((v) => ({ id: v.id, label: v.label }));
+  const options = (type: string) => [...all.values()].filter((v) => v.type_key === type);
 
   return (
     <AdminFrame staff={staff} current="/admin/pages" title="Landing pages">
@@ -40,7 +37,12 @@ async function PagesScreen() {
             Pick a service, niche and country. The page starts as an unlisted draft from the master template, with its
             URL and headline filled in.
           </p>
-          <NewPageForm services={options("service")} niches={options("niche")} countries={options("country")} />
+          <NewPageForm
+            services={options("service")}
+            niches={options("niche")}
+            countries={options("country")}
+            canManage={canManage(staff.role)}
+          />
         </Panel>
         <Panel title={`All pages (${pages?.length ?? 0})`}>
           {!pages?.length ? (
