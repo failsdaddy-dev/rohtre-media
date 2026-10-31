@@ -86,6 +86,22 @@ export async function updateStaff(
   return { ok: true };
 }
 
+/**
+ * Delete someone's account for good. Their profile goes with it (database
+ * cascade); what they made stays, and the audit log keeps their email.
+ */
+export async function removeStaff(userId: string, email: string | null): Promise<Result> {
+  const staff = await requireStaff({ owner: true });
+  if (userId === staff.userId) return { ok: false, error: "You can’t remove your own account." };
+  if (await lastOwner(userId)) return { ok: false, error: "There must always be one active owner." };
+  const admin = supabaseAdmin();
+  if (!admin) return { ok: false, error: "The server key isn’t set." };
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) return { ok: false, error: "Couldn’t remove this person." };
+  await audit(staff, "user.remove", "user", userId, { email });
+  return { ok: true };
+}
+
 /** New one-time password, e.g. when someone forgot theirs. */
 export async function resetPassword(userId: string): Promise<Result> {
   const staff = await requireStaff({ owner: true });

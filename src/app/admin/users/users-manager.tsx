@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Select } from "@/components/admin/select";
 import { Button, Field, INPUT_CLASS, Panel } from "@/components/admin/ui";
-import { createStaff, resetPassword, updateStaff, type Result } from "./actions";
+import { createStaff, removeStaff, resetPassword, updateStaff, type Result } from "./actions";
 
 export type StaffRow = {
   userId: string;
@@ -185,13 +185,26 @@ export function UsersManager({ rows, me }: { rows: StaffRow[]; me: string }) {
                   >
                     {armed === `pw-${r.userId}` ? "Confirm" : "Reset password"}
                   </Button>
+                  <Button
+                    className="h-9 px-4 text-xs"
+                    disabled={pending}
+                    variant={armed === `remove-${r.userId}` ? "danger" : "plain"}
+                    onClick={() =>
+                      confirmFirst(`remove-${r.userId}`, () =>
+                        run(() => removeStaff(r.userId, r.email), `${r.name ?? r.email ?? "This person"} was removed.`),
+                      )
+                    }
+                  >
+                    {armed === `remove-${r.userId}` ? "Confirm remove" : "Remove"}
+                  </Button>
                 </div>
               )}
             </li>
           ))}
         </ul>
         <p className="mt-4 text-xs text-fg-2">
-          Deactivated people can still sign in but see “no access” and can’t read or change anything.
+          Deactivated people can still sign in but see “no access” and can’t read or change anything. Remove deletes the
+          account for good; what they made stays on the site.
         </p>
       </Panel>
     </div>
