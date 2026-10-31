@@ -401,7 +401,6 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 | Admin screens were checked by typecheck, lint, unit tests, RLS checks and a production build only; the founder runs the site, so nobody has clicked through them in a browser yet | founder | no |
 | "2B+" conflict: conversions (home) vs views (About) vs 2,000,000+ conversions (brief) | founder | that badge |
 | Keys were pasted in chat (also a full `.env.local` copy on 2026-10-23): rotate the Supabase secret key, Cloudinary API secret, Gmail app password and `ADMIN_LOGIN_PATH`; delete the uploaded copy | founder | before launch |
-| Gmail SMTP limit about 500 emails/day (consumer account); if the account is flagged both forms stop emailing (rows are still saved, failure shown in the inbox) | founder | no |
 | Not seen in a browser by Claude: About, Careers, Contact, legal pages and their admin editors (the founder checks manually) | founder | no |
 | "2B+" badge is switched ON in the database (seen 2026-10-22) although its number/unit is unconfirmed; it shows on the live strip | founder | that badge |
 | Client-logo use: big-brand logos (EA, DayZ, BetterHelp, italki, Sidemen, SPORTbible…) imply they were clients; confirm each, with permission where needed | founder | before launch |
@@ -425,7 +424,23 @@ Placeholder mechanism: `<Placeholder>` in `src/components/page-parts.tsx` render
 
 ## 11. Next step
 
-**All public pages and the landing system are built on `dev` (2026-10-27).** 2026-10-27 work (landing theme, admin polish, niches, sharp frames, motion, mobile buttons) passes typecheck/lint/tests (286); the founder runs the build, then says "commit and push" (dev -> GitHub; main only when the site is finished). Two niche migrations to apply. After new routes run `npx next typegen`.
-Next (founder's word): Phase 6 = tracking + consent banner (needs GTM ID, GA4 ID, Ads conversion ID/label, Meta Pixel ID + CAPI token), SEO hardening (rewrite auto-excerpt descriptions, share images, Search Console), performance (Lighthouse mobile). Phase 7 = hosting choice (Vercel Hobby forbids commercial use), domain switch, WordPress redirect map (needs the URL export), uptime + backups, launch checklist.
+**State on 2026-10-31.** The site is live on Vercel (project `rohtre-media`, https://rohtre-media.vercel.app/, deployed from `main`). `dev` and `main` are both at `c5f5c5e`. Phases 6 and 7 were closed by the founder (hosting plan changed); Phase 5 (AI) stays dropped. Pushing to `main` starts a production deploy, and `main` only gets code when the founder says so for that update.
+
+Done on 2026-10-30 and 2026-10-31:
+- Tracking: Meta Pixel, GTM with a data layer, cookie banner with working Cookie Settings, CSP for Meta and Google Ads (`docs/META_PIXEL_EVENTS.md`, `docs/GTM_DATALAYER.md`).
+- Email: Careers sends from `talent@`, Contact from `sales@`, through Titan SMTP; recipients are edited in Admin. Lead copies go to the Google Sheet.
+- SEO: share image and structured data. Phone country picker. Deleting a landing page also cleans its Cloudinary media.
+- Intro: rebuilt with `public/brand/logo-intro-white.png` (2061 px, rebuilt from the small PNG, one file cut with CSS). The R and letters rise out of masks, then a red light passes. Total 3.7 s. It waits for page load plus the logo, with a 3 s limit (`data-intro-go`).
+- Landing options: Service, Niche and Country are added, renamed, hidden, reordered and deleted in Admin → Landing pages. They are `dimension_values` rows (`attrs.custom`, `attrs.noBrands`), so no migration. Editors can't add; built-ins can't be deleted; custom options in use can't be deleted.
+- Landing uploads: Results (`uploads`) and Creatives (`media`) take images and videos per page, shown before matched proof, no approval needed.
+- Publishing: only real errors block (blank H1, hero or form off, half-added banner, `[NEEDS DATA]`, off badges). Empty pages publish with neutral frames. `[Add ... here]` prompts and draft FAQs never reach visitors. Re-check lists what is still empty (`pageTodos`) and never blocks.
+- Admin: Remove user (owner only), Manage options with tabs and search, "Add new" as a dropdown footer.
+- Scrollbars: slim everywhere; on mouse devices the page bar is the floating `PageScrollbar`, because the native bar's strip can't be made transparent.
+
+Not checked: full-speed intro playback, dragging the page scrollbar, Firefox, phone size of the new intro, and the production build of these changes. The founder runs tests, lint and builds.
+
+**Domain move, on hold at Part 0 step 4.** Plan: point `rohtremedia.com` to Vercel (A and `www` at WordPress), copy DNS to Namecheap FreeDNS and switch name servers, move mail to Resend Inboxes (Zoho Mail Lite later), transfer to Namecheap, then add redirects and cancel WordPress and Titan. Needs code on `main`: the Resend sender (`SMTP_FROM`, `SMTP_SALES_FROM`) and the old URL redirects.
+
+Open: the real logo vector from the designer; GTM tag mapping and publishing (specialist, at the domain move); Search Console; Lighthouse; Vercel Hobby commercial-use limit.
 
 Admin sign-in: secret address in `.env.local` (`ADMIN_LOGIN_PATH`); founder's account is owner.
