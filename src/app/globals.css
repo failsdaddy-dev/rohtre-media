@@ -185,6 +185,8 @@ select:focus-visible {
    slight scale from the trigger's edge; nothing under reduced motion. */
 .rm-select-pop {
   transform-origin: top center;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 .rm-select-pop[data-up] {
   transform-origin: bottom center;

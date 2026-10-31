@@ -415,13 +415,17 @@ export function Select({
           e.preventDefault();
           choose(i);
         }}
-        className={`flex min-h-11 items-center gap-3 rounded-[10px] px-3 py-2 text-[15px] ${
+        className={`flex min-h-11 items-center gap-3 px-3 py-2 text-[15px] ${
           o.disabled
             ? "cursor-not-allowed opacity-50"
             : o.sticky
               ? "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,var(--bg-elev))]"
               : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
-        } ${selected ? "font-semibold" : ""} ${o.sticky ? "sticky -bottom-1.5 bg-bg-elev font-semibold" : ""}`}
+        } ${selected ? "font-semibold" : ""} ${
+          o.sticky
+            ? "sticky -bottom-1.5 z-10 -mx-1.5 -mb-1.5 mt-1 border-t border-line bg-bg-elev px-[18px] font-semibold"
+            : "rounded-[10px]"
+        }`}
       >
         {o.icon && (
           <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center">
