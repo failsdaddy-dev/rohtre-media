@@ -5,6 +5,7 @@ import { BADGE_LAYOUT, badgeLayout } from "@/content/layout-presets";
 import { isLiveProof, SHOW_PLACEHOLDERS, type Badge, type Result, type Testimonial } from "@/lib/home-data";
 import { publicBadges } from "@/lib/proof";
 import { ArrowRightIcon, AwardIcon, StepIcon } from "../icons";
+import { MediaSlot } from "../media/media-slot";
 import { ButtonLink, Container } from "../page-parts";
 import { BOOK_CALL_HREF } from "../site-header";
 import { NotLiveTag, PlaceholderBox, reveal, SectionCta, SectionHead } from "./parts";
@@ -133,7 +134,7 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
                   </div>
                 ) : (
                   <div
-                    className={`grid items-center gap-6 p-5 md:gap-10 md:p-10 ${r.image_public_id ? "lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]" : ""}`}
+                    className={`grid items-center gap-6 p-5 md:gap-10 md:p-10 ${r.image_public_id || r.file ? "lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]" : ""}`}
                   >
                     <div className="flex w-full min-w-0 flex-col gap-4">
                       {!isLiveProof(r) && <NotLiveTag>Not approved yet</NotLiveTag>}
@@ -154,15 +155,22 @@ export function Results({ s, results }: { s: HomeContent["results"]; results: Re
                         )}
                         <p className="text-[11px] font-bold uppercase tracking-[0.22em] opacity-80">{r.brand_name}</p>
                       </div>
-                      <p
-                        data-about-count={r.metric_value}
-                        className="text-[clamp(3rem,7vw,5.5rem)] font-bold leading-none tracking-[-0.05em] tabular-nums"
-                      >
-                        {r.metric_value}
-                      </p>
-                      <p className="text-xl font-semibold md:text-2xl">{r.metric_label}</p>
+                      {r.metric_value && (
+                        <p
+                          data-about-count={r.metric_value}
+                          className="text-[clamp(3rem,7vw,5.5rem)] font-bold leading-none tracking-[-0.05em] tabular-nums"
+                        >
+                          {r.metric_value}
+                        </p>
+                      )}
+                      {r.metric_label && <p className="text-xl font-semibold md:text-2xl">{r.metric_label}</p>}
                       {r.summary && <p className="max-w-md text-[var(--fg-2)]">{r.summary}</p>}
                     </div>
+                    {r.file && (
+                      <div className="w-full min-w-0">
+                        <MediaSlot slot={r.file} sizes="(max-width: 1024px) 100vw, 820px" maxWidth={1400} fit="contain" />
+                      </div>
+                    )}
                     {r.image_public_id && (
                       // The whole screenshot is shown (contain, never cropped) in a large 4:3 area.
                       <div className="relative aspect-[4/3] w-full min-w-0">

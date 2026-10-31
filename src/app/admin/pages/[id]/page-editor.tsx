@@ -66,6 +66,23 @@ const HINTS: Hints = {
   alt: { label: "Alt text (describe the banner)" },
   showConcept: { label: "Also show labelled concept work" },
   limit: { label: "How many to show" },
+  uploads: {
+    label: "Results for this page",
+    noun: ["result", "results"],
+    help: "Upload here for this page only. Results tagged in Proof & badges show after these.",
+    itemHints: {
+      brand: { label: "Brand name" },
+      metric: { label: "The number (for example 3x)" },
+      metricLabel: { label: "What it measures (for example return on ad spend)" },
+      summary: { label: "Short summary", multiline: true },
+      file: { label: "Dashboard image or video", showShape: true },
+    },
+  },
+  media: {
+    label: "Images and videos for this page",
+    noun: ["file", "files"],
+    help: "Upload here for this page only. Creatives tagged in Proof & badges show after these.",
+  },
   html: {
     label: "HTML",
     help: "Sanitized mode removes scripts and embeds. Raw mode (owner/developer only) keeps them.",

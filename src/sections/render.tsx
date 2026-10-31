@@ -4,10 +4,13 @@ import { reveal, NotLiveTag, PlaceholderBox, SectionHead } from "@/components/ho
 import { BadgeBar, Faq, Process, Results, Testimonials } from "@/components/home/sections";
 import { ArrowRightIcon, ChatIcon, CheckIcon, ServiceIcon } from "@/components/icons";
 import { LeadForm } from "@/components/lead-form";
+import { MediaPlayback } from "@/components/media/media-playback";
+import { MediaSlot } from "@/components/media/media-slot";
 import { RawHtml } from "@/components/raw-html";
 import { ButtonLink, Container } from "@/components/page-parts";
+import { isFilled } from "@/content/media-slot";
 import { cloudinaryUrl } from "@/lib/cloudinary/url";
-import type { Badge } from "@/lib/home-data";
+import type { Badge, Result } from "@/lib/home-data";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
 import type { Creative, LandingProof } from "@/lib/landing-data";
 import { isLiveProof, publicBadges } from "@/lib/proof";
@@ -227,14 +230,22 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
   const ordered =
     s.variant === "reels-first" ? [...byKind("reel"), ...byKind("image")] : [...byKind("image"), ...byKind("reel")];
   const items = [...ordered.slice(0, p.limit), ...(p.showConcept ? ctx.proof.concept.slice(0, p.limit) : [])];
-  const shown = items.length > 0 ? items : SHOW_PLACEHOLDERS ? null : [];
-  if (shown && shown.length === 0) return null;
+  const own = p.media.filter(isFilled);
+  const shown = items.length > 0 || own.length > 0 ? items : SHOW_PLACEHOLDERS ? null : [];
+  if (shown && shown.length === 0 && own.length === 0) return null;
   return (
     <section className={`rm-hero-sky overflow-clip ${PAD}`}>
       <Container>
         <SectionHead eyebrow={p.eyebrow} title={p.title} accent={p.accent} intro={p.intro} />
         {shown ? (
           <ul className="grid grid-cols-2 gap-5 md:grid-cols-3">
+            {own.map((slot, i) => (
+              <li key={slot.publicId} {...reveal(i % 3)}>
+                <div className="rm-lp-frame relative">
+                  <MediaSlot slot={slot} sizes="(max-width: 768px) 50vw, 360px" maxWidth={720} />
+                </div>
+              </li>
+            ))}
             {shown.map((c, i) => (
               <li key={`${c.concept ? "c" : "r"}-${c.id}`} {...reveal(i % 3)}>
                 <CreativeTile c={c} />
@@ -243,7 +254,8 @@ function Creatives({ s, ctx }: { s: SectionOf<"creatives">; ctx: RenderContext }
           </ul>
         ) : (
           <PlaceholderBox title="Creatives" className="min-h-96 max-sm:min-h-72">
-            No creatives are tagged for this page yet. Add real ads and reels (and, if you want, labelled concept work).
+            Nothing here yet. Upload images and videos in this section of the page editor, or tag creatives in Proof &
+            badges.
           </PlaceholderBox>
         )}
       </Container>
@@ -348,7 +360,25 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
     case "painPoints":
       return <PainPoints s={s} />;
     case "results": {
-      const results = ctx.proof.results.slice(0, s.props.limit);
+      const uploads = s.props.uploads
+        .filter((u) => u.brand.trim() || u.metric.trim() || isFilled(u.file))
+        .map(
+          (u, i): Result => ({
+            id: `upload-${i}`,
+            brand_name: u.brand,
+            logo_public_id: null,
+            metric_value: u.metric,
+            metric_label: u.metricLabel,
+            summary: u.summary || null,
+            image_public_id: null,
+            image_alt: null,
+            approved: true,
+            is_placeholder: false,
+            notes: null,
+            file: isFilled(u.file) ? u.file : undefined,
+          }),
+        );
+      const results = [...uploads, ...ctx.proof.results].slice(0, s.props.limit);
       if (results.length === 0) {
         return SHOW_PLACEHOLDERS ? (
           <section className={`bg-white ${PAD}`}>
@@ -360,7 +390,7 @@ function renderSection(s: Section, ctx: RenderContext): ReactNode {
                 intro={s.props.intro}
               />
               <PlaceholderBox title="Results" className="min-h-96 max-sm:min-h-72">
-                No results are tagged for this page yet. Add 2-3 real results (client, metric, dashboard screenshot).
+                Nothing here yet. Upload results in this section of the page editor, or tag results in Proof & badges.
               </PlaceholderBox>
             </Container>
           </section>
@@ -415,6 +445,7 @@ export function LandingSections({ sections, ctx }: { sections: Section[]; ctx: R
             {renderSection(s, ctx)}
           </div>
         ))}
+      <MediaPlayback />
     </>
   );
 }

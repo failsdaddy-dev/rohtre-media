@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { DEFAULT_HOME, parseHome, type HomeContent } from "@/content/home-schema";
+import type { MediaSlotValue } from "@/content/media-slot";
 import { isLiveProof, publicBadges } from "./proof";
 import type { BadgeLogoStyle } from "./proof-schemas";
 import { supabaseAdmin } from "./supabase/admin";
@@ -56,6 +57,8 @@ export type Result = {
   approved: boolean;
   is_placeholder: boolean;
   notes: string | null;
+  /** Landing pages: an image or video uploaded in the page editor. */
+  file?: MediaSlotValue;
 };
 
 export { isLiveBadge, isLiveProof } from "./proof";

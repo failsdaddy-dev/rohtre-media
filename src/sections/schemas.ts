@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { mediaSchema } from "../content/home-schema";
+import { slotSchema } from "../content/media-slot";
 import type { HeaderTone } from "../lib/header-tone";
 
 // Section registry, part 1: the data (R28). One Zod schema per section type
@@ -45,11 +46,21 @@ export const painPointsSchema = z.object({
     .max(6),
 });
 
+/** A result uploaded for one page: shown before matched proof, needs no approval. */
+const pageResult = z.object({
+  brand: text(80),
+  metric: text(40),
+  metricLabel: text(80),
+  summary: text(300),
+  file: slotSchema(["16:9", "4:3", "1:1", "9:16"]),
+});
+
 export const resultsSchema = z.object({
   eyebrow: text(60),
   title: text(100),
   accent: text(60),
   intro: text(300),
+  uploads: z.array(pageResult).max(3).default([]),
   /** How many matched results to show (R15: 2-3 dashboards). */
   limit: z.number().int().min(1).max(3),
   cta,
@@ -60,6 +71,8 @@ export const creativesSchema = z.object({
   title: text(100),
   accent: text(60),
   intro: text(300),
+  /** Images and videos uploaded for this page: shown before matched proof, need no approval. */
+  media: z.array(slotSchema(["4:5", "1:1", "9:16", "16:9"])).max(12).default([]),
   limit: z.number().int().min(1).max(12),
   /** R45: allow labelled concept work after the real work. */
   showConcept: z.boolean(),

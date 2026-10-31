@@ -98,8 +98,10 @@ async function Guide() {
                 country.
               </Step>
               <Step n={2} title="Fill the checklist">
-                Check the text and mark FAQ answers ready. The offer banner is optional; if you add one, it needs desktop,
-                mobile and alt text. Sections with no proof stay off the live page by themselves. Press{" "}
+                Check the text and mark FAQ answers ready. Upload images and videos right on the page: open{" "}
+                <strong>Results</strong> or <strong>Creatives &amp; reels</strong> and add them there. The offer banner is
+                optional; if you add one, it needs desktop, mobile and alt text. Sections with nothing to show stay off the
+                live page by themselves. Press{" "}
                 <strong>Save</strong>, then <strong>Re-check</strong>.
               </Step>
               <Step n={3} title="Publish">
