@@ -823,66 +823,159 @@ html[data-intro] .rm-intro {
 }
 .rm-intro-logo {
   position: relative;
-  width: 70vw;
-  aspect-ratio: 688 / 186;
+  width: 62vw;
+  aspect-ratio: 687 / 181;
 }
 @media (min-width: 768px) {
   .rm-intro-logo {
-    width: clamp(320px, 42vw, 760px);
+    width: clamp(260px, 30vw, 520px);
   }
 }
-/* One white logo file, cut into the R, ROHTRE and MEDIA (the cuts sit in the gaps). */
+/* The play button: a triangle pops up where the R's play shape is, is "pressed"
+   (rings), and the R grows out of it. Then the letters of ROHTRE rise and those
+   of MEDIA drop in, one by one, and a red light runs across the finished logo.
+   All parts are one file, cut with CSS in the gaps between the letters. */
 .rm-intro-mark,
-.rm-intro-word {
+.rm-intro-row,
+.rm-intro-letter,
+.rm-intro-sheen {
   position: absolute;
   inset: 0;
 }
 html[data-intro] .rm-intro-mark,
-html[data-intro] .rm-intro-word {
-  background: url("/brand/logo-intro-white.svg") center / 100% 100% no-repeat;
+html[data-intro] .rm-intro-letter {
+  background: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
+}
+.rm-intro-play {
+  position: absolute;
+  left: 7%;
+  top: 19.9%;
+  width: 11.9%;
+  height: 49.7%;
+  background: #ffffff;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  animation:
+    rm-play-in 0.5s linear 0.3s both,
+    rm-fade-out-kf 0.25s var(--ease) 1s forwards;
+}
+.rm-intro-ring {
+  position: absolute;
+  left: 14.5%;
+  top: 44%;
+  width: 16%;
+  aspect-ratio: 1;
+  margin: -8% 0 0 -8%;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: rm-ring-out 0.8s var(--ease-out) 0.68s both;
+}
+.rm-intro-ring + .rm-intro-ring {
+  animation-delay: 0.84s;
 }
 .rm-intro-mark {
   clip-path: inset(0 70.2% 0 0);
-  animation: rm-mark-in 0.65s linear 0.45s both;
+  transform-origin: 14.5% 44%;
+  animation: rm-mark-in 0.5s linear 0.72s both;
 }
-.rm-intro-word {
-  animation: rm-word-in 0.45s var(--ease-out) 0.95s both;
+.rm-intro-row-top {
+  clip-path: inset(0 0 47.8% 29.8%);
 }
-.rm-intro-word-top {
-  clip-path: inset(0 0 47.6% 29.8%);
+.rm-intro-row-bottom {
+  clip-path: inset(52.2% 0 0 29.8%);
 }
-.rm-intro-word-bottom {
-  clip-path: inset(52.4% 0 0 29.8%);
-  animation-delay: 1.15s;
+.rm-intro-letter {
+  clip-path: inset(0 calc(100% - var(--to)) 0 var(--from));
+}
+.rm-intro-row-top .rm-intro-letter {
+  animation: rm-letter-up 0.46s var(--ease-out) calc(0.98s + var(--i) * 0.04s) both;
+}
+.rm-intro-row-bottom .rm-intro-letter {
+  animation: rm-letter-down 0.46s var(--ease-out) calc(1.08s + var(--i) * 0.04s) both;
+}
+html[data-intro] .rm-intro-sheen {
+  overflow: hidden;
+  -webkit-mask: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
+  mask: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
+}
+.rm-intro-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 32%, #e50914 50%, transparent 68%);
+  animation: rm-sheen 0.42s var(--ease) 1.62s both;
+}
+@keyframes rm-play-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+    animation-timing-function: cubic-bezier(0.2, 0, 0.2, 1);
+  }
+  46% {
+    opacity: 1;
+    transform: scale(1.22);
+    animation-timing-function: ease-in-out;
+  }
+  76% {
+    transform: scale(0.82);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes rm-ring-out {
+  from {
+    opacity: 0.75;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.4);
+  }
 }
 @keyframes rm-mark-in {
   0% {
     opacity: 0;
-    transform: translateY(-34%);
-    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    transform: scale(0.5);
+    animation-timing-function: cubic-bezier(0.2, 0, 0.3, 1);
   }
-  52% {
+  58% {
     opacity: 1;
-    transform: translateY(5%);
-    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+    transform: scale(1.07);
+    animation-timing-function: ease-in-out;
   }
-  76% {
-    transform: translateY(-2.5%);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  80% {
+    transform: scale(0.98);
+    animation-timing-function: ease-in-out;
   }
   100% {
     opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes rm-letter-up {
+  from {
+    transform: translateY(56%);
+  }
+  to {
     transform: translateY(0);
   }
 }
-@keyframes rm-word-in {
+@keyframes rm-letter-down {
   from {
-    opacity: 0;
-    transform: translateX(-5%);
+    transform: translateY(-56%);
   }
   to {
-    opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
+  }
+}
+@keyframes rm-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 @keyframes rm-col-out {
@@ -913,7 +1006,7 @@ html[data-intro] .rm-intro-word {
   .rm-stripe-text,
   .rm-float,
   .rm-intro-mark,
-  .rm-intro-word {
+  .rm-intro-letter {
     animation: none;
   }
   .rm-marquee {

@@ -23,7 +23,7 @@ const source = function () {
       if (!noIntro && !sessionStorage.getItem("rm-intro")) {
         sessionStorage.setItem("rm-intro", "1");
         d.setAttribute("data-intro", "");
-        new Image().src = "/brand/logo-intro-white.svg"; // ready before the R drops in
+        new Image().src = "/brand/logo-wordmark-white.png"; // ready before the logo builds up
         setTimeout(function () {
           d.removeAttribute("data-intro");
         }, 3300);
