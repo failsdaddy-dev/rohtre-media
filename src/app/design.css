@@ -778,8 +778,8 @@ html[data-intro] {
 }
 
 /* ------------------------------------------------------------- intro splash
-   Once per visit: red stripes drop in, the name rises, then the stripes fall
-   away to reveal the page. Shown only while <html data-intro> is set. */
+   Once per visit: red stripes drop in, the logo builds up, then the stripes
+   fall away to reveal the page. Shown only while <html data-intro> is set. */
 .rm-intro {
   display: none;
 }
@@ -821,9 +821,69 @@ html[data-intro] .rm-intro {
   color: #ffffff;
   animation: rm-fade-out-kf 0.3s var(--ease) 2.1s forwards;
 }
-.rm-intro-letter {
-  display: inline-block;
-  animation: rm-letter-in 0.5s var(--ease-out) calc(0.7s + var(--i) * 0.035s) both;
+.rm-intro-logo {
+  position: relative;
+  width: 70vw;
+  aspect-ratio: 688 / 186;
+}
+@media (min-width: 768px) {
+  .rm-intro-logo {
+    width: clamp(320px, 42vw, 760px);
+  }
+}
+/* One white logo file, cut into the R, ROHTRE and MEDIA (the cuts sit in the gaps). */
+.rm-intro-mark,
+.rm-intro-word {
+  position: absolute;
+  inset: 0;
+}
+html[data-intro] .rm-intro-mark,
+html[data-intro] .rm-intro-word {
+  background: url("/brand/logo-intro-white.svg") center / 100% 100% no-repeat;
+}
+.rm-intro-mark {
+  clip-path: inset(0 70.2% 0 0);
+  animation: rm-mark-in 0.65s linear 0.45s both;
+}
+.rm-intro-word {
+  animation: rm-word-in 0.45s var(--ease-out) 0.95s both;
+}
+.rm-intro-word-top {
+  clip-path: inset(0 0 47.6% 29.8%);
+}
+.rm-intro-word-bottom {
+  clip-path: inset(52.4% 0 0 29.8%);
+  animation-delay: 1.15s;
+}
+@keyframes rm-mark-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-34%);
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+  52% {
+    opacity: 1;
+    transform: translateY(5%);
+    animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
+  }
+  76% {
+    transform: translateY(-2.5%);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rm-word-in {
+  from {
+    opacity: 0;
+    transform: translateX(-5%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes rm-col-out {
   from {
@@ -833,16 +893,6 @@ html[data-intro] .rm-intro {
   to {
     opacity: 0;
     transform: translateY(100%);
-  }
-}
-@keyframes rm-letter-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.45em);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 @keyframes rm-fade-out-kf {
@@ -861,7 +911,9 @@ html[data-intro] .rm-intro {
   .rm-beams::before,
   .rm-stripe-band::before,
   .rm-stripe-text,
-  .rm-float {
+  .rm-float,
+  .rm-intro-mark,
+  .rm-intro-word {
     animation: none;
   }
   .rm-marquee {
