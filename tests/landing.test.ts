@@ -174,9 +174,13 @@ describe("publish check (R25)", () => {
   it("passes a complete page", () => {
     expect(codes(ready())).toEqual([]);
   });
-  it("blocks the fresh master template (no banner, drafts)", () => {
-    const c = codes(masterTemplate({ service: META, niche: FASHION, country: USA }));
-    expect(c).toEqual(expect.arrayContaining(["banner-desktop", "banner-mobile", "banner-alt", "faq-draft"]));
+  it("blocks draft FAQs but not a missing banner", () => {
+    expect(codes(masterTemplate({ service: META, niche: FASHION, country: USA }))).toEqual(["faq-draft"]);
+  });
+  it("blocks a half-finished banner", () => {
+    const page = ready();
+    for (const s of page.sections) if (s.type === "hero") s.props.offerBanner.mobile = null;
+    expect(codes(page)).toEqual(["banner-mobile"]);
   });
   it("blocks a missing H1, missing form and a duplicate slug", () => {
     const page = ready();
@@ -188,10 +192,9 @@ describe("publish check (R25)", () => {
       expect.arrayContaining(["h1", "form", "slug-unique"]),
     );
   });
-  it("blocks proof sections with nothing approved (no placeholder blocks, R19)", () => {
-    expect(codes(ready(), ctx({ liveCounts: { results: 0, testimonials: 0, creatives: 0, concept: 0 } }))).toEqual(
-      expect.arrayContaining(["results-empty", "testimonials-empty", "creatives-empty"]),
-    );
+  it("allows a page with no proof or badges (those sections are left off)", () => {
+    const empty = { liveCounts: { results: 0, testimonials: 0, creatives: 0, concept: 0 }, liveBadgeIds: [] };
+    expect(codes(ready(), ctx(empty))).toEqual([]);
   });
   it("blocks [NEEDS DATA] and switched-off badges", () => {
     const page = ready();

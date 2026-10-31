@@ -58,28 +58,20 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
     add("hero-first", "The hero must be the first section.", heroes[0].id);
   for (const hero of heroes) {
     if (!hero.props.h1.trim()) add("h1", "The hero needs a headline (the page's H1).", hero.id);
+    // The banner is optional, but it needs both sizes and alt text once started.
     const b = hero.props.offerBanner;
-    if (!b.desktop) add("banner-desktop", "Upload the offer banner for desktop.", hero.id);
-    if (!b.mobile) add("banner-mobile", "Upload the offer banner for mobile.", hero.id);
-    if (!b.alt.trim()) add("banner-alt", "Describe the offer banner in its alt text.", hero.id);
+    if (b.desktop || b.mobile) {
+      if (!b.desktop) add("banner-desktop", "Upload the offer banner for desktop too.", hero.id);
+      if (!b.mobile) add("banner-mobile", "Upload the offer banner for mobile too.", hero.id);
+      if (!b.alt.trim()) add("banner-alt", "Describe the offer banner in its alt text.", hero.id);
+    }
   }
 
   // Form (R10, R25)
   if (enabledOf(c, "form").length === 0) add("form", "The page needs the enquiry form section switched on.");
 
-  // No placeholder blocks (R19): proof sections must have real, approved items.
-  for (const s of enabledOf(c, "results")) {
-    if (ctx.liveCounts.results === 0)
-      add("results-empty", "No approved results match this page. Add one or switch the section off.", s.id);
-  }
-  for (const s of enabledOf(c, "testimonials")) {
-    if (ctx.liveCounts.testimonials === 0)
-      add("testimonials-empty", "No approved testimonials match this page. Add one or switch the section off.", s.id);
-  }
+  // Proof is optional: a section with no approved items is left off the live page.
   for (const s of enabledOf(c, "creatives")) {
-    const shown = ctx.liveCounts.creatives + (s.props.showConcept ? ctx.liveCounts.concept : 0);
-    if (shown === 0)
-      add("creatives-empty", "No approved creatives match this page. Add some or switch the section off.", s.id);
     if (s.props.showConcept && ctx.unlabelledConcept > 0)
       add("concept-label", "Every concept work item needs its “Concept work” label.", s.id);
   }
@@ -91,8 +83,6 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
   for (const s of enabledOf(c, "badges")) {
     const missing = s.props.badgeIds.filter((id) => !ctx.liveBadgeIds.includes(id));
     if (missing.length) add("badges", `${missing.length} chosen badge(s) are switched off or deleted.`, s.id);
-    if (s.props.badgeIds.length === 0 && ctx.liveBadgeIds.length === 0)
-      add("badges-empty", "No badges are switched on.", s.id);
   }
 
   // Missing-fact markers anywhere in the copy (R30)

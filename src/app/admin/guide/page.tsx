@@ -98,8 +98,9 @@ async function Guide() {
                 country.
               </Step>
               <Step n={2} title="Fill the checklist">
-                Upload the offer banner (desktop + mobile + alt text), check the text, mark FAQ answers ready, and switch
-                off sections with no proof yet. Press <strong>Save</strong>, then <strong>Re-check</strong>.
+                Check the text and mark FAQ answers ready. The offer banner is optional; if you add one, it needs desktop,
+                mobile and alt text. Sections with no proof stay off the live page by themselves. Press{" "}
+                <strong>Save</strong>, then <strong>Re-check</strong>.
               </Step>
               <Step n={3} title="Publish">
                 Choose <strong>Unlisted</strong> (ads only, hidden from Google) or <strong>Public</strong>, then press{" "}

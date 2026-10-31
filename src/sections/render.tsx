@@ -73,11 +73,13 @@ function OfferBanner({ banner, priority }: { banner: SectionOf<"hero">["props"][
 function Hero({ s, ctx }: { s: SectionOf<"hero">; ctx: RenderContext }) {
   const p = s.props;
   const below = s.variant === "banner-below";
+  // No banner on a live page: the text takes the whole hero, with no empty frame.
+  const hasBanner = Boolean(p.offerBanner.desktop && p.offerBanner.mobile) || SHOW_PLACEHOLDERS;
   const enter = (i: number) => ({ className: "rm-hero-in", style: { "--i": i } as CSSProperties });
   return (
     <section aria-label="Introduction" className="rm-hero-sky rm-hero-dark overflow-clip">
       <Container
-        className={`grid items-center gap-10 pb-16 pt-10 md:gap-12 md:pb-24 md:pt-16 ${below ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
+        className={`grid items-center gap-10 pb-16 pt-10 md:gap-12 md:pb-24 md:pt-16 ${below || !hasBanner ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}
       >
         <div className={`flex min-w-0 flex-col ${below ? "items-center text-center" : "items-start"}`}>
           {p.eyebrow && (
@@ -120,14 +122,16 @@ function Hero({ s, ctx }: { s: SectionOf<"hero">; ctx: RenderContext }) {
             )}
           </div>
         </div>
-        <div
-          className={`rm-hero-in w-full min-w-0 ${below ? "mx-auto max-w-4xl" : ""}`}
-          style={{ "--i": 4 } as CSSProperties}
-        >
-          <div className="rm-lp-frame">
-            <OfferBanner banner={p.offerBanner} priority />
+        {hasBanner && (
+          <div
+            className={`rm-hero-in w-full min-w-0 ${below ? "mx-auto max-w-4xl" : ""}`}
+            style={{ "--i": 4 } as CSSProperties}
+          >
+            <div className="rm-lp-frame">
+              <OfferBanner banner={p.offerBanner} priority />
+            </div>
           </div>
-        </div>
+        )}
       </Container>
     </section>
   );
