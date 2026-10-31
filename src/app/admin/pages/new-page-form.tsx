@@ -128,6 +128,7 @@ export function NewPageForm({
       {managing && (
         <ManageOptions
           lists={{ service: withAdded("service"), niche: withAdded("niche"), country: withAdded("country") }}
+          onAdd={setAdding}
         />
       )}
     </div>
