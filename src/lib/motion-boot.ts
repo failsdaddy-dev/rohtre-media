@@ -52,7 +52,7 @@ const source = function () {
         };
         var logo = new Image();
         logo.onload = logo.onerror = ready;
-        logo.src = "/brand/logo-wordmark-white.png";
+        logo.src = "/brand/logo-intro-white.png";
         window.addEventListener("load", ready);
         window.addEventListener("DOMContentLoaded", function () {
           if (waiting <= 0) start();

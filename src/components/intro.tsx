@@ -4,9 +4,8 @@ import type { CSSProperties } from "react";
 // letters rise out of their masks, then the stripes fall away to reveal the
 // page. Rendered on every page but shown only while <html data-intro> is set by
 // motion-boot (first page of a visit, never on landing pages, admin or for
-// reduced motion). It never blocks clicks. Every logo part is the one header
-// logo file, cut with CSS (design.css), so nothing extra loads unless the intro
-// plays.
+// reduced motion). It never blocks clicks. Every logo part is one large white
+// logo file, cut with CSS (design.css), which loads only when the intro plays.
 
 const COLUMNS = 10;
 

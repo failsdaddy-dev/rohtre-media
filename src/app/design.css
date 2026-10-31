@@ -848,7 +848,7 @@ html[data-intro]:not([data-intro-go]) .rm-hero-in {
   inset: 0;
 }
 html[data-intro] .rm-intro-letter {
-  background: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
+  background: url("/brand/logo-intro-white.png") center / 100% 100% no-repeat;
 }
 .rm-intro-row-mark {
   --start: 0.75s;
@@ -873,8 +873,8 @@ html[data-intro] .rm-intro-letter {
 }
 html[data-intro] .rm-intro-sheen {
   overflow: hidden;
-  -webkit-mask: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
-  mask: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
+  -webkit-mask: url("/brand/logo-intro-white.png") center / 100% 100% no-repeat;
+  mask: url("/brand/logo-intro-white.png") center / 100% 100% no-repeat;
 }
 .rm-intro-sheen::after {
   content: "";
