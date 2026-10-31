@@ -424,7 +424,7 @@ html[data-motion] .rm-hero-in {
   animation: rm-hero-in 0.9s var(--ease-soft) calc(var(--intro-delay, 0s) + var(--i, 0) * 0.12s) both;
 }
 html[data-intro] {
-  --intro-delay: 2.4s;
+  --intro-delay: 3s;
 }
 
 /* ------------------------------------------------------- light-section cards
@@ -790,7 +790,7 @@ html[data-intro] .rm-intro {
   display: flex;
   overflow: hidden;
   pointer-events: none;
-  animation: rm-intro-hide 0s linear 3.1s forwards;
+  animation: rm-intro-hide 0s linear 3.7s forwards;
 }
 /* Everything waits on the dark screen until motion-boot sets data-intro-go. */
 html[data-intro]:not([data-intro-go]) .rm-intro,
@@ -803,7 +803,7 @@ html[data-intro]:not([data-intro-go]) .rm-hero-in {
   position: absolute;
   inset: 0;
   background: #060606;
-  animation: rm-fade-out-kf 0.25s var(--ease) 2.3s forwards;
+  animation: rm-fade-out-kf 0.25s var(--ease) 2.9s forwards;
 }
 .rm-intro-col {
   position: relative;
@@ -813,7 +813,7 @@ html[data-intro]:not([data-intro-go]) .rm-hero-in {
   background: linear-gradient(to bottom, #060606, #3a0709 42%, #e50914);
   animation:
     rm-col-in 0.65s var(--ease-out) calc(var(--i) * 0.07s) both,
-    rm-col-out 0.6s cubic-bezier(0.55, 0, 0.45, 1) calc(2.3s + var(--i) * 0.06s) forwards;
+    rm-col-out 0.6s cubic-bezier(0.55, 0, 0.45, 1) calc(2.9s + var(--i) * 0.06s) forwards;
 }
 .rm-intro-col:last-child {
   border-right: 0;
@@ -826,7 +826,7 @@ html[data-intro]:not([data-intro-go]) .rm-hero-in {
   justify-content: center;
   padding: 0 16px;
   color: #ffffff;
-  animation: rm-fade-out-kf 0.3s var(--ease) 2.1s forwards;
+  animation: rm-fade-out-kf 0.3s var(--ease) 2.7s forwards;
 }
 .rm-intro-logo {
   position: relative;
@@ -838,66 +838,38 @@ html[data-intro]:not([data-intro-go]) .rm-hero-in {
     width: clamp(260px, 30vw, 520px);
   }
 }
-/* The play button: a triangle pops up where the R's play shape is, is "pressed"
-   (rings), and the R grows out of it. Then the letters of ROHTRE rise and those
-   of MEDIA drop in, one by one, and a red light runs across the finished logo.
+/* A slow reveal: the R, then each letter, rises out of its own mask with a long
+   ease and no overshoot; then a soft red light passes over the finished logo.
    All parts are one file, cut with CSS in the gaps between the letters. */
-.rm-intro-mark,
 .rm-intro-row,
 .rm-intro-letter,
 .rm-intro-sheen {
   position: absolute;
   inset: 0;
 }
-html[data-intro] .rm-intro-mark,
 html[data-intro] .rm-intro-letter {
   background: url("/brand/logo-wordmark-white.png") center / 100% 100% no-repeat;
 }
-.rm-intro-play {
-  position: absolute;
-  left: 7%;
-  top: 19.9%;
-  width: 11.9%;
-  height: 49.7%;
-  background: #ffffff;
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-  animation:
-    rm-play-in 0.5s linear 0.3s both,
-    rm-fade-out-kf 0.25s var(--ease) 1s forwards;
-}
-.rm-intro-ring {
-  position: absolute;
-  left: 14.5%;
-  top: 44%;
-  width: 16%;
-  aspect-ratio: 1;
-  margin: -8% 0 0 -8%;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  animation: rm-ring-out 0.8s var(--ease-out) 0.68s both;
-}
-.rm-intro-ring + .rm-intro-ring {
-  animation-delay: 0.84s;
-}
-.rm-intro-mark {
+.rm-intro-row-mark {
+  --start: 0.75s;
+  --rise: 105%;
   clip-path: inset(0 70.2% 0 0);
-  transform-origin: 14.5% 44%;
-  animation: rm-mark-in 0.5s linear 0.72s both;
 }
 .rm-intro-row-top {
+  --start: 1s;
+  --rise: 60%;
+  --cut-bottom: 47.8%;
   clip-path: inset(0 0 47.8% 29.8%);
 }
 .rm-intro-row-bottom {
+  --start: 1.15s;
+  --rise: 60%;
+  --cut-top: 52.2%;
   clip-path: inset(52.2% 0 0 29.8%);
 }
 .rm-intro-letter {
-  clip-path: inset(0 calc(100% - var(--to)) 0 var(--from));
-}
-.rm-intro-row-top .rm-intro-letter {
-  animation: rm-letter-up 0.46s var(--ease-out) calc(0.98s + var(--i) * 0.04s) both;
-}
-.rm-intro-row-bottom .rm-intro-letter {
-  animation: rm-letter-down 0.46s var(--ease-out) calc(1.08s + var(--i) * 0.04s) both;
+  clip-path: inset(var(--cut-top, 0) calc(100% - var(--to)) var(--cut-bottom, 0) var(--from));
+  animation: rm-letter-rise 0.85s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--start) + var(--i) * 0.035s) both;
 }
 html[data-intro] .rm-intro-sheen {
   overflow: hidden;
@@ -908,70 +880,12 @@ html[data-intro] .rm-intro-sheen {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 32%, #e50914 50%, transparent 68%);
-  animation: rm-sheen 0.42s var(--ease) 1.62s both;
+  background: linear-gradient(105deg, transparent 20%, rgba(229, 9, 20, 0.9) 50%, transparent 80%);
+  animation: rm-sheen 0.75s cubic-bezier(0.65, 0, 0.35, 1) 1.95s both;
 }
-@keyframes rm-play-in {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-    animation-timing-function: cubic-bezier(0.2, 0, 0.2, 1);
-  }
-  46% {
-    opacity: 1;
-    transform: scale(1.22);
-    animation-timing-function: ease-in-out;
-  }
-  76% {
-    transform: scale(0.82);
-    animation-timing-function: ease-out;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes rm-ring-out {
+@keyframes rm-letter-rise {
   from {
-    opacity: 0.75;
-    transform: scale(0.4);
-  }
-  to {
-    opacity: 0;
-    transform: scale(3.4);
-  }
-}
-@keyframes rm-mark-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-    animation-timing-function: cubic-bezier(0.2, 0, 0.3, 1);
-  }
-  58% {
-    opacity: 1;
-    transform: scale(1.07);
-    animation-timing-function: ease-in-out;
-  }
-  80% {
-    transform: scale(0.98);
-    animation-timing-function: ease-in-out;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes rm-letter-up {
-  from {
-    transform: translateY(56%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-@keyframes rm-letter-down {
-  from {
-    transform: translateY(-56%);
+    transform: translateY(var(--rise));
   }
   to {
     transform: translateY(0);
@@ -1012,7 +926,6 @@ html[data-intro] .rm-intro-sheen {
   .rm-stripe-band::before,
   .rm-stripe-text,
   .rm-float,
-  .rm-intro-mark,
   .rm-intro-letter {
     animation: none;
   }

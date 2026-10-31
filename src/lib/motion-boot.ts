@@ -42,7 +42,7 @@ const source = function () {
               setTimeout(function () {
                 d.removeAttribute("data-intro");
                 d.removeAttribute("data-intro-go");
-              }, 3300);
+              }, 3900);
             });
           });
         };
