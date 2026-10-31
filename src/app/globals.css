@@ -181,12 +181,68 @@ select:focus-visible {
   border-color: color-mix(in srgb, var(--focus) 55%, var(--field-border));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 13%, transparent);
 }
+/* Every scrollbar on the site: slim, no arrows, a clear track and a soft thumb
+   that fits both light and dark areas. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(120, 120, 128, 0.5) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 128, 0.75) padding-box;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 120, 128, 0.5) transparent;
+  }
+}
+/* The page's own bar: hidden on devices with a mouse, replaced by PageScrollbar. */
+.rm-page-scrollbar {
+  display: none;
+}
+@media (pointer: fine) {
+  html {
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
+  .rm-page-scrollbar:not([hidden]) {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 90;
+    display: block;
+    width: 12px;
+    touch-action: none;
+  }
+  .rm-page-scrollbar::before {
+    content: "";
+    position: absolute;
+    inset: 3px 3px 3px auto;
+    width: 5px;
+    border-radius: 999px;
+    background: rgba(120, 120, 128, 0.55);
+    transition: background-color 0.15s var(--ease);
+  }
+  .rm-page-scrollbar:hover::before {
+    background: rgba(120, 120, 128, 0.85);
+  }
+}
 /* Admin dropdown popup (src/components/admin/select.tsx): a short fade and
    slight scale from the trigger's edge; nothing under reduced motion. */
 .rm-select-pop {
   transform-origin: top center;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
 }
 .rm-select-pop[data-up] {
   transform-origin: bottom center;

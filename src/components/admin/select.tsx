@@ -51,8 +51,8 @@ export type SelectOption = {
   icon?: ReactNode;
   /** Shown instead of the label and hint in the closed box (a narrow box, e.g. "+91"). */
   short?: string;
-  /** Stays visible at the bottom of the list while it scrolls (e.g. an "add new" row). */
-  sticky?: boolean;
+  /** Sits under the scrolling list, always visible (e.g. an "add new" row). */
+  footer?: boolean;
   disabled?: boolean;
 };
 
@@ -222,6 +222,7 @@ export function Select({
   const optId = (i: number) => `${id ?? auto}-opt-${i}`;
   const button = useRef<HTMLButtonElement>(null);
   const popup = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   const typed = useRef({ text: "", at: 0 });
   /** Scroll the list to the active option only after a keyboard move or on opening, never while the mouse scrolls it. */
   const follow = useRef(false);
@@ -286,9 +287,9 @@ export function Select({
   // Keep the active option in view.
   useEffect(() => {
     if (!open || active < 0 || !follow.current) return;
-    const list = popup.current;
+    const list = scroller.current;
     const el = list?.querySelector<HTMLElement>(`[data-index="${active}"]`);
-    if (!list || !el) return;
+    if (!list || !el) return; // the footer row isn't in the scrolling list
     // Scroll only the list itself: scrollIntoView would also scroll every
     // scrolling ancestor (e.g. the dialog the popup sits in), shifting the page.
     if (el.offsetTop < list.scrollTop) list.scrollTop = el.offsetTop;
@@ -386,6 +387,7 @@ export function Select({
 
   let lastGroup: string | undefined;
   const rows: ReactNode[] = [];
+  const footer: ReactNode[] = [];
   options.forEach((o, i) => {
     if (o.group && o.group !== lastGroup) {
       rows.push(
@@ -400,7 +402,7 @@ export function Select({
     }
     lastGroup = o.group;
     const selected = i === index;
-    rows.push(
+    (o.footer ? footer : rows).push(
       <div
         key={o.value}
         id={optId(i)}
@@ -415,17 +417,11 @@ export function Select({
           e.preventDefault();
           choose(i);
         }}
-        className={`flex min-h-11 items-center gap-3 px-3 py-2 text-[15px] ${
+        className={`flex min-h-11 items-center gap-3 rounded-[10px] px-3 py-2 text-[15px] ${
           o.disabled
             ? "cursor-not-allowed opacity-50"
-            : o.sticky
-              ? "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,var(--bg-elev))]"
-              : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
-        } ${selected ? "font-semibold" : ""} ${
-          o.sticky
-            ? "sticky -bottom-1.5 z-10 -mx-1.5 -mb-1.5 mt-1 border-t border-line bg-bg-elev px-[18px] font-semibold"
-            : "rounded-[10px]"
-        }`}
+            : "cursor-pointer data-[active]:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
+        } ${selected || o.footer ? "font-semibold" : ""}`}
       >
         {o.icon && (
           <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center">
@@ -456,6 +452,15 @@ export function Select({
       </div>,
     );
   });
+
+  const body = (
+    <>
+      <div ref={scroller} data-lenis-prevent="" className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
+        {rows}
+      </div>
+      {footer.length > 0 && <div className="shrink-0 border-t border-line p-1.5">{footer}</div>}
+    </>
+  );
 
   if (inline) {
     return (
@@ -493,10 +498,9 @@ export function Select({
             aria-label={ariaLabel}
             aria-labelledby={ariaLabel ? undefined : (ariaLabelledby ?? id)}
             onPointerDown={(e) => e.preventDefault()}
-            data-lenis-prevent=""
-            className={`rm-select-pop absolute ${popupClassName} top-[calc(100%+6px)] z-30 max-h-64 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]`}
+            className={`rm-select-pop absolute ${popupClassName} top-[calc(100%+6px)] z-30 flex max-h-64 flex-col overflow-hidden rounded-2xl border border-line bg-bg-elev text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]`}
           >
-            {rows}
+            {body}
           </div>
         )}
       </span>
@@ -552,10 +556,9 @@ export function Select({
               visibility: place ? "visible" : "hidden",
             }}
             data-up={place?.up || undefined}
-            data-lenis-prevent=""
-            className="rm-select-pop z-[1000] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-bg-elev p-1.5 text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
+            className="rm-select-pop z-[1000] flex flex-col overflow-hidden rounded-2xl border border-line bg-bg-elev text-fg shadow-[0_22px_50px_-18px_rgba(0,0,0,0.38)]"
           >
-            {rows}
+            {body}
           </div>,
           host,
         )}

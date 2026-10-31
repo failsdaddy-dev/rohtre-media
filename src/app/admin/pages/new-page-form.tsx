@@ -66,7 +66,7 @@ export function NewPageForm({
           ...withAdded(key)
             .filter((v) => v.active !== false)
             .map((v) => ({ value: v.id, label: v.label })),
-          ...(canManage ? [{ value: ADD, label: `Add new ${key}`, icon: PLUS, sticky: true }] : []),
+          ...(canManage ? [{ value: ADD, label: `Add new ${key}`, icon: PLUS, footer: true }] : []),
         ]}
         placeholder="Choose…"
       />

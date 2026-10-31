@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
+import { PageScrollbar } from "@/components/page-scrollbar";
 import { GoogleTagManager } from "@/components/tracking/google-tag-manager";
 import { MetaPixel, MetaPixelClicks } from "@/components/tracking/meta-pixel";
 import { SITE_URL } from "@/lib/env";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <MetaPixel />
         </Suspense>
         <MetaPixelClicks />
+        <PageScrollbar />
       </body>
     </html>
   );
