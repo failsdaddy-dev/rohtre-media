@@ -5,7 +5,7 @@ import { AdminFrame, AdminLoading } from "@/components/admin/admin-frame";
 import { canManage, requireStaff } from "@/lib/auth";
 import { headlineFor } from "@/lib/dimensions";
 import { sectionJsonSchemas } from "@/lib/json-schemas";
-import { dimensionMap, loadLandingPage, publishIssues } from "@/lib/page-ops";
+import { dimensionMap, loadLandingPage, pageReport } from "@/lib/page-ops";
 import { getSettings } from "@/lib/settings";
 import { supabaseServer } from "@/lib/supabase/server";
 import { masterTemplate } from "@/sections/master-template";
@@ -25,8 +25,8 @@ async function EditorScreen({ params }: { params: Promise<{ id: string }> }) {
   }
   const template = masterTemplate(loaded.dims);
   const content = loaded.content ?? template; // invalid stored content: start again from the template
-  const [issues, all, settings, { data: versions }, { data: badges }] = await Promise.all([
-    publishIssues(db, loaded),
+  const [report, all, settings, { data: versions }, { data: badges }] = await Promise.all([
+    pageReport(db, loaded),
     dimensionMap(db),
     getSettings(),
     db
@@ -62,7 +62,8 @@ async function EditorScreen({ params }: { params: Promise<{ id: string }> }) {
         invalidStored={!loaded.content}
         schemas={sectionJsonSchemas()}
         defaults={defaults}
-        initialIssues={issues}
+        initialIssues={report.issues}
+        initialTodos={report.todos}
         versions={(versions ?? []) as { id: string; number: number; note: string | null; created_at: string }[]}
         badgeOptions={(badges ?? []).map((b) => ({
           value: b.id as string,

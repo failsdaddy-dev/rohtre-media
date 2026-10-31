@@ -1,4 +1,6 @@
+import { isFilled } from "../content/media-slot";
 import { pageContentSchema, type PageContent, type Section, type SectionOf } from "../sections/schemas";
+import { HAS_PROMPT } from "./dimensions";
 
 // The automatic publish check (R25). Publishing is refused while any issue
 // remains. Pure: the page script, the admin (Phase 4) and the tests use it.
@@ -87,4 +89,83 @@ export function checkPublish(rawContent: unknown, ctx: PublishContext): PublishI
     add("missing-facts", "The meta title or description still has a placeholder.");
 
   return issues;
+}
+
+const SECTION_NAMES: Record<Section["type"], string> = {
+  hero: "Hero",
+  badges: "Partner badges",
+  painPoints: "Pain points",
+  results: "Results",
+  creatives: "Creatives & reels",
+  platforms: "Platforms",
+  testimonials: "Testimonials",
+  process: "Process",
+  faq: "FAQ",
+  form: "Enquiry form",
+  customHtml: "Custom HTML",
+};
+
+const unfilled = (text: string) => !text.trim() || HAS_PROMPT.test(text);
+
+/**
+ * What is still empty on a page, section by section, for Re-check. These never
+ * block publishing; they only tell the team what is left to add. Sections that
+ * are switched off are skipped.
+ */
+export function pageTodos(rawContent: unknown, ctx: PublishContext): PublishIssue[] {
+  const parsed = pageContentSchema.safeParse(rawContent);
+  if (!parsed.success) return [];
+  const todos: PublishIssue[] = [];
+  for (const s of parsed.data.sections.filter((x) => x.enabled)) {
+    const todo = (text: string) =>
+      todos.push({ code: "todo", message: `${SECTION_NAMES[s.type]}: ${text}`, sectionId: s.id });
+    const incomplete = (noun: string, items: string[][]) => {
+      const left = items.filter((fields) => fields.some(unfilled)).length;
+      if (left) todo(`fill in ${left} of ${items.length} ${noun}.`);
+    };
+    if ("title" in s.props && unfilled(s.props.title)) todo("add the heading.");
+    switch (s.type) {
+      case "hero":
+        if (unfilled(s.props.subline)) todo("add the hero text.");
+        if (!s.props.offerBanner.desktop || !s.props.offerBanner.mobile) todo("add the offer banner images.");
+        break;
+      case "badges":
+        if (ctx.liveBadgeIds.length === 0) todo("no badges are switched on.");
+        break;
+      case "painPoints":
+        incomplete("pain points", s.props.items.map((i) => [i.title, i.text]));
+        break;
+      case "results":
+        if (s.props.uploads.length === 0 && ctx.liveCounts.results === 0)
+          todo("upload a result here, or tag one in Proof & badges.");
+        s.props.uploads.forEach((u, i) => {
+          if (!isFilled(u.file)) todo(`add the image or video for result ${i + 1}.`);
+          if (unfilled(u.metric) || unfilled(u.metricLabel)) todo(`add the number and its label for result ${i + 1}.`);
+        });
+        break;
+      case "creatives":
+        if (!s.props.media.some(isFilled) && ctx.liveCounts.creatives === 0)
+          todo("upload images or videos here, or tag creatives in Proof & badges.");
+        break;
+      case "platforms":
+        incomplete("platforms", s.props.items.map((i) => [i.name, i.text]));
+        break;
+      case "testimonials":
+        if (ctx.liveCounts.testimonials === 0) todo("no approved testimonials match this page yet.");
+        break;
+      case "process":
+        incomplete("steps", s.props.steps.map((i) => [i.title, i.text]));
+        break;
+      case "faq": {
+        const drafts = s.props.items.filter((i) => i.status !== "ready").length;
+        if (s.props.items.length === 0) todo("add some questions.");
+        else if (drafts) todo(`${drafts} of ${s.props.items.length} answers are still drafts (visitors won’t see them).`);
+        break;
+      }
+      case "customHtml":
+        if (!s.props.html.trim()) todo("add the HTML.");
+        break;
+    }
+  }
+  return todos;
 }

@@ -12,7 +12,7 @@ import {
   createLandingPage,
   dimensionMap,
   loadLandingPage,
-  publishIssues,
+  pageReport,
   publishPage,
   saveDraft,
 } from "@/lib/page-ops";
@@ -104,10 +104,10 @@ export async function savePage(pageId: string, rawContent: unknown, note: string
   return { ok: true, number: saved.number };
 }
 
-export async function checkPage(pageId: string): Promise<PublishIssue[]> {
+export async function checkPage(pageId: string): Promise<{ issues: PublishIssue[]; todos: PublishIssue[] }> {
   await requireStaff();
   const db = await supabaseServer();
-  return publishIssues(db, await loadLandingPage(db, { id: pageId }));
+  return pageReport(db, await loadLandingPage(db, { id: pageId }));
 }
 
 export async function publish(pageId: string): Promise<Result<{ issues: PublishIssue[] }>> {

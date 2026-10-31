@@ -4,7 +4,7 @@ import { pageContentSchema, type PageContent } from "../sections/schemas";
 import { headlineFor, slugFor, uniqueSlug, type DimensionValue, type PageDims } from "./dimensions";
 import { collectMediaIds } from "./media-refs";
 import { matchProof } from "./proof-match";
-import { checkPublish, type PublishIssue } from "./publish-check";
+import { checkPublish, pageTodos, type PublishContext, type PublishIssue } from "./publish-check";
 
 // Landing-page operations shared by the admin (server actions) and the
 // developer script (scripts/landing.ts). They take a Supabase client, so the
@@ -166,8 +166,7 @@ export async function liveProofCounts(db: Db, dimIds: string[]) {
   };
 }
 
-/** Run the publish check (R25) on a page's current draft. */
-export async function publishIssues(db: Db, loaded: LoadedPage): Promise<PublishIssue[]> {
+async function publishContext(db: Db, loaded: LoadedPage): Promise<PublishContext> {
   const others = ((await must(db.from("pages").select("slug").neq("id", loaded.page.id))) as { slug: string }[]).map(
     (p) => p.slug,
   );
@@ -178,13 +177,24 @@ export async function publishIssues(db: Db, loaded: LoadedPage): Promise<Publish
     db,
     Object.values(loaded.dims).map((d) => d.id),
   );
-  return checkPublish(loaded.rawContent, {
+  return {
     slug: loaded.page.slug,
     visibility: loaded.page.visibility,
     otherSlugs: others,
     liveBadgeIds: badges,
     ...counts,
-  });
+  };
+}
+
+/** Run the publish check (R25) on a page's current draft. */
+export async function publishIssues(db: Db, loaded: LoadedPage): Promise<PublishIssue[]> {
+  return checkPublish(loaded.rawContent, await publishContext(db, loaded));
+}
+
+/** The publish check plus what is still empty on the page (the Publish box). */
+export async function pageReport(db: Db, loaded: LoadedPage) {
+  const ctx = await publishContext(db, loaded);
+  return { issues: checkPublish(loaded.rawContent, ctx), todos: pageTodos(loaded.rawContent, ctx) };
 }
 
 /** Publish the current draft if the check passes. Returns the issues (empty = published). */

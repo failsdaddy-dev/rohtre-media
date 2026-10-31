@@ -102,6 +102,7 @@ export function PageEditor(props: {
   schemas: Record<SectionType, JsonSchema>;
   defaults: Record<string, Section>;
   initialIssues: PublishIssue[];
+  initialTodos: PublishIssue[];
   versions: Version[];
   badgeOptions: { value: string; label: string }[];
   countries: { id: string; label: string }[];
@@ -117,6 +118,12 @@ export function PageEditor(props: {
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [issues, setIssues] = useState(props.initialIssues);
+  const [todos, setTodos] = useState(props.initialTodos);
+  const recheck = async () => {
+    const report = await checkPage(props.page.id);
+    setIssues(report.issues);
+    setTodos(report.todos);
+  };
   const [preview, setPreview] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [settings, setSettings] = useState({ slug: props.page.slug, visibility: props.page.visibility });
@@ -170,7 +177,7 @@ export function PageEditor(props: {
       setSaved(content);
       setNote("");
       setMessage({ tone: "ok", text: `Saved as version ${res.number}.` });
-      setIssues(await checkPage(props.page.id));
+      await recheck();
       router.refresh();
     });
 
@@ -360,8 +367,25 @@ export function PageEditor(props: {
               ))}
             </ul>
           )}
+          {todos.length === 0 ? (
+            <p className="mb-3 text-sm text-fg-2">Nothing left to fill in.</p>
+          ) : (
+            <div className="mb-3">
+              <p className="text-sm font-semibold">Still to fill in ({todos.length})</p>
+              <p className="mb-1.5 text-xs text-fg-2">These don’t stop you publishing.</p>
+              <ul className="flex flex-col gap-1.5 text-sm">
+                {todos.map((t, n) => (
+                  <li key={n} className="flex gap-2">
+                    <span className="text-fg-2">○</span>
+                    {t.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {dirty && <p className="mb-3 text-xs text-fg-2">Re-check reads the last saved draft. Save first.</p>}
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => run(async () => setIssues(await checkPage(props.page.id)))} disabled={pending}>
+            <Button onClick={() => run(recheck)} disabled={pending}>
               Re-check
             </Button>
             {props.canPublish && (

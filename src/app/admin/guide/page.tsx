@@ -159,8 +159,9 @@ async function Guide() {
             </Step>
             <Step n={4} title="Fill the prompts">
               Text we can’t write for a new service or niche starts as a prompt like{" "}
-              <strong>[Add the hero text here]</strong>. Replace each one when you can. You can still publish without them: visitors
-              never see a prompt, and that text is simply left off the live page.
+              <strong>[Add the hero text here]</strong>. Replace each one when you can. Press <strong>Re-check</strong> to see everything
+              still empty, section by section. You can still publish without them: visitors never see a prompt, and that
+              text is simply left off the live page.
             </Step>
             <Step n={5} title="Hide, rename or reorder">
               Press <strong>Manage options</strong> under the form. Hide takes an option out of the dropdowns; pages
