@@ -19,14 +19,17 @@ const googleTags = [
   "https://ad.doubleclick.net",
   "https://www.google.com",
 ].join(" ");
+// Microsoft Clarity, loaded by GTM. Its servers change (a.clarity.ms, b.clarity.ms...),
+// so this is the one wildcard, as Microsoft's own CSP guide recommends.
+const clarity = "https://*.clarity.ms https://c.bing.com";
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://connect.facebook.net ${googleTags}`, // Next.js inline bootstrap + theme boot script
+  `script-src 'self' 'unsafe-inline' https://connect.facebook.net ${googleTags} ${clarity}`, // Next.js inline bootstrap + theme boot script
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: https://res.cloudinary.com https://www.facebook.com ${googleTags} https://www.google.co.in`,
+  `img-src 'self' data: https://res.cloudinary.com https://www.facebook.com ${googleTags} https://www.google.co.in ${clarity}`,
   "media-src 'self' https://res.cloudinary.com",
   "font-src 'self'",
-  `connect-src 'self' ${supabase} https://api.cloudinary.com https://connect.facebook.net https://www.facebook.com ${googleTags}`.trim(),
+  `connect-src 'self' ${supabase} https://api.cloudinary.com https://connect.facebook.net https://www.facebook.com ${googleTags} ${clarity}`.trim(),
   "frame-src 'self' https://www.googletagmanager.com https://td.doubleclick.net",
   "object-src 'none'",
   "base-uri 'self'",
