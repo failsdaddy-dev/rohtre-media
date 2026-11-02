@@ -69,7 +69,7 @@ export default async function HomePage() {
       {home.results.enabled && results.length > 0 && <Results s={home.results} results={results} />}
       <AboutMotion />
       {home.showcase.enabled && <ClientShowcase s={home.showcase} />}
-      <StripeBand />
+      {home.stripeBand.enabled && <StripeBand />}
       {home.process.enabled && <Process s={home.process} phoneCta />}
       {home.brands.enabled && <Brands s={home.brands} />}
       {home.testimonials.enabled && testimonials.length > 0 && (

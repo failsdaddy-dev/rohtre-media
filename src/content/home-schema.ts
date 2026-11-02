@@ -505,6 +505,9 @@ export const homeSchema = z.object({
       cta: { text: "Want results like this for your brand? Let’s make it happen.", label: "Book a Call" },
     }),
 
+  /** The band with the brand name in moving red stripes. */
+  stripeBand: z.object({ enabled: z.boolean() }).default({ enabled: true }),
+
   brands: z
     .object({
       enabled: z.boolean(),

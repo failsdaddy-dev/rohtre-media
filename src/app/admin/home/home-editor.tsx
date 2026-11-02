@@ -73,6 +73,12 @@ export const SECTIONS: { key: Key; icon: string; anchor: string; about: string }
     anchor: "client-results",
     about: "The client slider with a poster and counting numbers (“We build growth that shows”).",
   },
+  {
+    key: "stripeBand",
+    icon: "sparkles",
+    anchor: "",
+    about: "The band with ROHTRE MEDIA in moving red stripes. Use the switch to show or hide it.",
+  },
   { key: "process", icon: "network", anchor: "process", about: "The steps from first call to growing sales." },
   { key: "brands", icon: "cart", anchor: "brands", about: "The moving row of client logos (dark)." },
   {

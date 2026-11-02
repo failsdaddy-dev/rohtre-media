@@ -20,6 +20,7 @@ export const SECTION_NAMES: Record<string, string> = {
   videoAds: "Video ads & reels",
   results: "Results",
   showcase: "Client showcase",
+  stripeBand: "Red stripe band",
   brands: "Brands we've worked with",
   process: "Process",
   testimonials: "Testimonials",
