@@ -20,7 +20,8 @@ function friendly(message: string): string {
   if (message.includes("reel_needs_poster")) return "An approved reel needs a poster image.";
   if (message.includes("logo_style"))
     return "The database update for “Logo style” hasn’t run yet. Run `npx supabase db push`, then save again.";
-  return "Couldn’t save. Please check the fields.";
+  console.error("proof: save failed", message);
+  return `Couldn’t save: ${message}`;
 }
 
 function refresh() {
