@@ -9,7 +9,7 @@ import { MediaSlot } from "@/components/media/media-slot";
 import { RawHtml } from "@/components/raw-html";
 import { ButtonLink, Container } from "@/components/page-parts";
 import { emptySlot, isFilled } from "@/content/media-slot";
-import { cloudinaryUrl } from "@/lib/cloudinary/url";
+import { clipUrl, cloudinaryUrl } from "@/lib/cloudinary/url";
 import { HAS_PROMPT } from "@/lib/dimensions";
 import type { Badge, Result } from "@/lib/home-data";
 import { SHOW_PLACEHOLDERS } from "@/lib/home-data";
@@ -200,7 +200,8 @@ function CreativeTile({ c }: { c: Creative }) {
             aria-label={c.alt ?? undefined}
             className="aspect-[9/16] w-full bg-black object-cover"
           >
-            <source src={cloudinaryUrl(media, { width: 720, resourceType: "video" })} />
+            {/* An MP4 (H.264) file: plays on every browser, Safari included. */}
+            <source src={clipUrl(media, { width: 720 })} type="video/mp4" />
           </video>
         ) : (
           <Image

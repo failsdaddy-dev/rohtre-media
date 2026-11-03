@@ -11,7 +11,8 @@ import { MEDIA_IMAGE_MAX_MB, MEDIA_VIDEO_MAX_MB } from "@/lib/media-limits";
 //   image  → responsive Cloudinary image (f_auto, q_auto, widths below)
 //   video  → a still (poster or first frame) under the clip. Loop clips are
 //            muted, have no src until MediaPlayback starts them in view, and
-//            stay on the still for reduced motion or data saver. Other
+//            show a play button when the device blocks autoplay, for
+//            reduced motion or for data saver. Other
 //            videos get a normal player with controls and preload="none".
 //   GIF    → served as a looping MP4 (much lighter than the GIF itself)
 
@@ -98,17 +99,31 @@ export function MediaSlot({ slot, sizes, priority, className = "", maxWidth = 24
     <div style={frame} className={box}>
       {still}
       {loop ? (
-        <video
-          data-rm-loop=""
-          data-src={clip}
-          muted
-          loop
-          playsInline
-          preload="none"
-          aria-label={slot.alt || undefined}
-          aria-hidden={slot.alt ? undefined : true}
-          className={`rm-loop-clip absolute inset-0 size-full ${objectFit}`}
-        />
+        <>
+          <video
+            data-rm-loop=""
+            data-src={clip}
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-label={slot.alt || undefined}
+            aria-hidden={slot.alt ? undefined : true}
+            className={`rm-loop-clip absolute inset-0 size-full ${objectFit}`}
+          />
+          {/* Shown by MediaPlayback only when the device blocks autoplay (e.g. Low Power Mode on Apple devices). */}
+          <button
+            type="button"
+            data-rm-play=""
+            hidden
+            aria-label={slot.alt ? `Play video: ${slot.alt}` : "Play video"}
+            className="absolute inset-0 m-auto grid size-14 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition hover:bg-black/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white [&[hidden]]:hidden"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="ml-0.5 size-6 fill-current">
+              <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+            </svg>
+          </button>
+        </>
       ) : (
         <video
           src={clip}
