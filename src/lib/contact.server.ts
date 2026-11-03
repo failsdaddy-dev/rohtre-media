@@ -100,15 +100,16 @@ export type EmailRow = [string, string, string?];
 
 /**
  * The branded form email (red header with the logo, then label and value
- * rows). Every value is escaped. Needs logoAttachment() in the attachments.
- * No tracking pixels.
+ * rows). Every value is escaped. With the default logo it needs
+ * logoAttachment() in the attachments; pass LOGO_URL to load it from the
+ * site instead. No tracking pixels.
  */
-export function brandedEmail(title: string, rows: EmailRow[], footer: string): string {
+export function brandedEmail(title: string, rows: EmailRow[], footer: string, logoSrc = "cid:rohtre-logo"): string {
   const cell = "padding:10px 14px;border-bottom:1px solid #eceef2;vertical-align:top;font-size:14px;line-height:1.5";
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif;color:#111827">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb">
 <tr><td style="padding:20px 24px;background:#e50914;color:#ffffff">
-<img src="cid:rohtre-logo" width="150" height="40" alt="RohTre Media" style="display:block;border:0;width:150px;height:auto">
+<img src="${esc(logoSrc)}" width="150" height="40" alt="RohTre Media" style="display:block;border:0;width:150px;height:auto">
 <div style="font-size:20px;font-weight:bold;margin-top:14px">${esc(title)}</div>
 </td></tr>
 <tr><td style="padding:8px 10px">
@@ -131,6 +132,14 @@ ${esc(footer)}
 }
 
 const FOOTER = "Reply to this email to answer the client directly. All enquiries: Admin → Leads.";
+
+/**
+ * The logo from the live site. The sales email uses this instead of an inline
+ * (cid) attachment: with no other attachment, Titan's webmail showed only the
+ * logo file and an empty body (text + HTML + inline image). Text + HTML alone
+ * is the plainest structure and shows everywhere.
+ */
+const LOGO_URL = `${SITE_URL}/${LOGO_FILE}`;
 
 /** The sales email: the branded HTML with a plain-text copy. */
 export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> {
@@ -167,7 +176,7 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
     ["Page", sourcePage],
   ];
 
-  const html = brandedEmail("New sales enquiry", rows, FOOTER);
+  const html = brandedEmail("New sales enquiry", rows, FOOTER, LOGO_URL);
 
   const text = [
     "RohTre Media: new sales enquiry",
@@ -186,7 +195,6 @@ export async function emailSales(e: Enquiry, sourcePage: string): Promise<void> 
     ).slice(0, 200),
     text,
     html,
-    attachments: [logoAttachment()],
   });
 }
 
