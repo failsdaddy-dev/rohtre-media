@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Suspense>
         <MetaPixelClicks />
         <PageScrollbar />
+        <Analytics />
       </body>
     </html>
   );
